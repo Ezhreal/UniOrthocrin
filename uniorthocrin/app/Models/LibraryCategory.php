@@ -2,42 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LibraryCategory extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'description',
-        'status'
     ];
 
-    protected $casts = [
-        'status' => 'string'
-    ];
-
-    /**
-     * Get the library items for the category.
-     */
-    public function libraryItems(): HasMany
+    public function library()
     {
-        return $this->hasMany(Library::class, 'category_id');
+        return $this->hasMany(Library::class);
     }
-
-    /**
-     * Scope a query to only include active categories.
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'active');
-    }
-
-    /**
-     * Check if the category is active.
-     */
-    public function isActive(): bool
-    {
-        return $this->status === 'active';
-    }
-} 
+}

@@ -19,6 +19,7 @@
         "vite": "^6.2.4"
     },
     "dependencies": {
+        "@tailwindcss/postcss": "^4.1.10",
         "alpinejs": "^3.14.9",
         "sortablejs": "^1.15.6",
         "sweetalert2": "^11.22.0"

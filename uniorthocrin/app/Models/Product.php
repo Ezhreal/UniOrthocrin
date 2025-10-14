@@ -6,17 +6,19 @@ use App\Models\Traits\HasFiles;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\HasPermissions;
 
 class Product extends Model
 {
-    use HasFiles;
+    use HasFiles, HasPermissions;
 
     protected $fillable = [
         'name',
-        'serie',
-        'category_id',
+        'product_series_id',
+        'product_category_id',
         'description',
-        'status'
+        'status',
+        'thumbnail_path'
     ];
 
     protected $casts = [
@@ -28,7 +30,7 @@ class Product extends Model
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(ProductCategory::class, 'category_id');
+        return $this->belongsTo(ProductCategory::class, 'product_category_id');
     }
 
     /**
@@ -74,6 +76,32 @@ class Product extends Model
     }
 
     /**
+     * Get the series that owns the product.
+     */
+    public function series(): BelongsTo
+    {
+        return $this->belongsTo(ProductSeries::class, 'product_series_id');
+    }
+
+    /**
+     * Get the files for the product.
+     */
+    public function files()
+    {
+        return $this->belongsToMany(File::class, 'product_files', 'product_id', 'file_id')
+                    ->withPivot('file_type', 'sort_order', 'is_primary')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get the main file for the product.
+     */
+    public function mainFile()
+    {
+        return $this->files()->wherePivot('is_primary', true)->first();
+    }
+
+    /**
      * Check if a user has permission to view the product.
      */
     public function canBeViewedBy(User $user): bool
@@ -96,11 +124,33 @@ class Product extends Model
     }
 
     /**
-     * Get the full path of the product file.
+     * Get the images for the product.
      */
-    public function getFilePath(): string
+    public function images()
     {
-        return storage_path('app/products/' . $this->serie . '/' . $this->getFirstFile());
+        return $this->belongsToMany(File::class, 'product_files', 'product_id', 'file_id')
+                    ->wherePivot('file_type', 'image')
+                    ->withPivot('file_type', 'sort_order', 'is_primary')
+                    ->orderBy('pivot_sort_order');
+    }
+
+    /**
+     * Get the videos for the product.
+     */
+    public function videos()
+    {
+        return $this->belongsToMany(File::class, 'product_files', 'product_id', 'file_id')
+                    ->wherePivot('file_type', 'video')
+                    ->withPivot('file_type', 'sort_order', 'is_primary')
+                    ->orderBy('pivot_sort_order');
+    }
+
+    /**
+     * Get the documents for the product.
+     */
+    public function documents()
+    {
+        return $this->files()->wherePivot('file_type', 'pdf')->orderBy('pivot_sort_order');
     }
 
     /**

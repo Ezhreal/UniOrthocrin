@@ -2,35 +2,61 @@
 
 namespace App\Models;
 
-use App\Models\Traits\HasFiles;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class News extends Model
 {
-    use HasFiles;
+    use HasFactory;
 
     protected $fillable = [
+        'author_id',
         'title',
         'content',
         'excerpt',
-        'author_id',
         'published_at',
-        'status'
+        'status',
+        'thumbnail_path',
+        'news_file_id',
+        'news_category_id',
     ];
 
     protected $casts = [
-        'published_at' => 'datetime',
         'status' => 'string'
     ];
 
     /**
-     * Get the author that owns the news.
+     * Get the thumbnail URL for the news.
+     */
+    public function getThumbnailUrlAttribute(): string
+    {
+        if ($this->news_img_file) {
+            if (Str::startsWith($this->news_img_file, 'private/')) {
+                return url('/' . $this->news_img_file);
+            }
+            return url('/' . ltrim($this->news_img_file, '/'));
+        }
+        return asset('images/placeholder-news.jpg');
+    }
+
+    /**
+     * Get the user that owns the news.
      */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    /**
+     * Get the user types that have permissions for the news.
+     */
+    public function userTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(UserType::class, 'news_permissions', 'news_id', 'user_type_id');
     }
 
     /**
@@ -39,6 +65,22 @@ class News extends Model
     public function permissions(): HasMany
     {
         return $this->hasMany(NewsPermission::class);
+    }
+
+    /**
+     * Get the main file for the news.
+     */
+    public function mainFile(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'news_file_id');
+    }
+
+    /**
+     * Get the image for the news (alias for mainFile).
+     */
+    public function image(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'news_file_id');
     }
 
     /**
@@ -55,9 +97,7 @@ class News extends Model
      */
     public function scopePublished($query)
     {
-        return $query->where('status', 'published')
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now());
+        return $query->where('status', 'published');
     }
 
     /**
@@ -95,6 +135,33 @@ class News extends Model
             return $this->excerpt;
         }
 
-        return \Str::limit(strip_tags($this->content), 150);
+        return Str::limit(strip_tags($this->content), 150);
     }
-} 
+
+    /**
+     * Get the category that owns the news.
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(NewsCategory::class, 'news_category_id');
+    }
+
+    /**
+     * Check if the news can be downloaded by the given user.
+     */
+    public function canBeDownloadedBy(User $user): bool
+    {
+        // Verificar se a notícia está publicada
+        if (!$this->isPublished()) {
+            return false;
+        }
+
+        // Verificar permissões específicas
+        $permission = $this->permissions()
+            ->where('user_type_id', $user->user_type_id)
+            ->first();
+
+        // Se não há permissão específica, permitir para usuários autenticados
+        return $permission ? $permission->can_download : true;
+    }
+}

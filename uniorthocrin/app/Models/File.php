@@ -3,18 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class File extends Model
 {
     protected $fillable = [
         'name',
-        'type',
         'path',
-        'thumbnail_path',
-        'size',
+        'type',
         'extension',
         'mime_type',
+        'size',
         'order'
     ];
 
@@ -24,43 +22,84 @@ class File extends Model
     ];
 
     /**
-     * Get the parent fileable model.
-     */
-    public function fileable(): MorphTo
-    {
-        return $this->morphTo();
-    }
-
-    /**
-     * Get the file's URL.
+     * Get the full URL for the file.
      */
     public function getUrlAttribute(): string
     {
-        return asset('storage/' . $this->path);
+        // Se o path já começa com 'private/', não adiciona barra extra
+        if (str_starts_with($this->path, 'private/')) {
+            return url('/' . $this->path);
+        }
+        
+        return url('/' . ltrim($this->path, '/'));
     }
 
     /**
-     * Get the thumbnail URL if exists.
+     * Get the thumbnail URL or placeholder.
      */
-    public function getThumbnailUrlAttribute(): ?string
+    public function getThumbnailUrlAttribute(): string
     {
-        return $this->thumbnail_path ? asset('storage/' . $this->thumbnail_path) : null;
-    }
-
-    /**
-     * Get the formatted file size.
-     */
-    public function getFormattedSizeAttribute(): string
-    {
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $size = $this->size;
-        $unit = 0;
-
-        while ($size >= 1024 && $unit < count($units) - 1) {
-            $size /= 1024;
-            $unit++;
+        // Se tem path, retorna a URL do arquivo original
+        if ($this->path) {
+            // Se o path já começa com 'private/', não adiciona barra extra
+            if (str_starts_with($this->path, 'private/')) {
+                return url('/' . $this->path);
+            }
+            
+            return url('/' . ltrim($this->path, '/'));
         }
 
-        return round($size, 2) . ' ' . $units[$unit];
+        // Placeholder baseado no tipo de arquivo apenas se não tiver arquivo
+        if ($this->isImage()) {
+            return 'https://placehold.co/600x600?text=Imagem';
+        } elseif ($this->isVideo()) {
+            return 'https://placehold.co/600x600?text=Vídeo';
+        } elseif ($this->isPdf()) {
+            return 'https://placehold.co/600x600?text=PDF';
+        } elseif ($this->isAudio()) {
+            return 'https://placehold.co/600x600?text=Áudio';
+        }
+        
+        return 'https://placehold.co/600x600?text=Arquivo';
+    }
+
+    /**
+     * Get the full path for the file.
+     */
+    public function getFullPathAttribute(): string
+    {
+        return storage_path('app/' . $this->path);
+    }
+
+    /**
+     * Check if the file is an image.
+     */
+    public function isImage(): bool
+    {
+        return $this->type === 'image';
+    }
+
+    /**
+     * Check if the file is a video.
+     */
+    public function isVideo(): bool
+    {
+        return $this->type === 'video';
+    }
+
+    /**
+     * Check if the file is a PDF.
+     */
+    public function isPdf(): bool
+    {
+        return $this->type === 'pdf';
+    }
+
+    /**
+     * Check if the file is an audio.
+     */
+    public function isAudio(): bool
+    {
+        return $this->type === 'audio';
     }
 } 

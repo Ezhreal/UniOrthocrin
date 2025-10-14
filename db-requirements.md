@@ -1,5 +1,21 @@
 # UniOrthocrin - Guia de Setup e Desenvolvimento
 
+## STATUS ATUAL DO SISTEMA (LADO DO CLIENTE)
+
+### O que já foi feito:
+- Layout da dashboard pronto, responsivo e aprovado visualmente.
+- Controllers, Services e Repositories criados para: Produtos, Notícias, Treinamentos, Notificações, Marketing (Campanhas) e Biblioteca (Library), todos seguindo padrão SOLID e Repository Pattern.
+- Models Eloquent para todas as entidades principais, com traits de permissões e scopes de status/visibilidade.
+- Permissões e visibilidade implementadas e seeders ajustados para cada tipo de usuário.
+- Layouts e componentes principais prontos (dashboard, blocos, acervo digital, etc), com Font Awesome para ícones.
+
+### Roteiro de próximos passos (lado do cliente)
+1. Implementar as views das demais páginas (produtos, treinamentos, biblioteca, campanhas, etc) — pode começar com layouts mockados e depois integrar com dados reais.
+2. Integrar controllers/services/repos nas views para exibir dados reais em todas as páginas.
+3. Ajustar rotas web para garantir navegação entre todas as páginas.
+4. Testar permissões e visibilidade em diferentes tipos de usuário.
+5. Aprimorar detalhes de UX/UI conforme feedback.
+
 ## Stack Tecnológica
 - **Backend**: Laravel 10+ + MySQL
 - **Frontend**: Blade + Alpine.js + Tailwind CSS + Livewire
@@ -56,8 +72,8 @@ DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=uniorthocrin
-DB_USERNAME=uniorthocrin_user
-DB_PASSWORD=sua_senha_segura
+DB_USERNAME=root
+DB_PASSWORD=Fl03
 
 FILESYSTEM_DISK=public
 ```
@@ -469,7 +485,7 @@ php artisan make:model DownloadOption
 1. ✅ **Executar FASE 1**: Setup inicial
 2. ✅ **Executar FASE 2**: Criar e executar migrations
 3. ✅ **Executar FASE 3**: Criar e executar seeders
-4. ⏳ **FASE 4**: Implementar Models com relacionamentos
+4. ✅ **FASE 4**: Implementar Models com relacionamentos
 5. ⏳ **FASE 5**: Controllers e Routes
 6. ⏳ **FASE 6**: Views e Layouts
 7. ⏳ **FASE 7**: Alpine.js e Interatividade

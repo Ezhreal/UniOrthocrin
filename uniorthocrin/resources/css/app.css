@@ -8,4 +8,11 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    
+    /* Suas cores customizadas para Tailwind v4 */
+    --color-primary: #910039;
+    --color-secondary: #FEAD00;
+    --color-text: #747474;
+    --color-border: #DDDDDD;
+    --color-background: #F9F9F9;
 }

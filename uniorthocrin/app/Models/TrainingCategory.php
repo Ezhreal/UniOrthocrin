@@ -2,42 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TrainingCategory extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'description',
-        'status'
     ];
 
-    protected $casts = [
-        'status' => 'string'
-    ];
-
-    /**
-     * Get the trainings for the category.
-     */
-    public function trainings(): HasMany
+    public function trainings()
     {
-        return $this->hasMany(Training::class, 'category_id');
+        return $this->hasMany(Training::class);
     }
-
-    /**
-     * Scope a query to only include active categories.
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'active');
-    }
-
-    /**
-     * Check if the category is active.
-     */
-    public function isActive(): bool
-    {
-        return $this->status === 'active';
-    }
-} 
+}

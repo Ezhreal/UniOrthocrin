@@ -1,0 +1,24 @@
+CONFIGURAÇÕES DO PHP QUE FORAM ALTERADAS:
+
+Arquivo: /etc/php/8.3/fpm/php.ini
+
+Linha 419: max_execution_time = 300
+Linha 445: memory_limit = 256M  
+Linha 713: post_max_size = 100M
+Linha 865: upload_max_filesize = 50M
+
+COMANDOS PARA APLICAR AS MUDANÇAS:
+
+1. Copiar a configuração do nginx:
+   sudo cp /home/codestackrg/Projects/UniOrthocrin/nginx_config_temp.conf /etc/nginx/sites-available/uniorthocrin.local
+
+2. Testar configuração do nginx:
+   sudo nginx -t
+
+3. Reiniciar serviços:
+   sudo systemctl restart php8.3-fpm
+   sudo systemctl restart nginx
+
+4. Verificar se os serviços estão rodando:
+   sudo systemctl status php8.3-fpm
+   sudo systemctl status nginx

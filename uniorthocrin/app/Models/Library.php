@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\Traits\HasFiles;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Library extends Model
 {
-    use HasFiles;
 
     /**
      * The table associated with the model.
@@ -18,9 +17,10 @@ class Library extends Model
 
     protected $fillable = [
         'name',
-        'category_id',
+        'library_category_id',
         'description',
-        'status'
+        'status',
+        'thumbnail_path'
     ];
 
     protected $casts = [
@@ -32,7 +32,7 @@ class Library extends Model
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(LibraryCategory::class, 'category_id');
+        return $this->belongsTo(LibraryCategory::class, 'library_category_id');
     }
 
     /**
@@ -41,6 +41,16 @@ class Library extends Model
     public function permissions(): HasMany
     {
         return $this->hasMany(LibraryPermission::class);
+    }
+
+    /**
+     * Get all files for the library item.
+     */
+    public function files(): BelongsToMany
+    {
+        return $this->belongsToMany(File::class, 'library_files')
+                    ->withPivot('file_type', 'sort_order', 'is_primary')
+                    ->orderBy('pivot_sort_order');
     }
 
     /**
@@ -75,5 +85,24 @@ class Library extends Model
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /**
+     * Check if the library item can be downloaded by the given user.
+     */
+    public function canBeDownloadedBy(User $user): bool
+    {
+        // Verificar se o item está ativo
+        if (!$this->isActive()) {
+            return false;
+        }
+
+        // Verificar permissões específicas
+        $permission = $this->permissions()
+            ->where('user_type_id', $user->user_type_id)
+            ->first();
+
+        // Se não há permissão específica, permitir para usuários autenticados
+        return $permission ? $permission->can_download : true;
     }
 } 

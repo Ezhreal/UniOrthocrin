@@ -1,0 +1,338 @@
+/* Admin CSS baseado no TailAdmin */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+
+/* Cores customizadas do UniOrthocrin */
+:root {
+  --color-primary: #910039;
+  --color-primary-25: #fdf2f8;
+  --color-primary-50: #fce7f3;
+  --color-primary-100: #fbcfe8;
+  --color-primary-200: #f9a8d4;
+  --color-primary-300: #f472b6;
+  --color-primary-400: #ec4899;
+  --color-primary-500: #910039;
+  --color-primary-600: #7c1d3a;
+  --color-primary-700: #6b1a32;
+  --color-primary-800: #5a162a;
+  --color-primary-900: #491322;
+  --color-primary-950: #2d0a15;
+
+  --color-secondary: #FEAD00;
+  --color-secondary-25: #fffdf5;
+  --color-secondary-50: #fff9e6;
+  --color-secondary-100: #fff2cc;
+  --color-secondary-200: #ffe699;
+  --color-secondary-300: #ffd966;
+  --color-secondary-400: #ffcc33;
+  --color-secondary-500: #FEAD00;
+  --color-secondary-600: #e69a00;
+  --color-secondary-700: #cc8800;
+  --color-secondary-800: #b37700;
+  --color-secondary-900: #996600;
+  --color-secondary-950: #664400;
+
+  --color-gray-25: #fcfcfd;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f2f4f7;
+  --color-gray-200: #e4e7ec;
+  --color-gray-300: #d0d5dd;
+  --color-gray-400: #98a2b3;
+  --color-gray-500: #667085;
+  --color-gray-600: #475467;
+  --color-gray-700: #344054;
+  --color-gray-800: #1d2939;
+  --color-gray-900: #101828;
+  --color-gray-950: #0c111d;
+
+  --color-success-25: #f6fef9;
+  --color-success-50: #ecfdf3;
+  --color-success-100: #d1fadf;
+  --color-success-200: #a6f4c5;
+  --color-success-300: #6ce9a6;
+  --color-success-400: #32d583;
+  --color-success-500: #12b76a;
+  --color-success-600: #039855;
+  --color-success-700: #027a48;
+  --color-success-800: #05603a;
+  --color-success-900: #054f31;
+  --color-success-950: #053321;
+
+  --color-error-25: #fffbfa;
+  --color-error-50: #fef3f2;
+  --color-error-100: #fee4e2;
+  --color-error-200: #fecdca;
+  --color-error-300: #fda29b;
+  --color-error-400: #f97066;
+  --color-error-500: #f04438;
+  --color-error-600: #d92d20;
+  --color-error-700: #b42318;
+  --color-error-800: #912018;
+  --color-error-900: #7a271a;
+  --color-error-950: #55160c;
+
+  --color-warning-25: #fffcf5;
+  --color-warning-50: #fffaeb;
+  --color-warning-100: #fef0c7;
+  --color-warning-200: #fedf89;
+  --color-warning-300: #fec84b;
+  --color-warning-400: #fdb022;
+  --color-warning-500: #f79009;
+  --color-warning-600: #dc6803;
+  --color-warning-700: #b54708;
+  --color-warning-800: #93370d;
+  --color-warning-900: #7a2e0e;
+  --color-warning-950: #4e1d09;
+
+  --shadow-theme-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-theme: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-theme-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-theme-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-theme-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-theme-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+/* Menu Styles */
+.menu-item {
+  @apply relative flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200;
+  gap: 0.75rem;
+}
+
+.menu-item-active {
+  @apply bg-primary text-white shadow-sm;
+}
+
+.menu-item-inactive {
+  @apply text-gray-700 hover:bg-gray-100 hover:text-gray-900;
+}
+
+.menu-item-icon-size {
+  @apply flex items-center justify-center;
+}
+
+.menu-item-icon-size svg {
+  @apply h-5 w-5;
+}
+
+.menu-item-icon-active {
+  @apply text-white;
+}
+
+.menu-item-icon-inactive {
+  @apply text-gray-500 group-hover:text-gray-700;
+}
+
+.menu-dropdown-item {
+  @apply relative flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200;
+  gap: 0.75rem;
+}
+
+.menu-dropdown-item-active {
+  @apply bg-primary/10 text-primary;
+}
+
+.menu-dropdown-item-inactive {
+  @apply text-gray-700 hover:bg-gray-100 hover:text-gray-900;
+}
+
+/* Card Styles */
+.admin-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200;
+}
+
+.admin-card-header {
+  @apply border-b border-gray-200 pb-4 mb-6;
+}
+
+.admin-card-title {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.admin-card-subtitle {
+  @apply text-sm text-gray-600 mt-1;
+}
+
+/* Button Styles */
+.btn-primary {
+  @apply inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200;
+}
+
+.btn-success {
+  @apply inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-success-500 hover:bg-success-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success-500 transition-colors duration-200;
+}
+
+.btn-danger {
+  @apply inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-error-500 hover:bg-error-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error-500 transition-colors duration-200;
+}
+
+/* Form Styles */
+.form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors duration-200;
+}
+
+.form-select {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors duration-200;
+}
+
+.form-textarea {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors duration-200;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.form-error {
+  @apply mt-1 text-sm text-error-600;
+}
+
+/* Table Styles */
+.admin-table {
+  @apply min-w-full divide-y divide-gray-200;
+}
+
+.admin-table thead {
+  @apply bg-gray-50;
+}
+
+.admin-table th {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+}
+
+.admin-table td {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
+}
+
+.admin-table tbody tr {
+  @apply hover:bg-gray-50 transition-colors duration-200;
+}
+
+/* Badge Styles */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-success-100 text-success-800;
+}
+
+.badge-error {
+  @apply bg-error-100 text-error-800;
+}
+
+.badge-warning {
+  @apply bg-warning-100 text-warning-800;
+}
+
+.badge-primary {
+  @apply bg-primary-100 text-primary-800;
+}
+
+.badge-gray {
+  @apply bg-gray-100 text-gray-800;
+}
+
+/* Stats Card Styles */
+.stats-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200;
+}
+
+.stats-card-icon {
+  @apply h-12 w-12 rounded-lg flex items-center justify-center;
+}
+
+.stats-card-icon-primary {
+  @apply bg-primary/10 text-primary;
+}
+
+.stats-card-icon-secondary {
+  @apply bg-secondary/10 text-secondary;
+}
+
+.stats-card-icon-success {
+  @apply bg-success-100 text-success-600;
+}
+
+.stats-card-icon-warning {
+  @apply bg-warning-100 text-warning-600;
+}
+
+.stats-card-icon-error {
+  @apply bg-error-100 text-error-600;
+}
+
+.stats-card-icon-gray {
+  @apply bg-gray-100 text-gray-600;
+}
+
+/* File Upload Styles */
+.file-upload-area {
+  @apply mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-primary transition-colors duration-200;
+}
+
+.file-upload-area-active {
+  @apply border-primary bg-primary/5;
+}
+
+/* Loading States */
+.loading-spinner {
+  @apply animate-spin rounded-full h-4 w-4 border-b-2 border-primary;
+}
+
+/* Responsive Utilities */
+@media (max-width: 640px) {
+  .admin-card {
+    @apply p-4;
+  }
+  
+  .admin-table {
+    @apply text-xs;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    @apply px-3 py-2;
+  }
+}
+
+/* Dark mode support (if needed) */
+.dark .admin-card {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .admin-card-title {
+  @apply text-white;
+}
+
+.dark .admin-card-subtitle {
+  @apply text-gray-400;
+}
+
+.dark .form-input,
+.dark .form-select,
+.dark .form-textarea {
+  @apply bg-gray-700 border-gray-600 text-white;
+}
+
+.dark .form-label {
+  @apply text-gray-300;
+}
+
+.dark .admin-table thead {
+  @apply bg-gray-700;
+}
+
+.dark .admin-table th {
+  @apply text-gray-300;
+}
+
+.dark .admin-table td {
+  @apply text-gray-300;
+}
+
+.dark .admin-table tbody tr:hover {
+  @apply bg-gray-700;
+}
