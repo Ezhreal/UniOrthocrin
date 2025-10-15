@@ -76,6 +76,7 @@ class TrainingController extends Controller
             $training->save();
         }
 
+        $publishOneDrive = $request->boolean('publish_onedrive');
         // Handle video uploads
         if ($request->hasFile('videos')) {
             foreach ($request->file('videos') as $videoFile) {
@@ -88,6 +89,12 @@ class TrainingController extends Controller
                     'size' => $videoFile->getSize(),
                     'file_type' => 'video',
                 ]);
+                // OneDrive (assíncrono)
+                if ($publishOneDrive && $path) {
+                    $localPath = storage_path('app/' . $path);
+                    $remotePath = 'Training/' . $training->id . '/' . $videoFile->getClientOriginalName();
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                }
             }
         }
 
@@ -103,6 +110,12 @@ class TrainingController extends Controller
                     'size' => $pdfFile->getSize(),
                     'file_type' => 'pdf',
                 ]);
+                // OneDrive (assíncrono)
+                if ($publishOneDrive && $path) {
+                    $localPath = storage_path('app/' . $path);
+                    $remotePath = 'Training/' . $training->id . '/' . $pdfFile->getClientOriginalName();
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                }
             }
         }
 

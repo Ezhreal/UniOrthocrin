@@ -143,26 +143,28 @@
     <!-- Novos Treinamentos e Radar -->
     <div class="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
         <div class="md:col-span-2">
-,            <div class="flex justify-between items-center mb-8">
+            <div class="flex justify-between items-center mb-8">
                 <h2 class="text-[#910039] text-2xl font-bold uppercase">NOVOS TREINAMENTOS</h2>
 
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                 @if(isset($treinamentos))
                 @forelse($treinamentos as $treinamento)
-                <div class="dashboard-card training-card bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
-                    <img src="{{ $treinamento->thumbnail_path ? url('/private/' . $treinamento->thumbnail_path) : ($treinamento->files->first() ? $treinamento->files->first()->url : 'https://placehold.co/600x600?text=Treinamento') }}" alt="{{ $treinamento->name }}" class="w-full h-32 object-cover rounded-t-lg">
-                    <div class="p-4 flex-1 flex flex-col justify-between">
-                        <div>
-                            <div class="text-[#910039] font-bold text-base mb-1">{{ $treinamento->name }}</div>
-                            <div class="text-gray-500 text-sm mb-2">{{ $treinamento->category->name ?? 'Sem categoria' }}</div>
-                        </div>
-                        <div class="flex items-center gap-2 mt-2">
-                            <i class="fa-regular fa-eye text-[#910039]"></i>
-                            <span class="text-xs text-gray-700">Ver treinamento</span>
-                        </div>
+            <div class="dashboard-card training-card bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
+                <img src="{{ $treinamento->thumbnail_path ? url('/private/' . $treinamento->thumbnail_path) : ($treinamento->files->first() ? $treinamento->files->first()->url : 'https://placehold.co/600x600?text=Treinamento') }}" alt="{{ $treinamento->name }}" class="w-full h-32 object-cover rounded-t-lg">
+                <div class="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                        <div class="text-[#910039] font-bold text-base mb-1">{{ $treinamento->name }}</div>
+                        <div class="text-gray-500 text-sm mb-2">{{ $treinamento->category->name ?? 'Sem categoria' }}</div>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <a href="{{ route('treinamentos.detail', $treinamento->id) }}" class="flex items-center gap-1 text-[#910039] text-xs hover:underline">
+                            <i class="fa-regular fa-eye"></i>
+                            Ver treinamento
+                        </a>
                     </div>
                 </div>
+            </div>
                 @empty
                 <div class="col-span-full text-center text-gray-500 py-8">
                     Nenhum treinamento encontrado.
@@ -189,10 +191,6 @@
                 <div class="pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
                     <div class="text-[#910039] font-semibold text-sm mb-1">{{ $noticia->title }}</div>
                     <div class="text-gray-500 text-xs mb-1">{{ $noticia->published_at ? $noticia->published_at->format('d/m/Y') : 'Data não informada' }}</div>
-                    <div class="flex items-center gap-2">
-                        <i class="fa-regular fa-eye text-[#910039]"></i>
-                        <span class="text-xs text-gray-700">Ver mais</span>
-                    </div>
                 </div>
                 @empty
                 <div class="text-center text-gray-500 py-4">
@@ -205,7 +203,6 @@
                 </div>
                 @endif
             </div>
-            <a href="{{ route('news.list') }}" class="bg-[#910039] text-white px-6 py-1 rounded-full font-semibold text-sm">Ver todas</a>
         </div>
     </div>
     <!-- Blocos finais -->

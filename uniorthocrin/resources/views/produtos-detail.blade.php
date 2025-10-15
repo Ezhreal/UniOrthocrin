@@ -20,6 +20,45 @@
     </div>
 
     <div class="max-w-7xl mx-auto py-12">
+        <!-- Card de Informações Detalhadas -->
+        <div class="bg-white p-6 rounded-lg shadow-sm mb-12">
+            <!-- Descrição -->
+            <div class="mb-4">
+                <h3 class="text-[#910039] font-bold text-lg mb-2">Descrição</h3>
+                @if($product->description)
+                    <p class="text-gray-700 leading-relaxed">{{ $product->description }}</p>
+                @else
+                    <p class="text-gray-500 italic">Nenhuma descrição disponível.</p>
+                @endif
+            </div>
+            
+            <!-- Data e Tamanho -->
+            <div class="flex items-center gap-6 text-sm text-gray-600 mb-6">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-calendar text-[#910039]"></i>
+                    <span>Publicado: <strong>{{ $product->created_at->format('d/m/Y') }}</strong></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-hdd text-[#910039]"></i>
+                    <span><strong>{{ number_format(($product->images->sum('size') + $product->videos->sum('size')) / 1024 / 1024, 1) }} MB</strong> de arquivos</span>
+                </div>
+            </div>
+            
+            <!-- Botão Download -->
+            <div class="pt-4 border-t border-gray-200">
+                <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
+                    @csrf
+                    <input type="hidden" name="content_type" value="product">
+                    <input type="hidden" name="content_id" value="{{ $product->id }}">
+                    <input type="hidden" name="type" value="all">
+                    <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                        <i class="fa-solid fa-download"></i>
+                        Download do Produto .zip
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <!-- Galeria de Imagens -->
         <div class="mb-12 bg-white p-8">
             <h2 class="text-[#910039] text-2xl font-bold mb-8">Galeria de Imagens</h2>

@@ -67,6 +67,7 @@ class NewsController extends Controller
             'title', 'content', 'news_category_id', 'status'
         ]));
 
+        $publishOneDrive = $request->boolean('publish_onedrive');
         // Handle image upload
         if ($request->hasFile('image')) {
             $imageFile = $request->file('image');
@@ -79,6 +80,12 @@ class NewsController extends Controller
                 'size' => $imageFile->getSize(),
                 'file_type' => 'image',
             ]);
+
+            if ($publishOneDrive && $path) {
+                $localPath = storage_path('app/' . $path);
+                $remotePath = 'News/' . $news->id . '/' . $imageFile->getClientOriginalName();
+                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+            }
         }
 
         // Handle permissions
@@ -137,6 +144,7 @@ class NewsController extends Controller
                 'title', 'content', 'news_category_id', 'status'
             ]));
 
+        $publishOneDrive = $request->boolean('publish_onedrive');
         // Handle new image upload
         if ($request->hasFile('image')) {
             // Delete old image
@@ -155,6 +163,12 @@ class NewsController extends Controller
                 'size' => $imageFile->getSize(),
                 'file_type' => 'image',
             ]);
+
+            if ($publishOneDrive && $path) {
+                $localPath = storage_path('app/' . $path);
+                $remotePath = 'News/' . $news->id . '/' . $imageFile->getClientOriginalName();
+                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+            }
         }
 
         // Update permissions (simple sync for now, can be more complex)

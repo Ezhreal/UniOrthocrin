@@ -261,6 +261,10 @@
                     
                     <div class="space-modern-sm">
                         <div class="space-y-3">
+                            <label class="inline-flex items-center space-x-2">
+                                <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox">
+                                <span class="text-modern-body">Publicar no OneDrive</span>
+                            </label>
                             <button type="submit" class="btn-modern-primary w-full">
                                 <i class="fas fa-save mr-2"></i>Criar Treinamento
                             </button>

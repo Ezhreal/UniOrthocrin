@@ -145,6 +145,14 @@
                             @error('files.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
+
+                            <!-- Publicar no OneDrive -->
+                            <div class="mt-4">
+                                <label class="inline-flex items-center space-x-2">
+                                    <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox">
+                                    <span class="text-modern-body">Publicar no OneDrive</span>
+                                </label>
+                            </div>
                             
                             <!-- Lista dos Arquivos Existentes -->
                             @if($library->files && $library->files->count() > 0)

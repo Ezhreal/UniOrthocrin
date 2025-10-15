@@ -37,6 +37,14 @@
                                 <p class="modern-card-subtitle">Dados principais do item</p>
                             </div>
                         </div>
+
+                        <!-- Publicar no OneDrive -->
+                        <div class="mt-4">
+                            <label class="inline-flex items-center space-x-2">
+                                <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox">
+                                <span class="text-modern-body">Publicar no OneDrive</span>
+                            </label>
+                        </div>
                     </div>
                     
             <div class="space-modern-sm">

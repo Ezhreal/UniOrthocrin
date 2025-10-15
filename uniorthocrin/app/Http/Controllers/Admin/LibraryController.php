@@ -239,6 +239,7 @@ class LibraryController extends Controller
         ]);
 
         $uploadedFiles = [];
+        $publishOneDrive = $request->boolean('publish_onedrive');
         foreach ($request->file('files') as $file) {
             $path = $file->store('private/library/' . $library->id, 'private');
             // Criar o arquivo
@@ -260,6 +261,12 @@ class LibraryController extends Controller
             ]);
             
             $uploadedFile = $fileRecord;
+            // Disparar envio ao OneDrive (assíncrono) se marcado
+            if ($publishOneDrive && $path) {
+                $localPath = storage_path('app/' . $path);
+                $remotePath = 'Library/' . $library->id . '/' . $file->getClientOriginalName();
+                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+            }
             $uploadedFiles[] = $uploadedFile;
         }
 

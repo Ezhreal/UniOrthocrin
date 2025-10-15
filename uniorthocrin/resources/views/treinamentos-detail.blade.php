@@ -20,6 +20,45 @@
     </div>
 
     <div class="max-w-7xl mx-auto py-12">
+        <!-- Card de Informações Detalhadas -->
+        <div class="bg-white p-6 rounded-lg shadow-sm mb-12">
+            <!-- Descrição -->
+            <div class="mb-4">
+                <h3 class="text-[#910039] font-bold text-lg mb-2">Descrição</h3>
+                @if($training->description)
+                    <p class="text-gray-700 leading-relaxed">{{ $training->description }}</p>
+                @else
+                    <p class="text-gray-500 italic">Nenhuma descrição disponível.</p>
+                @endif
+            </div>
+            
+            <!-- Data e Tamanho -->
+            <div class="flex items-center gap-6 text-sm text-gray-600 mb-6">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-calendar text-[#910039]"></i>
+                    <span>Publicado: <strong>{{ $training->created_at->format('d/m/Y') }}</strong></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-hdd text-[#910039]"></i>
+                    <span><strong>{{ number_format($training->files->sum('size') / 1024 / 1024, 1) }} MB</strong> de arquivos</span>
+                </div>
+            </div>
+            
+            <!-- Botão Download -->
+            <div class="pt-4 border-t border-gray-200">
+                <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
+                    @csrf
+                    <input type="hidden" name="content_type" value="training">
+                    <input type="hidden" name="content_id" value="{{ $training->id }}">
+                    <input type="hidden" name="type" value="all">
+                    <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                        <i class="fa-solid fa-download"></i>
+                        Download do Treinamento .zip
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <!-- Box 1: Galeria de Vídeos -->
         @if($training->files()->where('type', 'video')->count() > 0)
         <div class="mb-12 bg-white p-8">

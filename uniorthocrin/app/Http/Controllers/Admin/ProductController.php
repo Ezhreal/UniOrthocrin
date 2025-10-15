@@ -53,6 +53,7 @@ class ProductController extends Controller
 
         $request->validate($validationRules, (new FileValidationRequest())->messages());
 
+        $publishOneDrive = $request->boolean('publish_onedrive');
         DB::beginTransaction();
         try {
             // Criar produto
@@ -88,6 +89,12 @@ class ProductController extends Controller
                         'sort_order' => $index + 1,
                         'is_primary' => $index === 0,
                     ]);
+
+                    if ($publishOneDrive && $path) {
+                        $localPath = storage_path('app/' . $path);
+                        $remotePath = 'Products/' . $product->id . '/images/' . $image->getClientOriginalName();
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                    }
                 }
             }
 
@@ -111,6 +118,12 @@ class ProductController extends Controller
                         'sort_order' => $index + 1,
                         'is_primary' => $index === 0,
                     ]);
+
+                    if ($publishOneDrive && $path) {
+                        $localPath = storage_path('app/' . $path);
+                        $remotePath = 'Products/' . $product->id . '/videos/' . $video->getClientOriginalName();
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                    }
                 }
             }
 
@@ -177,6 +190,7 @@ class ProductController extends Controller
 
         $request->validate($validationRules, (new FileValidationRequest())->messages());
 
+        $publishOneDrive = $request->boolean('publish_onedrive');
         DB::beginTransaction();
         try {
             // Atualizar produto
@@ -189,6 +203,11 @@ class ProductController extends Controller
                 $thumbPath = $thumb->store("private/products/{$product->id}/thumb", 'private');
                 $product->thumbnail_path = $thumbPath;
                 $product->save();
+                if ($publishOneDrive && $thumbPath) {
+                    $localPath = storage_path('app/' . $thumbPath);
+                    $remotePath = 'Products/' . $product->id . '/thumb/' . $thumb->getClientOriginalName();
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                }
             }
 
             // Upload de novas imagens
@@ -211,6 +230,11 @@ class ProductController extends Controller
                         'sort_order' => $product->images()->count() + $index + 1,
                         'is_primary' => false,
                     ]);
+                    if ($publishOneDrive && $path) {
+                        $localPath = storage_path('app/' . $path);
+                        $remotePath = 'Products/' . $product->id . '/images/' . $image->getClientOriginalName();
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                    }
                 }
             }
 
@@ -234,6 +258,11 @@ class ProductController extends Controller
                         'sort_order' => $product->videos()->count() + $index + 1,
                         'is_primary' => false,
                     ]);
+                    if ($publishOneDrive && $path) {
+                        $localPath = storage_path('app/' . $path);
+                        $remotePath = 'Products/' . $product->id . '/videos/' . $video->getClientOriginalName();
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                    }
                 }
             }
 

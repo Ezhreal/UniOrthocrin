@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'onedrive' => [
+        'tenant_id' => env('ONEDRIVE_TENANT_ID'),
+        'client_id' => env('ONEDRIVE_CLIENT_ID'),
+        'client_secret' => env('ONEDRIVE_CLIENT_SECRET'),
+        'drive_id' => env('ONEDRIVE_DRIVE_ID'), // opcional; se vazio usa me/drive
+    ],
+
 ];

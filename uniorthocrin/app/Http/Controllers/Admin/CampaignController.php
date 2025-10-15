@@ -498,6 +498,7 @@ class CampaignController extends Controller
 
     private function processPosts(Request $request, Campaign $campaign)
     {
+        $publishOneDrive = $request->boolean('publish_onedrive');
         $postTypes = [
             'posts_feed' => 'feeds',
             'posts_stories_mg_sp' => 'stories_mg_sp',
@@ -532,6 +533,12 @@ class CampaignController extends Controller
                         'sort_order' => 0,
                         'is_primary' => true
                     ]);
+
+                    if ($publishOneDrive && $path) {
+                        $localPath = storage_path('app/' . $path);
+                        $remotePath = 'Campaigns/' . $campaign->id . '/posts/' . $file->getClientOriginalName();
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                    }
                 }
             }
         }
@@ -539,6 +546,7 @@ class CampaignController extends Controller
 
     private function processFolders(Request $request, Campaign $campaign)
     {
+        $publishOneDrive = $request->boolean('publish_onedrive');
         $folderTypes = [
             'folder_mg_sp' => 'MG/SP',
             'folder_df_es' => 'DF/ES'
@@ -572,6 +580,12 @@ class CampaignController extends Controller
                         'sort_order' => 0,
                         'is_primary' => true
                     ]);
+
+                    if ($publishOneDrive && $path) {
+                        $localPath = storage_path('app/' . $path);
+                        $remotePath = 'Campaigns/' . $campaign->id . '/folders/' . $file->getClientOriginalName();
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                    }
                 }
             }
         }
@@ -579,6 +593,7 @@ class CampaignController extends Controller
 
     private function processVideos(Request $request, Campaign $campaign)
     {
+        $publishOneDrive = $request->boolean('publish_onedrive');
         $videoTypes = [
             'videos_reels' => 'reels',
             'videos_campaigns' => 'marketing_campaigns'
@@ -611,6 +626,12 @@ class CampaignController extends Controller
                         'sort_order' => 0,
                         'is_primary' => true
                     ]);
+
+                    if ($publishOneDrive && $path) {
+                        $localPath = storage_path('app/' . $path);
+                        $remotePath = 'Campaigns/' . $campaign->id . '/videos/' . $file->getClientOriginalName();
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                    }
                 }
             }
         }
@@ -618,6 +639,7 @@ class CampaignController extends Controller
 
     private function processMiscellaneous(Request $request, Campaign $campaign)
     {
+        $publishOneDrive = $request->boolean('publish_onedrive');
         $miscTypes = [
             'misc_spot' => 'spot',
             'misc_tag' => 'tag',
@@ -652,6 +674,12 @@ class CampaignController extends Controller
                             'sort_order' => 0,
                             'is_primary' => true
                         ]);
+
+                        if ($publishOneDrive && $path) {
+                            $localPath = storage_path('app/' . $path);
+                            $remotePath = 'Campaigns/' . $campaign->id . '/miscellaneous/' . $file->getClientOriginalName();
+                            \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                        }
                 }
             }
         }

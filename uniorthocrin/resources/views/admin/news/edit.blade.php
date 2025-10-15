@@ -264,6 +264,15 @@
                 </div>
             </div>
         </div>
+
+        <div class="flex justify-end space-x-3">
+            <label class="inline-flex items-center space-x-2 mr-auto">
+                <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox">
+                <span class="text-modern-body">Publicar no OneDrive</span>
+            </label>
+            <a href="{{ route('admin.news.index') }}" class="btn-modern-secondary">Cancelar</a>
+            <button type="submit" class="btn-modern-primary"><i class="fas fa-save mr-2"></i>Salvar Notícia</button>
+        </div>
     </form>
 </div>
 

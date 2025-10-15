@@ -1,0 +1,119 @@
+name: Deploy via FTP
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Locaweb
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, dom, fileinfo, mysql, zip
+        coverage: none
+        
+    - name: Install Composer dependencies
+      run: |
+        cd uniorthocrin
+        composer install --no-dev --optimize-autoloader --no-interaction
+        
+    - name: Build assets (if needed)
+      run: |
+        cd uniorthocrin
+        npm ci
+        npm run build
+        
+    - name: Prepare deployment files
+      run: |
+        # Criar diretório de deploy
+        mkdir -p deploy
+        
+        # Copiar arquivos do Laravel (excluindo node_modules, .git, etc.)
+        cp -r uniorthocrin/* deploy/
+        
+        # Remover arquivos desnecessários para produção
+        rm -rf deploy/node_modules
+        rm -rf deploy/.git
+        rm -rf deploy/tests
+        rm -rf deploy/.env.example
+        rm -rf deploy/README.md
+        rm -rf deploy/package*.json
+        rm -rf deploy/webpack.mix.js
+        rm -rf deploy/vite.config.js
+        
+        # Criar .htaccess do public se não existir
+        if [ ! -f deploy/public/.htaccess ]; then
+          cat > deploy/public/.htaccess << 'EOF'
+        <IfModule mod_rewrite.c>
+            <IfModule mod_negotiation.c>
+                Options -MultiViews -Indexes
+            </IfModule>
+
+            RewriteEngine On
+
+            # Handle Authorization Header
+            RewriteCond %{HTTP:Authorization} .
+            RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+            # Redirect Trailing Slashes If Not A Folder...
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_URI} (.+)/$
+            RewriteRule ^ %1 [L,R=301]
+
+            # Send Requests To Front Controller...
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteRule ^ index.php [L]
+        </IfModule>
+        EOF
+        fi
+
+        # Criar .htaccess na raiz da subpasta para apontar para public/index.php
+        cat > deploy/.htaccess << 'EOF'
+        <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /uniorthocrinpreview/
+
+            # Redireciona tudo para public/index.php
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule ^ public/index.php [L]
+        </IfModule>
+        EOF
+        
+    - name: FTP Deploy to Locaweb
+      uses: locaweb/ftp-deploy@1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        user: ${{ secrets.USER }}
+        password: ${{ secrets.PASS }}
+        localDir: "deploy"
+        remoteDir: "public_html/uniorthocrinpreview"
+        forceSsl: true
+
+    - name: Run migrations/seeders via SSH (optional)
+      if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && (secrets.SSH_PASSWORD != '' || secrets.SSH_KEY != '') }}
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd public_html/uniorthocrinpreview
+          php -v
+          php artisan down || true
+          php artisan migrate --force
+          if [ "${{ vars.RUN_SEED }}" = "true" ]; then php artisan db:seed --force; fi
+          php artisan optimize:clear
+          php artisan up
