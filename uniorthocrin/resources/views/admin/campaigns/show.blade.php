@@ -1,5 +1,9 @@
 @extends('admin.layouts.app')
 
+@php
+    use Illuminate\Support\Facades\Storage;
+@endphp
+
 @section('title', 'Visualizar Campanha - Admin')
 
 @section('content')
@@ -38,6 +42,18 @@
                 </div>
                 
                 <div class="space-modern-sm">
+                    <!-- Preview da Imagem (Thumbnail) -->
+                    @if($campaign->thumbnail_path)
+                    <div class="mb-6">
+                        <label class="form-label-modern">Preview da Campanha</label>
+                        <div class="w-full max-w-md">
+                            <img src="{{ url('/private/' . str_replace('private/', '', $campaign->thumbnail_path)) }}" 
+                                 alt="Preview da campanha {{ $campaign->name }}" 
+                                 class="w-full h-auto rounded-lg shadow-lg object-cover">
+                        </div>
+                    </div>
+                    @endif
+                    
                     <div class="grid-modern grid-modern-2">
                         <div>
                             <label class="form-label-modern">Nome</label>
@@ -67,14 +83,47 @@
                         </div>
                     </div>
                     
-                    <div>
-                        <label class="form-label-modern">Visibilidade</label>
-                        <span class="badge-modern {{ $campaign->franchise_only ? 'badge-modern-warning' : 'badge-modern-gray' }}">
-                            {{ $campaign->franchise_only ? 'Apenas Franqueados' : 'Todos os Usuários' }}
-                        </span>
+                    <div class="grid-modern grid-modern-2">
+                        <div>
+                            <label class="form-label-modern">Visibilidade</label>
+                            <span class="badge-modern {{ $campaign->visible_franchise_only ? 'badge-modern-warning' : 'badge-modern-gray' }}">
+                                {{ $campaign->visible_franchise_only ? 'Apenas Franqueados' : 'Todos os Usuários' }}
+                            </span>
+                        </div>
+                        <div>
+                            <label class="form-label-modern">Campanha Destaque</label>
+                            <span class="badge-modern {{ $campaign->is_featured ? 'badge-modern-warning' : 'badge-modern-gray' }}">
+                                {{ $campaign->is_featured ? 'Sim' : 'Não' }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Banner Card -->
+            @if($campaign->is_featured && $campaign->banner_path)
+            <div class="modern-card hover-modern-lift">
+                <div class="modern-card-header">
+                    <div class="flex items-center space-x-3">
+                        <div class="h-10 w-10 bg-warning-50 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-star text-warning-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="modern-card-title">Banner da Campanha Destaque</h3>
+                            <p class="modern-card-subtitle">Imagem que aparece no dashboard</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-modern-sm">
+                    <div class="w-full">
+                        <img src="{{ url('/private/' . str_replace('private/', '', $campaign->banner_path)) }}" 
+                             alt="Banner da campanha {{ $campaign->name }}" 
+                             class="w-full h-auto rounded-lg shadow-lg object-cover">
+                    </div>
+                </div>
+            </div>
+            @endif
 
             <!-- Folhetos Card -->
             <div class="modern-card hover-modern-lift">
@@ -160,7 +209,7 @@
                 
                 <div class="space-modern-sm">
                     @if($campaign->posts && $campaign->posts->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-8">
                         <!-- Feed -->
                         @if($campaign->posts->where('type', 'feeds')->count() > 0)
                         <div>
@@ -168,9 +217,9 @@
                             <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                                 @foreach($campaign->posts->where('type', 'feeds') as $post)
                                 <div class="relative group">
-                                    <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                        @if($post->url)
-                                            <img src="{{ $post->url }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
+                                    <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200">
+                                        @if($post->mainImage())
+                                            <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
                                         @else
                                             <i class="fas fa-image text-gray-400 text-lg"></i>
                                         @endif
@@ -188,9 +237,9 @@
                             <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                                 @foreach($campaign->posts->where('type', 'stories_mg_sp') as $post)
                                 <div class="relative group">
-                                    <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                        @if($post->url)
-                                            <img src="{{ $post->url }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
+                                    <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200">
+                                        @if($post->mainImage())
+                                            <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
                                         @else
                                             <i class="fas fa-image text-gray-400 text-lg"></i>
                                         @endif
@@ -208,9 +257,9 @@
                             <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                                 @foreach($campaign->posts->where('type', 'stories_df_es') as $post)
                                 <div class="relative group">
-                                    <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                        @if($post->url)
-                                            <img src="{{ $post->url }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
+                                    <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200">
+                                        @if($post->mainImage())
+                                            <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
                                         @else
                                             <i class="fas fa-image text-gray-400 text-lg"></i>
                                         @endif
@@ -239,67 +288,58 @@
                         </div>
                         <div>
                             <h3 class="modern-card-title">Vídeos</h3>
-                            <p class="modern-card-subtitle">Vídeos por tipo</p>
+                            <p class="modern-card-subtitle">Lista de vídeos por tipo</p>
                         </div>
                     </div>
                 </div>
                 
                 <div class="space-modern-sm">
                     @if($campaign->videos && $campaign->videos->count() > 0)
-                    <div class="space-y-6">
-                        <!-- Reels -->
-                        @if($campaign->videos->where('type', 'reels')->count() > 0)
-                        <div>
-                            <h4 class="text-modern-body font-medium mb-4">Reels ({{ $campaign->videos->where('type', 'reels')->count() }})</h4>
-                            <div class="space-y-3">
-                                @foreach($campaign->videos->where('type', 'reels') as $video)
-                                <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="bg-gray-100 rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-video text-gray-400 text-lg"></i>
-                                            </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arquivo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($campaign->videos as $video)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{ $video->name }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                            {{ $video->type === 'reels' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                                            {{ $video->type === 'reels' ? 'Reels' : 'Campanhas' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-video text-gray-400 mr-2"></i>
+                                            <span class="text-sm text-gray-500">
+                                                @if($video->primaryFile())
+                                                    <a href="{{ url('/private/' . str_replace('private/', '', $video->primaryFile()->path)) }}" target="_blank" class="text-primary-600 hover:text-primary-800">
+                                                        Ver vídeo
+                                                    </a>
+                                                @else
+                                                    Sem arquivo
+                                                @endif
+                                            </span>
                                         </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-900 truncate">{{ $video->name }}</p>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                            onclick="deleteVideo({{ $video->id }})">
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
-                                </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <span class="text-gray-400">
+                                            <i class="fas fa-eye"></i>
+                                        </span>
+                                    </td>
+                                </tr>
                                 @endforeach
-                            </div>
-                        </div>
-                        @endif
-                        
-                        <!-- Campanhas -->
-                        @if($campaign->videos->where('type', 'marketing_campaigns')->count() > 0)
-                        <div>
-                            <h4 class="text-modern-body font-medium mb-4">Campanhas ({{ $campaign->videos->where('type', 'marketing_campaigns')->count() }})</h4>
-                            <div class="space-y-3">
-                                @foreach($campaign->videos->where('type', 'marketing_campaigns') as $video)
-                                <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="bg-gray-100 rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-video text-gray-400 text-lg"></i>
-                                            </div>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-900 truncate">{{ $video->name }}</p>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                            onclick="deleteVideo({{ $video->id }})">
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
+                            </tbody>
+                        </table>
                     </div>
                     @else
                     <div class="text-center py-12">
@@ -344,10 +384,9 @@
                                             <p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p>
                                         </div>
                                     </div>
-                                    <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                            onclick="deleteMiscellaneous({{ $misc->id }})">
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
+                                    <span class="text-gray-400">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </span>
                                 </div>
                                 @endforeach
                             </div>
@@ -371,10 +410,9 @@
                                             <p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p>
                                         </div>
                                     </div>
-                                    <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                            onclick="deleteMiscellaneous({{ $misc->id }})">
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
+                                    <span class="text-gray-400">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </span>
                                 </div>
                                 @endforeach
                             </div>
@@ -398,10 +436,9 @@
                                             <p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p>
                                         </div>
                                     </div>
-                                    <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                            onclick="deleteMiscellaneous({{ $misc->id }})">
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
+                                    <span class="text-gray-400">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </span>
                                 </div>
                                 @endforeach
                             </div>
@@ -425,10 +462,9 @@
                                             <p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p>
                                         </div>
                                     </div>
-                                    <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                            onclick="deleteMiscellaneous({{ $misc->id }})">
-                                        <i class="fas fa-trash text-sm"></i>
-                                    </button>
+                                    <span class="text-gray-400">
+                                        <i class="fas fa-eye text-sm"></i>
+                                    </span>
                                 </div>
                                 @endforeach
                             </div>

@@ -10,6 +10,7 @@ use App\Models\ProductSeries;
 use App\Models\File;
 use App\Models\UserType;
 use App\Models\ProductPermission;
+use App\Models\OneDriveSync;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -92,8 +93,9 @@ class ProductController extends Controller
 
                     if ($publishOneDrive && $path) {
                         $localPath = storage_path('app/' . $path);
-                        $remotePath = 'Products/' . $product->id . '/images/' . $image->getClientOriginalName();
-                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                        $remotePath = 'Products/' . $product->id . '/images/' . $file->id . '-image.' . $this->getFileExtension($image->getClientOriginalName());
+                        $sync = $this->createOneDriveSync($product, $path, $remotePath);
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                     }
                 }
             }
@@ -121,8 +123,9 @@ class ProductController extends Controller
 
                     if ($publishOneDrive && $path) {
                         $localPath = storage_path('app/' . $path);
-                        $remotePath = 'Products/' . $product->id . '/videos/' . $video->getClientOriginalName();
-                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                        $remotePath = 'Products/' . $product->id . '/videos/' . $file->id . '-video.' . $this->getFileExtension($video->getClientOriginalName());
+                        $sync = $this->createOneDriveSync($product, $path, $remotePath);
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                     }
                 }
             }
@@ -133,11 +136,20 @@ class ProductController extends Controller
                     ProductPermission::create([
                         'product_id' => $product->id,
                         'user_type_id' => $permission['user_type_id'],
-                        'can_view' => $permission['can_view'] ?? false,
-                        'can_download' => $permission['can_download'] ?? false,
+                        'can_view' => isset($permission['can_view']) ? (bool)$permission['can_view'] : false,
+                        'can_download' => isset($permission['can_download']) ? (bool)$permission['can_download'] : false,
                     ]);
                 }
             }
+
+            // Administrador sempre tem permissão total
+            ProductPermission::updateOrCreate([
+                'product_id' => $product->id,
+                'user_type_id' => 1, // ID do Administrador
+            ], [
+                'can_view' => true,
+                'can_download' => true,
+            ]);
 
             DB::commit();
 
@@ -205,8 +217,9 @@ class ProductController extends Controller
                 $product->save();
                 if ($publishOneDrive && $thumbPath) {
                     $localPath = storage_path('app/' . $thumbPath);
-                    $remotePath = 'Products/' . $product->id . '/thumb/' . $thumb->getClientOriginalName();
-                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                    $remotePath = 'Products/' . $product->id . '/thumb-' . $product->id . '.' . $this->getFileExtension($thumb->getClientOriginalName());
+                    $sync = $this->createOneDriveSync($product, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                 }
             }
 
@@ -232,8 +245,9 @@ class ProductController extends Controller
                     ]);
                     if ($publishOneDrive && $path) {
                         $localPath = storage_path('app/' . $path);
-                        $remotePath = 'Products/' . $product->id . '/images/' . $image->getClientOriginalName();
-                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                        $remotePath = 'Products/' . $product->id . '/images/' . $file->id . '-image.' . $this->getFileExtension($image->getClientOriginalName());
+                        $sync = $this->createOneDriveSync($product, $path, $remotePath);
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                     }
                 }
             }
@@ -260,27 +274,44 @@ class ProductController extends Controller
                     ]);
                     if ($publishOneDrive && $path) {
                         $localPath = storage_path('app/' . $path);
-                        $remotePath = 'Products/' . $product->id . '/videos/' . $video->getClientOriginalName();
-                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                        $remotePath = 'Products/' . $product->id . '/videos/' . $file->id . '-video.' . $this->getFileExtension($video->getClientOriginalName());
+                        $sync = $this->createOneDriveSync($product, $path, $remotePath);
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                     }
                 }
             }
 
             // Atualizar permissões
             if ($request->has('permissions')) {
-                // Remover permissões existentes
-                $product->permissions()->delete();
+                // Remover permissões existentes (exceto admin)
+                $product->permissions()->where('user_type_id', '!=', 1)->delete();
                 
                 // Criar novas permissões
                 foreach ($request->permissions as $permission) {
-                    ProductPermission::create([
-                        'product_id' => $product->id,
-                        'user_type_id' => $permission['user_type_id'],
-                        'can_view' => $permission['can_view'] ?? false,
-                        'can_download' => $permission['can_download'] ?? false,
-                    ]);
+                    try {
+                        ProductPermission::create([
+                            'product_id' => $product->id,
+                            'user_type_id' => $permission['user_type_id'],
+                            'can_view' => isset($permission['can_view']) ? (bool)$permission['can_view'] : false,
+                            'can_download' => isset($permission['can_download']) ? (bool)$permission['can_download'] : false,
+                        ]);
+                    } catch (\Exception $e) {
+                        // Ignorar erro de duplicata (admin já existe)
+                        if (!str_contains($e->getMessage(), 'Duplicate entry')) {
+                            throw $e;
+                        }
+                    }
                 }
             }
+
+            // Administrador sempre tem permissão total
+            ProductPermission::updateOrCreate([
+                'product_id' => $product->id,
+                'user_type_id' => 1, // ID do Administrador
+            ], [
+                'can_view' => true,
+                'can_download' => true,
+            ]);
 
             DB::commit();
 
@@ -359,5 +390,94 @@ class ProductController extends Controller
     private function getFileExtension($filename)
     {
         return strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    }
+
+    /**
+     * Helper para criar sincronização OneDrive
+     */
+    private function createOneDriveSync($product, $filePath, $remotePath)
+    {
+        $sync = OneDriveSync::create([
+            'syncable_type' => get_class($product),
+            'syncable_id' => $product->id,
+            'file_path' => $filePath,
+            'remote_path' => $remotePath,
+            'status' => 'pending'
+        ]);
+
+        return $sync;
+    }
+
+    public function syncToOneDrive(Product $product)
+    {
+        try {
+            $syncedCount = 0;
+            
+            // Sincronizar arquivos que ainda não foram enviados
+            foreach ($product->files as $file) {
+                // Verificar se já existe sync para este arquivo
+                $existingSync = OneDriveSync::where('syncable_type', get_class($product))
+                    ->where('syncable_id', $product->id)
+                    ->where('file_path', $file->path)
+                    ->first();
+                
+                if (!$existingSync) {
+                    // Criar novo sync
+                    $localPath = storage_path('app/' . $file->path);
+                    $remotePath = 'Products/' . $product->id . '/' . $file->type . 's/' . $file->name;
+                    
+                    $sync = $this->createOneDriveSync($product, $file->path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                    $syncedCount++;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Sincronização iniciada para {$syncedCount} arquivo(s).",
+                'synced_count' => $syncedCount
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao iniciar sincronização: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function retryOneDriveSync(Product $product)
+    {
+        try {
+            $retryCount = 0;
+            
+            // Reenviar arquivos que falharam
+            $failedSyncs = OneDriveSync::where('syncable_type', get_class($product))
+                ->where('syncable_id', $product->id)
+                ->where('status', 'failed')
+                ->get();
+            
+            foreach ($failedSyncs as $sync) {
+                $localPath = storage_path('app/' . $sync->file_path);
+                
+                if (file_exists($localPath)) {
+                    $sync->update(['status' => 'pending']);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $sync->remote_path, $sync->id);
+                    $retryCount++;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Tentativa de reenvio iniciada para {$retryCount} arquivo(s).",
+                'retry_count' => $retryCount
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao tentar reenviar: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

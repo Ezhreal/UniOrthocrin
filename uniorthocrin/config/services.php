@@ -40,6 +40,8 @@ return [
         'client_id' => env('ONEDRIVE_CLIENT_ID'),
         'client_secret' => env('ONEDRIVE_CLIENT_SECRET'),
         'drive_id' => env('ONEDRIVE_DRIVE_ID'), // opcional; se vazio usa me/drive
+        'auth_mode' => env('ONEDRIVE_AUTH_MODE', 'delegated'),
+        'refresh_token' => env('ONEDRIVE_REFRESH_TOKEN'),
     ],
 
 ];

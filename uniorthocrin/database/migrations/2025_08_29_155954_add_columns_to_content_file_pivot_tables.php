@@ -13,7 +13,7 @@ return new class extends Migration
     {
         // Adicionar colunas extras nas tabelas pivot para melhor controle
         Schema::table('product_files', function (Blueprint $table) {
-            $table->string('file_type')->nullable(); // image, video, document
+            $table->string('file_type')->nullable(); // image, video, pdf, audio
             $table->integer('sort_order')->default(0); // Para ordenação
             $table->boolean('is_primary')->default(false); // Arquivo principal
         });

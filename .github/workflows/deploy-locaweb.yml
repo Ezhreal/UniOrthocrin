@@ -1,0 +1,82 @@
+name: Deploy to Locaweb
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Locaweb
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, dom, fileinfo, mysql, zip, gd, curl, xml, bcmath, json
+        coverage: none
+        
+    - name: Copy .env
+      run: |
+        cp .env.production .env
+        
+    - name: Install dependencies
+      run: |
+        composer install --no-dev --optimize-autoloader --no-interaction
+        
+    - name: Generate application key
+      run: php artisan key:generate --force
+      
+    - name: Run migrations
+      run: php artisan migrate --force
+      
+    - name: Clear and cache config
+      run: |
+        php artisan config:clear
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
+        
+    - name: Create storage symlink
+      run: php artisan storage:link
+      
+    - name: Set permissions
+      run: |
+        chmod -R 755 storage bootstrap/cache
+        chown -R www-data:www-data storage bootstrap/cache
+        
+    - name: FTP Deploy to Locaweb
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        password: ${{ secrets.PASS }}
+        local-dir: ./
+        server-dir: public_html/
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.env
+          **/.env.*
+          **/tests/**
+          **/storage/logs/**
+          **/storage/framework/cache/**
+          **/storage/framework/sessions/**
+          **/storage/framework/views/**
+          **/.github/**
+          **/README.md
+          **/composer.json
+          **/composer.lock
+          **/package.json
+          **/package-lock.json
+          **/yarn.lock
+          **/webpack.mix.js
+          **/vite.config.js
+          **/tailwind.config.js
+          **/postcss.config.js

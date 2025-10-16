@@ -27,27 +27,15 @@ class Campaign extends Model
         'status',
         'thumbnail_path',
         'is_featured',
-        'banner_path',
-        'folder_mg_sp',
-        'folder_df_es',
-        'posts_feed',
-        'posts_stories_mg_sp',
-        'posts_stories_df_es',
-        'spot_audio',
-        'tag_pdf',
-        'adesivo_pdf',
-        'roteiros_pdf'
+        'banner_path'
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
         'visible_franchise_only' => 'boolean',
-        'status' => 'string',
-        'posts_feed' => 'array',
-        'posts_stories_mg_sp' => 'array',
-        'posts_stories_df_es' => 'array',
-        'videos' => 'array'
+        'is_featured' => 'boolean',
+        'status' => 'string'
     ];
 
     /**
@@ -180,7 +168,7 @@ class Campaign extends Model
      */
     public function isArchiveOnly(): bool
     {
-        return $this->is_archive_only;
+        return false; // Campo não existe na tabela atual
     }
 
     /**

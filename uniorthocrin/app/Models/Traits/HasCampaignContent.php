@@ -52,7 +52,7 @@ trait HasCampaignContent
      */
     public function documents()
     {
-        return $this->files()->wherePivot('file_type', 'document')
+        return $this->files()->wherePivot('file_type', 'pdf')
             ->orderBy('pivot_sort_order');
     }
 

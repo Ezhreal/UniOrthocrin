@@ -185,6 +185,7 @@
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
                             
+                            
                             <!-- Miniaturas das Imagens Existentes -->
                             @if($product->images && $product->images->count() > 0)
                             <div class="mt-4">
@@ -226,6 +227,7 @@
                             @error('gallery_videos.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
+                            
                             
                             <!-- Lista dos Vídeos Existentes -->
                             @if($product->videos && $product->videos->count() > 0)
@@ -291,17 +293,22 @@
                             <div class="flex items-center space-x-4">
                                 <label class="flex items-center cursor-pointer">
                                     <input type="checkbox" name="permissions[{{ $loop->index }}][can_view]" value="1"
-                                           {{ $permission && $permission->can_view ? 'checked' : '' }}
+                                           {{ $permission && $permission->can_view ? 'checked' : '' }} @if($userType->id == 1) checked disabled @endif
                                            class="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300 rounded transition-colors duration-200">
                                     <span class="ml-2 text-modern-caption">Ver</span>
                                 </label>
                                 <label class="flex items-center cursor-pointer">
                                     <input type="checkbox" name="permissions[{{ $loop->index }}][can_download]" value="1"
-                                           {{ $permission && $permission->can_download ? 'checked' : '' }}
+                                           {{ $permission && $permission->can_download ? 'checked' : '' }} @if($userType->id == 1) checked disabled @endif
                                            class="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300 rounded transition-colors duration-200">
                                     <span class="ml-2 text-modern-caption">Baixar</span>
                                 </label>
                                 <input type="hidden" name="permissions[{{ $loop->index }}][user_type_id]" value="{{ $userType->id }}">
+                                @if($userType->id == 1)
+                                    <!-- Campos hidden para garantir que o admin sempre seja enviado como true -->
+                                    <input type="hidden" name="permissions[{{ $loop->index }}][can_view]" value="1">
+                                    <input type="hidden" name="permissions[{{ $loop->index }}][can_download]" value="1">
+                                @endif
                             </div>
                         </div>
                         @endforeach
@@ -361,6 +368,18 @@
                     </div>
                     
                     <div class="space-modern-sm">
+
+                        <!-- Status OneDrive -->
+                        <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-cloud mr-1"></i>Status OneDrive
+                            </h4>
+                            <x-onedrive-sync-status :item="$product" type="product" />
+                            <div class="mt-2">
+                                <x-onedrive-sync-button :item="$product" type="product" />
+                            </div>
+                        </div>
+                        
                         <div class="space-y-3">
                             <button type="submit" class="btn-modern-primary w-full">
                                 <i class="fas fa-save mr-2"></i>Salvar Alterações
@@ -375,12 +394,7 @@
         </div>
 
         <div class="flex justify-end space-x-3">
-            <label class="inline-flex items-center space-x-2 mr-auto">
-                <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox">
-                <span class="text-modern-body">Publicar no OneDrive</span>
-            </label>
             <a href="{{ route('admin.products.index') }}" class="btn-modern-secondary">Cancelar</a>
-            <button type="submit" class="btn-modern-primary"><i class="fas fa-save mr-2"></i>Salvar Produto</button>
         </div>
     </form>
 </div>

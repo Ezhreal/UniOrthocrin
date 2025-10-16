@@ -46,6 +46,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     Route::post('products/{product}/files', [ProductController::class, 'uploadFiles'])->name('products.files.upload');
     Route::delete('products/{product}/files/{file}', [ProductController::class, 'deleteFile'])->name('products.files.delete');
     Route::post('products/{product}/permissions', [ProductController::class, 'updatePermissions'])->name('products.permissions.update');
+    Route::post('products/{product}/onedrive/sync', [ProductController::class, 'syncToOneDrive'])->name('products.onedrive.sync');
+    Route::post('products/{product}/onedrive/retry', [ProductController::class, 'retryOneDriveSync'])->name('products.onedrive.retry');
     
     // Product Categories
     Route::resource('product-categories', ProductCategoryController::class)->only(['index', 'store', 'destroy']);
@@ -72,6 +74,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     Route::post('library/{library}/files', [LibraryController::class, 'uploadFiles'])->name('library.files.upload');
     Route::delete('library/{library}/files/{file}', [LibraryController::class, 'deleteFile'])->name('library.files.delete');
     Route::post('library/{library}/permissions', [LibraryController::class, 'updatePermissions'])->name('library.permissions.update');
+    Route::post('library/{library}/onedrive/sync', [LibraryController::class, 'syncToOneDrive'])->name('library.onedrive.sync');
+    Route::post('library/{library}/onedrive/retry', [LibraryController::class, 'retryOneDriveSync'])->name('library.onedrive.retry');
     
     // Library Categories
     Route::resource('library-categories', LibraryCategoryController::class)->only(['index', 'store', 'destroy']);
@@ -82,6 +86,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     Route::delete('training/{training}/files/{file}', [TrainingController::class, 'deleteFile'])->name('training.files.delete');
     Route::delete('training/{training}/videos/{video}', [TrainingController::class, 'deleteVideo'])->name('training.videos.delete');
     Route::post('training/{training}/permissions', [TrainingController::class, 'updatePermissions'])->name('training.permissions.update');
+    Route::post('training/{training}/onedrive/sync', [TrainingController::class, 'syncToOneDrive'])->name('training.onedrive.sync');
+    Route::post('training/{training}/onedrive/retry', [TrainingController::class, 'retryOneDriveSync'])->name('training.onedrive.retry');
     
     // Training Categories
     Route::resource('training-categories', TrainingCategoryController::class)->only(['index', 'store', 'destroy']);
@@ -92,12 +98,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     Route::post('campaigns/{campaign}/folders', [CampaignController::class, 'storeFolder'])->name('campaigns.folders.store');
     Route::post('campaigns/{campaign}/videos', [CampaignController::class, 'storeVideo'])->name('campaigns.videos.store');
     Route::post('campaigns/{campaign}/miscellaneous', [CampaignController::class, 'storeMiscellaneous'])->name('campaigns.miscellaneous.store');
+    Route::post('campaigns/{campaign}/onedrive/sync', [CampaignController::class, 'syncToOneDrive'])->name('campaigns.onedrive.sync');
+    Route::post('campaigns/{campaign}/onedrive/retry', [CampaignController::class, 'retryOneDriveSync'])->name('campaigns.onedrive.retry');
     
     // News
     Route::resource('news', NewsController::class);
     Route::post('news/{news}/image', [NewsController::class, 'uploadImage'])->name('news.image.upload');
     Route::delete('news/{news}/image', [NewsController::class, 'deleteImage'])->name('news.image.delete');
     Route::post('news/{news}/permissions', [NewsController::class, 'updatePermissions'])->name('news.permissions.update');
+    Route::post('news/{news}/onedrive/sync', [NewsController::class, 'syncToOneDrive'])->name('news.onedrive.sync');
+    Route::post('news/{news}/onedrive/retry', [NewsController::class, 'retryOneDriveSync'])->name('news.onedrive.retry');
     
     // News Categories
     Route::resource('news-categories', NewsCategoryController::class)->only(['index', 'store', 'destroy']);

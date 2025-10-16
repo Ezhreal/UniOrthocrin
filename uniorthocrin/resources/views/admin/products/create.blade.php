@@ -174,6 +174,7 @@
                             @error('gallery_images.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
+                            
                         </div>
 
                         <!-- Galeria de Vídeos -->
@@ -199,6 +200,7 @@
                             @error('gallery_videos.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
+                            
                         </div>
                     </div>
                 </div>
@@ -232,16 +234,21 @@
                             </div>
                             <div class="flex items-center space-x-4">
                                 <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" name="permissions[{{ $loop->index }}][can_view]" value="1"
+                                    <input type="checkbox" name="permissions[{{ $loop->index }}][can_view]" value="1" @if($userType->id == 1) checked disabled @endif
                                            class="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300 rounded transition-colors duration-200">
                                     <span class="ml-2 text-modern-caption">Ver</span>
                                 </label>
                                 <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" name="permissions[{{ $loop->index }}][can_download]" value="1"
+                                    <input type="checkbox" name="permissions[{{ $loop->index }}][can_download]" value="1" @if($userType->id == 1) checked disabled @endif
                                            class="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300 rounded transition-colors duration-200">
                                     <span class="ml-2 text-modern-caption">Baixar</span>
                                 </label>
                                 <input type="hidden" name="permissions[{{ $loop->index }}][user_type_id]" value="{{ $userType->id }}">
+                                @if($userType->id == 1)
+                                    <!-- Campos hidden para garantir que o admin sempre seja enviado como true -->
+                                    <input type="hidden" name="permissions[{{ $loop->index }}][can_view]" value="1">
+                                    <input type="hidden" name="permissions[{{ $loop->index }}][can_download]" value="1">
+                                @endif
                             </div>
                         </div>
                         @endforeach
@@ -291,6 +298,15 @@
                     </div>
                     
                     <div class="space-modern-sm">
+                        <!-- Checkbox OneDrive -->
+                        <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <label class="inline-flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox text-blue-600">
+                                <span class="text-modern-body font-medium text-blue-800">Publicar no OneDrive</span>
+                            </label>
+                            <p class="text-xs text-blue-600 mt-1">Uploads serão sincronizados automaticamente</p>
+                        </div>
+                        
                         <div class="space-y-3">
                             <button type="submit" class="btn-modern-primary w-full">
                                 <i class="fas fa-save mr-2"></i>Criar Produto
@@ -305,12 +321,10 @@
         </div>
 
         <div class="flex justify-end space-x-3">
-            <label class="inline-flex items-center space-x-2 mr-auto">
-                <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox">
-                <span class="text-modern-body">Publicar no OneDrive</span>
-            </label>
             <a href="{{ route('admin.products.index') }}" class="btn-modern-secondary">Cancelar</a>
-            <button type="submit" class="btn-modern-primary"><i class="fas fa-save mr-2"></i>Salvar Produto</button>
+            <x-loading-button type="submit" variant="primary" size="md" loading-text="Salvando Produto...">
+                <i class="fas fa-save mr-2"></i>Salvar Produto
+            </x-loading-button>
         </div>
     </form>
 </div>

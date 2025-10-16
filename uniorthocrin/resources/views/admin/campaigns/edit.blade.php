@@ -21,7 +21,7 @@
     </div>
 
     <!-- Modern Form -->
-    <form action="{{ route('admin.campaigns.update', $campaign) }}" method="POST" class="space-modern">
+    <form action="{{ route('admin.campaigns.update', $campaign) }}" method="POST" class="space-modern" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -68,7 +68,7 @@
                         <!-- Thumbnail -->
                         <div>
                             <label for="thumbnail" class="form-label-modern">Thumbnail (imagem)</label>
-                            <input type="file" id="thumbnail" name="thumbnail" accept=".jpg,.jpeg,.png"
+                            <input type="file" id="thumbnail" name="thumbnail" accept=".jpg,.jpeg,.png,.webp"
                                    class="form-input-modern @error('thumbnail') border-error-500 @enderror">
                             @if($campaign->thumbnail_path)
                                 <p class="text-sm text-gray-600 mt-1">Atual: <a href="/{{ $campaign->thumbnail_path }}" target="_blank" class="text-primary-600 underline">ver thumbnail</a></p>
@@ -85,9 +85,9 @@
                         </div>
 
                         <!-- Banner (condicional) -->
-                        <div id="banner-wrapper" style="display: none;">
+                        <div id="banner-wrapper" @if(old('is_featured', $campaign->is_featured)) style="display: block;" @else style="display: none;" @endif>
                             <label for="banner" class="form-label-modern">Banner (imagem larga)</label>
-                            <input type="file" id="banner" name="banner" accept=".jpg,.jpeg,.png"
+                            <input type="file" id="banner" name="banner" accept=".jpg,.jpeg,.png,.webp"
                                    class="form-input-modern @error('banner') border-error-500 @enderror">
                             @if($campaign->banner_path)
                                 <p class="text-sm text-gray-600 mt-1">Atual: <a href="/{{ $campaign->banner_path }}" target="_blank" class="text-primary-600 underline">ver banner</a></p>
@@ -291,8 +291,8 @@
                                      @foreach($campaign->posts->where('type', 'feeds') as $post)
                                      <div class="relative">
                                          <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
-                                             @if($post->url)
-                                                 <img src="{{ $post->url }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
+                                             @if($post->mainImage())
+                                                 <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
                                              @else
                                                  <i class="fas fa-image text-gray-400 text-lg"></i>
                                              @endif
@@ -333,8 +333,8 @@
                                      @foreach($campaign->posts->where('type', 'stories_mg_sp') as $post)
                                      <div class="relative">
                                          <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
-                                             @if($post->url)
-                                                 <img src="{{ $post->url }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
+                                             @if($post->mainImage())
+                                                 <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
                                              @else
                                                  <i class="fas fa-image text-gray-400 text-lg"></i>
                                              @endif
@@ -375,8 +375,8 @@
                                      @foreach($campaign->posts->where('type', 'stories_df_es') as $post)
                                      <div class="relative">
                                          <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
-                                             @if($post->url)
-                                                 <img src="{{ $post->url }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
+                                             @if($post->mainImage())
+                                                 <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
                                              @else
                                                  <i class="fas fa-image text-gray-400 text-lg"></i>
                                              @endif
@@ -624,12 +624,12 @@
                             </div>
                             
                             <!-- Lista dos Adesivos Existentes -->
-                            @if($campaign->miscellaneous && $campaign->miscellaneous->where('type', 'adesivo')->count() > 0)
+                            @if($campaign->miscellaneous && $campaign->miscellaneous->where('type', 'sticker')->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">Adesivos Existentes ({{ $campaign->miscellaneous->where('type', 'adesivo')->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">Adesivos Existentes ({{ $campaign->miscellaneous->where('type', 'sticker')->count() }})</h5>
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
-                                        @foreach($campaign->miscellaneous->where('type', 'adesivo') as $misc)
+                                        @foreach($campaign->miscellaneous->where('type', 'sticker') as $misc)
                                         <div class="flex items-center justify-between p-3 hover:bg-gray-50">
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
@@ -669,12 +669,12 @@
                             </div>
                             
                             <!-- Lista dos Roteiros Existentes -->
-                            @if($campaign->miscellaneous && $campaign->miscellaneous->where('type', 'roteiro')->count() > 0)
+                            @if($campaign->miscellaneous && $campaign->miscellaneous->where('type', 'script')->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">Roteiros Existentes ({{ $campaign->miscellaneous->where('type', 'roteiro')->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">Roteiros Existentes ({{ $campaign->miscellaneous->where('type', 'script')->count() }})</h5>
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
-                                        @foreach($campaign->miscellaneous->where('type', 'roteiro') as $misc)
+                                        @foreach($campaign->miscellaneous->where('type', 'script') as $misc)
                                         <div class="flex items-center justify-between p-3 hover:bg-gray-50">
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
@@ -749,19 +749,25 @@
                     </div>
                     
                     <div class="space-modern-sm">
-                        <!-- Ações -->
-                        <div class="flex justify-end space-x-3">
-                            <label class="inline-flex items-center space-x-2 mr-auto">
-                                <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox">
-                                <span class="text-modern-body">Publicar no OneDrive</span>
-                            </label>
-                            <a href="{{ route('admin.campaigns.index') }}" class="btn-modern-secondary">
-                                Cancelar
-                            </a>
-                            <button type="submit" class="btn-modern-primary">
-                                <i class="fas fa-save mr-2"></i>
-                                Salvar Alterações
+
+                        <!-- Status OneDrive -->
+                        <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-cloud mr-1"></i>Status OneDrive
+                            </h4>
+                            <x-onedrive-sync-status :item="$campaign" type="campaign" />
+                            <div class="mt-2">
+                                <x-onedrive-sync-button :item="$campaign" type="campaign" />
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <button type="submit" class="btn-modern-primary w-full">
+                                <i class="fas fa-save mr-2"></i>Salvar Alterações
                             </button>
+                            <a href="{{ route('admin.campaigns.index') }}" class="btn-modern-secondary w-full text-center">
+                                <i class="fas fa-times mr-2"></i>Cancelar
+                            </a>
                         </div>
                     </div>
                 </div>

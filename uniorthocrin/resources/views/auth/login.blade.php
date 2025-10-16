@@ -30,7 +30,7 @@
     <div class="flex w-screen h-screen">
         <!-- Coluna Esquerda: Splash -->
         <div class="w-1/2 h-full flex items-center justify-center p-6">
-            <img src="https://placehold.co/800x1000" alt="Splash" class="object-cover w-full h-full rounded-lg" />
+            <img src="{{ asset('images/login-page.jpg') }}" alt="UniOrthocrin" class="object-cover w-full h-full rounded-lg" />
         </div>
         <!-- Coluna Direita: Formulário -->
         <div class="w-1/2 h-full flex items-center justify-center">

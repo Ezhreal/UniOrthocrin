@@ -294,11 +294,7 @@
                 </div>
 
                 <!-- Modern User Menu -->
-                <div class="flex items-center space-x-4" x-data="{ open: false, notificationsOpen: false, notifications: [], unreadCount: 0 }" 
-                     x-init="
-                        loadNotifications();
-                        setInterval(loadNotifications, 30000); // Atualizar a cada 30 segundos
-                     ">
+                <div class="flex items-center space-x-4" x-data="{ open: false, notificationsOpen: false, notifications: [], unreadCount: 0 }">
                         <!-- Notifications -->
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open; loadNotifications()" 
@@ -421,20 +417,40 @@
     <script>
         // Função para carregar notificações
         function loadNotifications() {
-            fetch('{{ route("admin.notifications.recent") }}')
-                .then(response => response.json())
-                .then(data => {
-                    // Atualizar o contexto Alpine.js
-                    const notificationComponent = document.querySelector('[x-data*="notifications"]');
-                    if (notificationComponent) {
-                        const alpineData = Alpine.$data(notificationComponent);
-                        alpineData.notifications = data.notifications;
-                        alpineData.unreadCount = data.unread_count;
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar notificações:', error);
-                });
+            // Verificar se existe componente de notificação antes de fazer requisição
+            const notificationComponent = document.querySelector('[x-data*="notifications"]');
+            if (!notificationComponent) {
+                return; // Não fazer requisição se não houver componente
+            }
+
+            fetch('{{ route("admin.notifications.recent") }}', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Atualizar o contexto Alpine.js
+                const alpineData = Alpine.$data(notificationComponent);
+                if (alpineData) {
+                    alpineData.notifications = data.notifications || [];
+                    alpineData.unreadCount = data.unread_count || 0;
+                }
+            })
+            .catch(error => {
+                // Silenciar erro - não mostrar no console para não poluir
+                console.log('Notificações não disponíveis:', error.message);
+            });
         }
 
         // Função para formatar data
@@ -458,7 +474,22 @@
 
         // Adicionar função formatDate ao contexto global
         window.formatDate = formatDate;
+
+        // Inicializar notificações apenas se o componente existir
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationComponent = document.querySelector('[x-data*="notifications"]');
+            if (notificationComponent) {
+                // Carregar notificações após 1 segundo (aguardar Alpine.js inicializar)
+                setTimeout(() => {
+                    loadNotifications();
+                    setInterval(loadNotifications, 30000); // Atualizar a cada 30 segundos
+                }, 1000);
+            }
+        });
     </script>
+
+    <!-- Loading Scripts -->
+    <script src="{{ asset('js/button-loading.js') }}"></script>
 
 </body>
 </html>

@@ -9,6 +9,7 @@ use App\Models\LibraryCategory;
 use App\Models\UserType;
 use App\Models\File;
 use App\Models\LibraryPermission;
+use App\Models\OneDriveSync;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -77,6 +78,8 @@ class LibraryController extends Controller
         }
 
         // Handle file uploads
+        $publishOneDrive = $request->boolean('publish_onedrive');
+        
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $path = $file->store('private/library/' . $library->id, 'private');
@@ -98,6 +101,14 @@ class LibraryController extends Controller
                     'sort_order' => 0,
                     'is_primary' => true
                 ]);
+                
+                // Disparar envio ao OneDrive (síncrono) se marcado
+                if ($publishOneDrive && $path) {
+                    $localPath = storage_path('app/' . $path);
+                    $remotePath = 'Library/' . $library->id . '/' . $fileRecord->id . '-' . $this->getFileType($file->getMimeType()) . '.' . $this->getFileExtension($file->getClientOriginalName());
+                    $sync = $this->createOneDriveSync($library, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                }
             }
         }
 
@@ -107,11 +118,20 @@ class LibraryController extends Controller
                 LibraryPermission::create([
                     'library_id' => $library->id,
                     'user_type_id' => $permission['user_type_id'],
-                    'can_view' => $permission['can_view'] ?? false,
-                    'can_download' => $permission['can_download'] ?? false,
+                    'can_view' => isset($permission['can_view']) ? (bool)$permission['can_view'] : false,
+                    'can_download' => isset($permission['can_download']) ? (bool)$permission['can_download'] : false,
                 ]);
             }
         }
+
+        // Administrador sempre tem permissão total
+        LibraryPermission::updateOrCreate([
+            'library_id' => $library->id,
+            'user_type_id' => 1, // ID do Administrador
+        ], [
+            'can_view' => true,
+            'can_download' => true,
+        ]);
 
         // Criar notificação automática para usuários com permissão
         NotificationService::notifyNewLibrary($library->id, $library->name);
@@ -159,11 +179,21 @@ class LibraryController extends Controller
                 'name', 'description', 'library_category_id', 'status'
             ]));
 
+        $publishOneDrive = $request->boolean('publish_onedrive');
+
         if ($request->hasFile('thumbnail')) {
             $thumb = $request->file('thumbnail');
             $thumbPath = $thumb->store('private/library/' . $library->id . '/thumb', 'private');
             $library->thumbnail_path = $thumbPath;
             $library->save();
+            
+            // OneDrive (assíncrono)
+            if ($publishOneDrive && $thumbPath) {
+                $localPath = storage_path('app/' . $thumbPath);
+                $remotePath = 'Library/' . $library->id . '/thumb-' . $library->id . '.' . $this->getFileExtension($thumb->getClientOriginalName());
+                $sync = $this->createOneDriveSync($library, $path, $remotePath);
+                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+            }
         }
 
         // Handle new file uploads
@@ -188,22 +218,46 @@ class LibraryController extends Controller
                     'sort_order' => 0,
                     'is_primary' => true
                 ]);
+                
+                // OneDrive (assíncrono)
+                if ($publishOneDrive && $path) {
+                    $localPath = storage_path('app/' . $path);
+                    $remotePath = 'Library/' . $library->id . '/' . $fileRecord->id . '-' . $this->getFileType($file->getMimeType()) . '.' . $this->getFileExtension($file->getClientOriginalName());
+                    $sync = $this->createOneDriveSync($library, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                }
             }
         }
 
         // Update permissions (simple sync for now, can be more complex)
-        $library->permissions()->delete(); // Remove existing
+        $library->permissions()->where('user_type_id', '!=', 1)->delete(); // Remove existing (exceto admin)
         
         if ($request->has('permissions')) {
             foreach ($request->permissions as $permission) {
-                LibraryPermission::create([
-                    'library_id' => $library->id,
-                    'user_type_id' => $permission['user_type_id'],
-                    'can_view' => $permission['can_view'] ?? false,
-                    'can_download' => $permission['can_download'] ?? false,
-                ]);
+                try {
+                    LibraryPermission::create([
+                        'library_id' => $library->id,
+                        'user_type_id' => $permission['user_type_id'],
+                        'can_view' => isset($permission['can_view']) ? (bool)$permission['can_view'] : false,
+                        'can_download' => isset($permission['can_download']) ? (bool)$permission['can_download'] : false,
+                    ]);
+                } catch (\Exception $e) {
+                    // Ignorar erro de duplicata (admin já existe)
+                    if (!str_contains($e->getMessage(), 'Duplicate entry')) {
+                        throw $e;
+                    }
+                }
             }
         }
+
+        // Administrador sempre tem permissão total
+        LibraryPermission::updateOrCreate([
+            'library_id' => $library->id,
+            'user_type_id' => 1, // ID do Administrador
+        ], [
+            'can_view' => true,
+            'can_download' => true,
+        ]);
 
             DB::commit();
 
@@ -235,11 +289,12 @@ class LibraryController extends Controller
     {
         $request->validate([
             'files' => 'required|array',
-            'files.*' => 'file|max:102400', // 100MB
+            'files.*' => 'file|max:512000', // 500MB
         ]);
 
         $uploadedFiles = [];
         $publishOneDrive = $request->boolean('publish_onedrive');
+        
         foreach ($request->file('files') as $file) {
             $path = $file->store('private/library/' . $library->id, 'private');
             // Criar o arquivo
@@ -265,7 +320,8 @@ class LibraryController extends Controller
             if ($publishOneDrive && $path) {
                 $localPath = storage_path('app/' . $path);
                 $remotePath = 'Library/' . $library->id . '/' . $file->getClientOriginalName();
-                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                $sync = $this->createOneDriveSync($library, $path, $remotePath);
+                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
             }
             $uploadedFiles[] = $uploadedFile;
         }
@@ -341,5 +397,91 @@ class LibraryController extends Controller
     private function getFileExtension($filename)
     {
         return strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    }
+
+    private function createOneDriveSync($library, $filePath, $remotePath)
+    {
+        $sync = OneDriveSync::create([
+            'syncable_type' => get_class($library),
+            'syncable_id' => $library->id,
+            'file_path' => $filePath,
+            'remote_path' => $remotePath,
+            'status' => 'pending'
+        ]);
+
+        return $sync;
+    }
+
+    public function syncToOneDrive(Library $library)
+    {
+        try {
+            $syncedCount = 0;
+            
+            // Sincronizar arquivos que ainda não foram enviados
+            foreach ($library->files as $file) {
+                // Verificar se já existe sync para este arquivo
+                $existingSync = OneDriveSync::where('syncable_type', get_class($library))
+                    ->where('syncable_id', $library->id)
+                    ->where('file_path', $file->path)
+                    ->first();
+                
+                if (!$existingSync) {
+                    // Criar novo sync
+                    $localPath = storage_path('app/' . $file->path);
+                    $remotePath = 'Library/' . $library->id . '/' . $file->name;
+                    
+                    $sync = $this->createOneDriveSync($library, $file->path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                    $syncedCount++;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Sincronização iniciada para {$syncedCount} arquivo(s).",
+                'synced_count' => $syncedCount
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao iniciar sincronização: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function retryOneDriveSync(Library $library)
+    {
+        try {
+            $retryCount = 0;
+            
+            // Reenviar arquivos que falharam
+            $failedSyncs = OneDriveSync::where('syncable_type', get_class($library))
+                ->where('syncable_id', $library->id)
+                ->where('status', 'failed')
+                ->get();
+            
+            foreach ($failedSyncs as $sync) {
+                $localPath = storage_path('app/' . $sync->file_path);
+                
+                if (file_exists($localPath)) {
+                    $sync->update(['status' => 'pending']);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $sync->remote_path, $sync->id);
+                    $retryCount++;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Tentativa de reenvio iniciada para {$retryCount} arquivo(s).",
+                'retry_count' => $retryCount
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao tentar reenviar: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

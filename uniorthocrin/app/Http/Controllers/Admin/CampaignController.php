@@ -11,9 +11,11 @@ use App\Models\CampaignVideo;
 use App\Models\CampaignMiscellaneous;
 use App\Models\File;
 use App\Models\UserType;
+use App\Models\OneDriveSync;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CampaignController extends Controller
@@ -42,8 +44,7 @@ class CampaignController extends Controller
 
     public function create()
     {
-        $userTypes = UserType::orderBy('name')->get();
-        return view('admin.campaigns.create', compact('userTypes'));
+        return view('admin.campaigns.create');
     }
 
     public function store(Request $request)
@@ -54,7 +55,6 @@ class CampaignController extends Controller
             'description' => 'nullable|string|max:1000',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'visible_franchise_only' => 'boolean',
             'status' => 'required|in:active,inactive',
             'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
             'is_featured' => 'nullable|boolean',
@@ -70,7 +70,7 @@ class CampaignController extends Controller
             'misc_tag' => 'nullable|array',
             'misc_sticker' => 'nullable|array',
             'misc_script' => 'nullable|array',
-        ], $this->getCampaignFileValidationRules());
+        ], FileValidationRequest::getProductValidationRules());
 
         $request->validate($validationRules, (new FileValidationRequest())->messages());
 
@@ -87,14 +87,14 @@ class CampaignController extends Controller
         // Upload thumbnail
         if ($request->hasFile('thumbnail')) {
             $thumb = $request->file('thumbnail');
-            $thumbPath = $thumb->store('private/campaigns/' . $campaign->id . '/thumb', 'private');
+            $thumbPath = $thumb->store("private/campaigns/{$campaign->id}/thumb", 'private');
             $campaign->thumbnail_path = $thumbPath;
         }
 
         // Upload banner se marcado como destaque
         if ($request->boolean('is_featured') && $request->hasFile('banner')) {
             $banner = $request->file('banner');
-            $bannerPath = $banner->store('private/campaigns/' . $campaign->id . '/banner', 'private');
+            $bannerPath = $banner->store("private/campaigns/{$campaign->id}/banner", 'private');
             $campaign->banner_path = $bannerPath;
         }
 
@@ -111,56 +111,71 @@ class CampaignController extends Controller
 
     public function show(Campaign $campaign)
     {
-        $campaign->load(['posts', 'folders', 'videos', 'miscellaneous']);
+        $campaign->load([
+            'posts.files',
+            'folders.files', 
+            'videos.files',
+            'miscellaneous.files'
+        ]);
         return view('admin.campaigns.show', compact('campaign'));
     }
 
     public function edit(Campaign $campaign)
     {
+        $campaign->load([
+            'posts.files',
+            'folders.files', 
+            'videos.files',
+            'miscellaneous.files'
+        ]);
         return view('admin.campaigns.edit', compact('campaign'));
     }
 
     public function update(Request $request, Campaign $campaign)
     {
-        $request->validate([
+
+        $validationRules = array_merge([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'visible_franchise_only' => 'boolean',
             'status' => 'required|in:active,inactive',
-            'thumbnail' => 'nullable|image|max:10240',
+            'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
             'is_featured' => 'nullable|boolean',
-            'banner' => 'nullable|image|max:20480',
-            'folder_mg_sp' => 'nullable|string|max:255',
-            'folder_df_es' => 'nullable|string|max:255',
+            'banner' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:20480',
+            'folder_mg_sp' => 'nullable|array',
+            'folder_df_es' => 'nullable|array',
             'posts_feed' => 'nullable|array',
             'posts_stories_mg_sp' => 'nullable|array',
             'posts_stories_df_es' => 'nullable|array',
-            'spot_audio' => 'nullable|string|max:255',
-            'tag_pdf' => 'nullable|string|max:255',
-            'adesivo_pdf' => 'nullable|string|max:255',
-            'roteiros_pdf' => 'nullable|string|max:255',
-        ]);
+            'videos_reels' => 'nullable|array',
+            'videos_reels.*' => 'nullable|file|mimes:mp4,avi,mov|max:51200',
+            'videos_campaigns' => 'nullable|array',
+            'videos_campaigns.*' => 'nullable|file|mimes:mp4,avi,mov|max:51200',
+            'misc_spot' => 'nullable|array',
+            'misc_tag' => 'nullable|array',
+            'misc_sticker' => 'nullable|array',
+            'misc_script' => 'nullable|array',
+        ], FileValidationRequest::getProductValidationRules());
+
+        $request->validate($validationRules, (new FileValidationRequest())->messages());
 
         $campaign->update(array_merge(
             $request->only([
-                'name', 'description', 'start_date', 'end_date', 'status', 'is_featured',
-                'folder_mg_sp', 'folder_df_es', 'posts_feed', 'posts_stories_mg_sp', 'posts_stories_df_es',
-                'spot_audio', 'tag_pdf', 'adesivo_pdf', 'roteiros_pdf'
+                'name', 'description', 'start_date', 'end_date', 'status', 'is_featured'
             ]),
             ['visible_franchise_only' => true]
         ));
 
         if ($request->hasFile('thumbnail')) {
             $thumb = $request->file('thumbnail');
-            $thumbPath = $thumb->store('private/campaigns/' . $campaign->id . '/thumb', 'private');
+            $thumbPath = $thumb->store("private/campaigns/{$campaign->id}/thumb", 'private');
             $campaign->thumbnail_path = $thumbPath;
         }
 
         if ($request->boolean('is_featured') && $request->hasFile('banner')) {
             $banner = $request->file('banner');
-            $bannerPath = $banner->store('private/campaigns/' . $campaign->id . '/banner', 'private');
+            $bannerPath = $banner->store("private/campaigns/{$campaign->id}/banner", 'private');
             $campaign->banner_path = $bannerPath;
         } else if (!$request->boolean('is_featured')) {
             // Se desmarcar destaque, zera o banner
@@ -168,6 +183,9 @@ class CampaignController extends Controller
         }
 
         $campaign->save();
+
+        // Processar uploads de arquivos (posts, vídeos, folders, etc.)
+        $this->processFileUploads($request, $campaign);
 
         return redirect()->route('admin.campaigns.show', $campaign)->with('success', 'Campanha atualizada com sucesso!');
     }
@@ -281,6 +299,15 @@ class CampaignController extends Controller
                 'sort_order' => 0,
                 'is_primary' => true
             ]);
+
+            // OneDrive sync se habilitado
+            $publishOneDrive = $request->boolean('publish_onedrive');
+            if ($publishOneDrive && $path) {
+                $localPath = storage_path('app/' . $path);
+                $remotePath = 'Campaigns/' . $campaign->id . '/posts/' . $post->id . '-' . $fileRecord->id . '.' . $this->getFileExtension($imageFile->getClientOriginalName());
+                $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
+                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+            }
         }
 
         return redirect()->route('admin.campaigns.show', $campaign)->with('success', 'Post criado com sucesso!');
@@ -315,10 +342,11 @@ class CampaignController extends Controller
                 $fileRecord = File::create([
                     'name' => $file->getClientOriginalName(),
                     'path' => $path,
-                    'disk' => 'private',
+                    'type' => $this->getFileType($file->getMimeType()),
+                    'extension' => $this->getFileExtension($file->getClientOriginalName()),
                     'mime_type' => $file->getMimeType(),
                     'size' => $file->getSize(),
-                    'file_type' => $this->getFileType($file->getMimeType()),
+                    'order' => 0,
                 ]);
                 
                 // Associar o arquivo à pasta
@@ -327,6 +355,15 @@ class CampaignController extends Controller
                     'sort_order' => 0,
                     'is_primary' => true
                 ]);
+
+                // OneDrive sync se habilitado
+                $publishOneDrive = $request->boolean('publish_onedrive');
+                if ($publishOneDrive && $path) {
+                    $localPath = storage_path('app/' . $path);
+                    $remotePath = 'Campaigns/' . $campaign->id . '/folders/' . $folder->id . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
+                    $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                }
             }
         }
 
@@ -375,6 +412,15 @@ class CampaignController extends Controller
                 'sort_order' => 0,
                 'is_primary' => true
             ]);
+
+            // OneDrive sync se habilitado
+            $publishOneDrive = $request->boolean('publish_onedrive');
+            if ($publishOneDrive && $path) {
+                $localPath = storage_path('app/' . $path);
+                $remotePath = 'Campaigns/' . $campaign->id . '/videos/' . $video->id . '-' . $fileRecord->id . '.' . $this->getFileExtension($videoFile->getClientOriginalName());
+                $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
+                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+            }
         }
 
         return redirect()->route('admin.campaigns.show', $campaign)->with('success', 'Vídeo criado com sucesso!');
@@ -417,10 +463,11 @@ class CampaignController extends Controller
             $fileRecord = File::create([
                 'name' => $file->getClientOriginalName(),
                 'path' => $path,
-                'disk' => 'private',
+                'type' => $this->getFileType($file->getMimeType()),
+                'extension' => $this->getFileExtension($file->getClientOriginalName()),
                 'mime_type' => $file->getMimeType(),
                 'size' => $file->getSize(),
-                'file_type' => $this->getFileType($file->getMimeType()),
+                'order' => 0,
             ]);
             
             // Associar o arquivo ao miscellaneous
@@ -429,6 +476,15 @@ class CampaignController extends Controller
                 'sort_order' => 0,
                 'is_primary' => true
             ]);
+
+            // OneDrive sync se habilitado
+            $publishOneDrive = $request->boolean('publish_onedrive');
+            if ($publishOneDrive && $path) {
+                $localPath = storage_path('app/' . $path);
+                $remotePath = 'Campaigns/' . $campaign->id . '/miscellaneous/' . $type . '-' . $misc->id . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
+                $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
+                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+            }
         }
 
         return redirect()->route('admin.campaigns.show', $campaign)->with('success', 'Item criado com sucesso!');
@@ -445,7 +501,7 @@ class CampaignController extends Controller
         } elseif (in_array($mimeType, ['application/pdf'])) {
             return 'pdf';
         } else {
-            return 'pdf'; // Default para outros tipos de arquivo
+            return 'pdf'; // Default para outros tipos de arquivo (PDF é o mais comum)
         }
     }
     
@@ -454,32 +510,6 @@ class CampaignController extends Controller
         return strtolower(pathinfo($filename, PATHINFO_EXTENSION));
     }
 
-    /**
-     * Obter validações específicas de arquivo para campanhas
-     */
-    private function getCampaignFileValidationRules()
-    {
-        return [
-            // Folhetos (PDFs)
-            'folder_mg_sp.*' => 'file|mimes:pdf|max:102400',
-            'folder_df_es.*' => 'file|mimes:pdf|max:102400',
-            
-            // Posts (Imagens)
-            'posts_feed.*' => 'image|mimes:jpeg,jpg,png,webp|max:10240',
-            'posts_stories_mg_sp.*' => 'image|mimes:jpeg,jpg,png,webp|max:10240',
-            'posts_stories_df_es.*' => 'image|mimes:jpeg,jpg,png,webp|max:10240',
-            
-            // Vídeos
-            'videos_reels.*' => 'file|mimes:mp4,mov,ogg,avi|max:102400',
-            'videos_campaigns.*' => 'file|mimes:mp4,mov,ogg,avi|max:102400',
-            
-            // Miscellaneous
-            'misc_spot.*' => 'file|mimes:mp3,wav,ogg,aac,m4a|max:102400', // Spot (áudio)
-            'misc_tag.*' => 'file|mimes:pdf|max:102400', // Tag (PDF)
-            'misc_sticker.*' => 'file|mimes:pdf|max:102400', // Adesivo (PDF)
-            'misc_script.*' => 'file|mimes:pdf|max:102400', // Roteiro (PDF)
-        ];
-    }
 
     private function processFileUploads(Request $request, Campaign $campaign)
     {
@@ -536,8 +566,9 @@ class CampaignController extends Controller
 
                     if ($publishOneDrive && $path) {
                         $localPath = storage_path('app/' . $path);
-                        $remotePath = 'Campaigns/' . $campaign->id . '/posts/' . $file->getClientOriginalName();
-                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                        $remotePath = 'Campaigns/' . $campaign->id . '/posts/' . $type . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
+                        $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                     }
                 }
             }
@@ -583,8 +614,9 @@ class CampaignController extends Controller
 
                     if ($publishOneDrive && $path) {
                         $localPath = storage_path('app/' . $path);
-                        $remotePath = 'Campaigns/' . $campaign->id . '/folders/' . $file->getClientOriginalName();
-                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                        $remotePath = 'Campaigns/' . $campaign->id . '/folders/' . $type . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
+                        $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                     }
                 }
             }
@@ -614,10 +646,11 @@ class CampaignController extends Controller
                     $fileRecord = File::create([
                         'name' => $file->getClientOriginalName(),
                         'path' => $path,
-                        'disk' => 'private',
+                        'type' => 'video',
+                        'extension' => $this->getFileExtension($file->getClientOriginalName()),
                         'mime_type' => $file->getMimeType(),
                         'size' => $file->getSize(),
-                        'file_type' => 'video',
+                        'order' => 0,
                     ]);
                     
                     // Associar o arquivo ao vídeo
@@ -629,8 +662,9 @@ class CampaignController extends Controller
 
                     if ($publishOneDrive && $path) {
                         $localPath = storage_path('app/' . $path);
-                        $remotePath = 'Campaigns/' . $campaign->id . '/videos/' . $file->getClientOriginalName();
-                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                        $remotePath = 'Campaigns/' . $campaign->id . '/videos/' . $type . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
+                        $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                     }
                 }
             }
@@ -643,8 +677,8 @@ class CampaignController extends Controller
         $miscTypes = [
             'misc_spot' => 'spot',
             'misc_tag' => 'tag',
-            'misc_sticker' => 'adesivo',
-            'misc_script' => 'roteiro'
+            'misc_sticker' => 'sticker',
+            'misc_script' => 'script'
         ];
 
         foreach ($miscTypes as $inputName => $type) {
@@ -652,36 +686,147 @@ class CampaignController extends Controller
                 foreach ($request->file($inputName) as $file) {
                     $path = $file->store('private/campaigns/' . $campaign->id . '/miscellaneous', 'private');
                     
-                        $misc = $campaign->miscellaneous()->create([
-                            'name' => $file->getClientOriginalName(),
-                            'type' => $type,
-                            'status' => 'active'
-                        ]);
-                        
-                        // Criar o arquivo
-                        $fileRecord = File::create([
-                            'name' => $file->getClientOriginalName(),
-                            'path' => $path,
-                            'disk' => 'private',
-                            'mime_type' => $file->getMimeType(),
-                            'size' => $file->getSize(),
-                            'file_type' => $this->getFileType($file->getMimeType()),
-                        ]);
-                        
-                        // Associar o arquivo ao miscellaneous
-                        $misc->files()->attach($fileRecord->id, [
-                            'file_type' => $this->getFileType($file->getMimeType()),
-                            'sort_order' => 0,
-                            'is_primary' => true
-                        ]);
+                    $misc = $campaign->miscellaneous()->create([
+                        'name' => $file->getClientOriginalName(),
+                        'type' => $type,
+                        'status' => 'active'
+                    ]);
+                    
+                    // Criar o arquivo
+                    $fileRecord = File::create([
+                        'name' => $file->getClientOriginalName(),
+                        'path' => $path,
+                        'type' => $this->getFileType($file->getMimeType()),
+                        'extension' => $this->getFileExtension($file->getClientOriginalName()),
+                        'mime_type' => $file->getMimeType(),
+                        'size' => $file->getSize(),
+                        'order' => 0,
+                    ]);
+                    
+                    // Associar o arquivo ao miscellaneous
+                    $misc->files()->attach($fileRecord->id, [
+                        'file_type' => $this->getFileType($file->getMimeType()),
+                        'sort_order' => 0,
+                        'is_primary' => true
+                    ]);
 
-                        if ($publishOneDrive && $path) {
-                            $localPath = storage_path('app/' . $path);
-                            $remotePath = 'Campaigns/' . $campaign->id . '/miscellaneous/' . $file->getClientOriginalName();
-                            \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
-                        }
+                    if ($publishOneDrive && $path) {
+                        $localPath = storage_path('app/' . $path);
+                        $remotePath = 'Campaigns/' . $campaign->id . '/miscellaneous/' . $type . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
+                        $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
+                        \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                    }
                 }
             }
+        }
+    }
+
+    private function createOneDriveSync($campaign, $filePath, $remotePath)
+    {
+        $sync = OneDriveSync::create([
+            'syncable_type' => get_class($campaign),
+            'syncable_id' => $campaign->id,
+            'file_path' => $filePath,
+            'remote_path' => $remotePath,
+            'status' => 'pending'
+        ]);
+
+        return $sync;
+    }
+
+    public function syncToOneDrive(Campaign $campaign)
+    {
+        try {
+            $syncedCount = 0;
+            
+            // Sincronizar todos os arquivos da campanha (posts, folders, videos, miscellaneous)
+            $allFiles = collect();
+            
+            // Posts
+            foreach ($campaign->posts as $post) {
+                $allFiles = $allFiles->merge($post->files);
+            }
+            
+            // Folders
+            foreach ($campaign->folders as $folder) {
+                $allFiles = $allFiles->merge($folder->files);
+            }
+            
+            // Videos
+            foreach ($campaign->videos as $video) {
+                $allFiles = $allFiles->merge($video->files);
+            }
+            
+            // Miscellaneous
+            foreach ($campaign->miscellaneous as $misc) {
+                $allFiles = $allFiles->merge($misc->files);
+            }
+            
+            // Sincronizar arquivos únicos
+            foreach ($allFiles->unique('id') as $file) {
+                // Verificar se já existe sync para este arquivo
+                $existingSync = OneDriveSync::where('syncable_type', get_class($campaign))
+                    ->where('syncable_id', $campaign->id)
+                    ->where('file_path', $file->path)
+                    ->first();
+                
+                if (!$existingSync) {
+                    // Criar novo sync
+                    $localPath = storage_path('app/' . $file->path);
+                    $remotePath = 'Campaigns/' . $campaign->id . '/' . $file->name;
+                    
+                    $sync = $this->createOneDriveSync($campaign, $file->path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                    $syncedCount++;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Sincronização iniciada para {$syncedCount} arquivo(s).",
+                'synced_count' => $syncedCount
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao iniciar sincronização: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function retryOneDriveSync(Campaign $campaign)
+    {
+        try {
+            $retryCount = 0;
+            
+            // Reenviar arquivos que falharam
+            $failedSyncs = OneDriveSync::where('syncable_type', get_class($campaign))
+                ->where('syncable_id', $campaign->id)
+                ->where('status', 'failed')
+                ->get();
+            
+            foreach ($failedSyncs as $sync) {
+                $localPath = storage_path('app/' . $sync->file_path);
+                
+                if (file_exists($localPath)) {
+                    $sync->update(['status' => 'pending']);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $sync->remote_path, $sync->id);
+                    $retryCount++;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Tentativa de reenvio iniciada para {$retryCount} arquivo(s).",
+                'retry_count' => $retryCount
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao tentar reenviar: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -175,7 +175,7 @@
                                 <div class="h-10 w-10 rounded-lg bg-gradient-to-r from-red-100 to-red-200 flex items-center justify-center shadow-sm">
                                     <i class="fas fa-file-pdf text-red-600"></i>
                                 </div>
-                            @elseif($file->file_type === 'document')
+                            @elseif($file->file_type === 'pdf')
                                 <div class="h-10 w-10 rounded-lg bg-gradient-to-r from-blue-100 to-blue-200 flex items-center justify-center shadow-sm">
                                     <i class="fas fa-file-word text-blue-600"></i>
                                 </div>
@@ -223,7 +223,7 @@
                     <option value="video" {{ request('file_type') == 'video' ? 'selected' : '' }}>Vídeo</option>
                     <option value="audio" {{ request('file_type') == 'audio' ? 'selected' : '' }}>Áudio</option>
                     <option value="pdf" {{ request('file_type') == 'pdf' ? 'selected' : '' }}>PDF</option>
-                    <option value="document" {{ request('file_type') == 'document' ? 'selected' : '' }}>Documento</option>
+                    <option value="pdf" {{ request('file_type') == 'pdf' ? 'selected' : '' }}>Documento</option>
                     <option value="spreadsheet" {{ request('file_type') == 'spreadsheet' ? 'selected' : '' }}>Planilha</option>
                     <option value="presentation" {{ request('file_type') == 'presentation' ? 'selected' : '' }}>Apresentação</option>
                     <option value="other" {{ request('file_type') == 'other' ? 'selected' : '' }}>Outros</option>
@@ -327,7 +327,7 @@
                                         <div class="h-12 w-12 rounded-lg bg-gradient-to-r from-red-100 to-red-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
                                             <i class="fas fa-file-pdf text-red-600 text-lg"></i>
                                         </div>
-                                    @elseif($file->file_type === 'document')
+                                    @elseif($file->file_type === 'pdf')
                                         <div class="h-12 w-12 rounded-lg bg-gradient-to-r from-blue-100 to-blue-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
                                             <i class="fas fa-file-word text-blue-600 text-lg"></i>
                                         </div>
@@ -358,7 +358,7 @@
                                     'video' => 'bg-red-100 text-red-800',
                                     'audio' => 'bg-blue-100 text-blue-800',
                                     'pdf' => 'bg-red-100 text-red-800',
-                                    'document' => 'bg-blue-100 text-blue-800',
+                                    'pdf' => 'bg-blue-100 text-blue-800',
                                     'spreadsheet' => 'bg-green-100 text-green-800',
                                     'presentation' => 'bg-orange-100 text-orange-800',
                                     default => 'bg-gray-100 text-gray-800'

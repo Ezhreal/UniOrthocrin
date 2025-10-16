@@ -36,6 +36,16 @@ return [
             'serve' => true,
             'throw' => false,
             'report' => false,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0644,
+                ],
+                'dir' => [
+                    'public' => 0755,
+                    'private' => 0755,
+                ],
+            ],
         ],
 
         'private' => [
@@ -45,6 +55,16 @@ return [
             'visibility' => 'private',
             'throw' => false,
             'report' => false,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0644,
+                ],
+                'dir' => [
+                    'public' => 0755,
+                    'private' => 0755,
+                ],
+            ],
         ],
 
         'public' => [

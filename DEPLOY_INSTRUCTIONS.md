@@ -1,95 +1,176 @@
-# Instruções de Deploy Automatizado - Locaweb
+# 🚀 Instruções de Deploy - UniOrthocrin
 
-## 📋 O que foi configurado
-
-Criado o arquivo `.github/workflows/deploy.yml` que automatiza o deploy do projeto Laravel para a Locaweb via FTP.
-
-## 🔧 Configuração necessária no GitHub
+## 📋 Pré-requisitos
 
 ### 1. Configurar Secrets no GitHub
+Vá em: `Settings > Secrets and variables > Actions` e adicione:
 
-Acesse seu repositório no GitHub e vá em:
-**Settings** → **Secrets and variables** → **Actions** → **New repository secret**
-
-Crie os seguintes secrets:
-
-| Secret Name | Descrição | Exemplo |
-|-------------|-----------|---------|
-| `HOST` | Endereço do servidor FTP | `ftp.seusite.com.br` |
-| `USER` | Usuário do FTP | `seu_usuario` |
-| `PASS` | Senha do FTP | `sua_senha` |
-
-### 2. Informações da Locaweb
-
-Para encontrar essas informações:
-1. Acesse o painel da Locaweb
-2. Vá em **Hospedagem** → **Gerenciar**
-3. Procure por **FTP** ou **Acesso FTP**
-4. Use as credenciais fornecidas
-
-## 🚀 Como funciona o deploy
-
-### Triggers (quando o deploy acontece):
-- **Push na branch main/master**: Deploy automático
-- **Manual**: Vá em Actions → Deploy via FTP → Run workflow
-
-### Processo do deploy:
-1. ✅ Baixa o código do repositório
-2. ✅ Configura PHP 8.1
-3. ✅ Instala dependências do Composer (produção)
-4. ✅ Instala e builda assets (npm)
-5. ✅ Prepara arquivos para produção
-6. ✅ Remove arquivos desnecessários
-7. ✅ Cria .htaccess se necessário
-8. ✅ Faz upload via FTP para `public_html`
-
-## 📁 Estrutura de arquivos no servidor
-
-O deploy copia todo o conteúdo da pasta `uniorthocrin/` para `public_html/` no servidor, exceto:
-- `node_modules/`
-- `.git/`
-- `tests/`
-- `.env.example`
-- `README.md`
-- `package*.json`
-- `webpack.mix.js`
-- `vite.config.js`
-
-## ⚙️ Configurações específicas do projeto
-
-### Se precisar ajustar o remoteDir:
-Edite o arquivo `.github/workflows/deploy.yml` na linha:
-```yaml
-remoteDir: "public_html"  # Mude para "web" se for Windows
+```
+HOST = ftp.seudominio.com.br
+USER = seu_usuario_ftp
+PASS = sua_senha_ftp
 ```
 
-### Se precisar ajustar o localDir:
-O workflow já está configurado para usar a pasta `uniorthocrin/` como base.
+### 2. Configurar Banco de Dados na Locaweb
+- Criar banco MySQL
+- Anotar: host, database, username, password
 
-## 🔍 Verificação do deploy
+## 🔧 Configuração do Deploy
 
-1. Acesse a aba **Actions** no GitHub
-2. Clique no workflow "Deploy via FTP"
-3. Verifique se todos os steps passaram (✅)
-4. Teste o site no navegador
+### 1. Criar arquivo .env.production
+```bash
+# Copie o .env.example e ajuste para produção
+cp .env.example .env.production
+```
 
-## 🛠️ Troubleshooting
+Edite o `.env.production` com:
+```env
+APP_NAME="UniOrthocrin"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://seudominio.com.br
 
-### Erro de permissão FTP:
-- Verifique se as credenciais estão corretas
-- Confirme se o usuário tem permissão de escrita
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=seu_banco_producao
+DB_USERNAME=seu_usuario_producao
+DB_PASSWORD=sua_senha_producao
 
-### Erro de arquivo não encontrado:
-- Verifique se o `remoteDir` está correto
-- Confirme se a estrutura de pastas existe no servidor
+# OneDrive (configure com suas credenciais)
+ONEDRIVE_CLIENT_ID=seu_client_id
+ONEDRIVE_CLIENT_SECRET=seu_client_secret
+ONEDRIVE_REDIRECT_URI=https://seudominio.com.br/onedrive/callback
+```
 
-### Erro de PHP:
-- Verifique se o servidor suporta PHP 8.1
-- Confirme se as extensões necessárias estão instaladas
+### 2. Deploy Automático
+O deploy acontece automaticamente quando você:
+1. Faz push para a branch `main`
+2. Ou executa manualmente em: `Actions > Deploy to Locaweb > Run workflow`
+
+## 🗄️ Configuração do Banco de Dados
+
+### 1. Executar Migrações
+Após o deploy, acesse o servidor via SSH e execute:
+
+```bash
+cd /home/seudominio/public_html
+php artisan migrate --force
+```
+
+### 2. Popular Dados Iniciais
+```bash
+php migrate-production.php
+```
+
+Isso criará:
+- ✅ Usuário administrador: `admin@uniorthocrin.com.br` / `admin123`
+- ✅ Tipos de usuário padrão
+- ✅ Categorias padrão para todos os módulos
+
+## ⏰ Configurar Crontab
+
+### 1. Executar Script de Configuração
+```bash
+bash setup-crontab.sh
+```
+
+### 2. Jobs Configurados
+- **Queue Worker**: A cada 5 minutos (processa OneDrive sync)
+- **Limpeza de Jobs**: A cada hora (remove jobs falhados)
+- **Limpeza de Cache**: A cada 6 horas
+- **Backup do Banco**: Diário às 2h
+
+### 3. Verificar Crontab
+```bash
+crontab -l
+```
+
+## 🔄 Processo de Deploy
+
+### 1. Desenvolvimento
+```bash
+# Trabalhe na branch develop
+git checkout develop
+git add .
+git commit -m "Nova funcionalidade"
+git push origin develop
+```
+
+### 2. Deploy para Produção
+```bash
+# Merge para main
+git checkout main
+git merge develop
+git push origin main
+```
+
+### 3. Deploy Automático
+- ✅ GitHub Actions executa automaticamente
+- ✅ Instala dependências
+- ✅ Executa migrações
+- ✅ Limpa e cacheia configurações
+- ✅ Faz upload via FTP
+
+## 🛠️ Comandos Úteis
+
+### No Servidor de Produção
+```bash
+# Verificar logs
+tail -f storage/logs/laravel.log
+
+# Executar queue worker manualmente
+php artisan queue:work --once
+
+# Limpar cache
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+# Verificar status dos jobs
+php artisan queue:failed
+
+# Reprocessar jobs falhados
+php artisan queue:retry all
+```
+
+### Backup Manual
+```bash
+# Backup do banco
+php artisan backup:run --only-db
+
+# Backup completo
+php artisan backup:run
+```
+
+## 🔍 Troubleshooting
+
+### 1. Deploy Falhou
+- Verificar logs em: `Actions > Deploy to Locaweb`
+- Verificar se os secrets estão corretos
+- Verificar se o banco está acessível
+
+### 2. OneDrive Sync Não Funciona
+- Verificar credenciais no .env
+- Verificar se o crontab está rodando
+- Verificar logs: `tail -f storage/logs/laravel.log`
+
+### 3. Permissões de Arquivo
+```bash
+# Corrigir permissões
+chmod -R 755 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+```
 
 ## 📞 Suporte
 
-Se tiver problemas:
-1. Verifique os logs na aba Actions do GitHub
-2. Teste as credenciais FTP manualmente
-3. Entre em contato com o suporte da Locaweb se necessário
+Em caso de problemas:
+1. Verificar logs do Laravel
+2. Verificar logs do GitHub Actions
+3. Verificar status do crontab
+4. Verificar conectividade com OneDrive
+
+---
+
+**✅ Sistema configurado e pronto para produção!**

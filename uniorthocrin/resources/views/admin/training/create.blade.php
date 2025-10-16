@@ -199,18 +199,23 @@
                             </div>
                             <div class="flex items-center space-x-4">
                                 <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" name="permissions[{{ $loop->index }}][can_view]" value="1"
+                                    <input type="checkbox" name="permissions[{{ $loop->index }}][can_view]" value="1" @if($userType->id == 1) checked disabled @endif
                                            {{ old("permissions.{$userType->id}.can_view") ? 'checked' : '' }}
                                            class="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300 rounded transition-colors duration-200">
                                     <span class="ml-2 text-modern-caption">Ver</span>
                                 </label>
                                 <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" name="permissions[{{ $loop->index }}][can_download]" value="1"
+                                    <input type="checkbox" name="permissions[{{ $loop->index }}][can_download]" value="1" @if($userType->id == 1) checked disabled @endif
                                            {{ old("permissions.{$userType->id}.can_download") ? 'checked' : '' }}
                                            class="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300 rounded transition-colors duration-200">
                                     <span class="ml-2 text-modern-caption">Baixar</span>
                                 </label>
                                 <input type="hidden" name="permissions[{{ $loop->index }}][user_type_id]" value="{{ $userType->id }}">
+                                @if($userType->id == 1)
+                                    <!-- Campos hidden para garantir que o admin sempre seja enviado como true -->
+                                    <input type="hidden" name="permissions[{{ $loop->index }}][can_view]" value="1">
+                                    <input type="hidden" name="permissions[{{ $loop->index }}][can_download]" value="1">
+                                @endif
                             </div>
                         </div>
                         @endforeach
@@ -260,11 +265,27 @@
                     </div>
                     
                     <div class="space-modern-sm">
-                        <div class="space-y-3">
-                            <label class="inline-flex items-center space-x-2">
-                                <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox">
-                                <span class="text-modern-body">Publicar no OneDrive</span>
+                        <!-- Checkbox OneDrive -->
+                        <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <label class="inline-flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox text-blue-600">
+                                <span class="text-modern-body font-medium text-blue-800">Publicar no OneDrive</span>
                             </label>
+                            <p class="text-xs text-blue-600 mt-1">Uploads serão sincronizados automaticamente</p>
+                        </div>
+
+                        <!-- Status OneDrive (será preenchido após criação) -->
+                        <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-cloud mr-1"></i>Status OneDrive
+                            </h4>
+                            <div class="flex items-center space-x-2 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                                <i class="fas fa-info-circle text-gray-500"></i>
+                                <span class="text-sm font-medium text-gray-500">Status será exibido após salvar</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
                             <button type="submit" class="btn-modern-primary w-full">
                                 <i class="fas fa-save mr-2"></i>Criar Treinamento
                             </button>

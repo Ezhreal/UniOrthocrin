@@ -9,6 +9,7 @@ use App\Models\TrainingCategory;
 use App\Models\UserType;
 use App\Models\File;
 use App\Models\TrainingPermission;
+use App\Models\OneDriveSync;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -81,19 +82,31 @@ class TrainingController extends Controller
         if ($request->hasFile('videos')) {
             foreach ($request->file('videos') as $videoFile) {
                 $path = $videoFile->store('private/training/' . $training->id, 'private');
-                $training->videos()->create([
+                
+                // Criar o arquivo na tabela files
+                $fileRecord = File::create([
                     'name' => $videoFile->getClientOriginalName(),
                     'path' => $path,
-                    'disk' => 'private',
+                    'type' => 'video',
+                    'extension' => $this->getFileExtension($videoFile->getClientOriginalName()),
                     'mime_type' => $videoFile->getMimeType(),
                     'size' => $videoFile->getSize(),
-                    'file_type' => 'video',
+                    'order' => 0,
                 ]);
+                
+                // Associar o arquivo ao training
+                $training->files()->attach($fileRecord->id, [
+                    'file_type' => 'video',
+                    'sort_order' => 0,
+                    'is_primary' => true
+                ]);
+                
                 // OneDrive (assíncrono)
                 if ($publishOneDrive && $path) {
                     $localPath = storage_path('app/' . $path);
-                    $remotePath = 'Training/' . $training->id . '/' . $videoFile->getClientOriginalName();
-                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                    $remotePath = 'Training/' . $training->id . '/video-' . $fileRecord->id . '.' . $this->getFileExtension($videoFile->getClientOriginalName());
+                    $sync = $this->createOneDriveSync($training, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                 }
             }
         }
@@ -102,19 +115,31 @@ class TrainingController extends Controller
         if ($request->hasFile('pdfs')) {
             foreach ($request->file('pdfs') as $pdfFile) {
                 $path = $pdfFile->store('private/training/' . $training->id, 'private');
-                $training->files()->create([
+                
+                // Criar o arquivo na tabela files
+                $fileRecord = File::create([
                     'name' => $pdfFile->getClientOriginalName(),
                     'path' => $path,
-                    'disk' => 'private',
+                    'type' => 'pdf',
+                    'extension' => $this->getFileExtension($pdfFile->getClientOriginalName()),
                     'mime_type' => $pdfFile->getMimeType(),
                     'size' => $pdfFile->getSize(),
-                    'file_type' => 'pdf',
+                    'order' => 0,
                 ]);
+                
+                // Associar o arquivo ao training
+                $training->files()->attach($fileRecord->id, [
+                    'file_type' => 'pdf',
+                    'sort_order' => 0,
+                    'is_primary' => true
+                ]);
+                
                 // OneDrive (assíncrono)
                 if ($publishOneDrive && $path) {
                     $localPath = storage_path('app/' . $path);
-                    $remotePath = 'Training/' . $training->id . '/' . $pdfFile->getClientOriginalName();
-                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath)->onQueue('uploads');
+                    $remotePath = 'Training/' . $training->id . '/pdf-' . $fileRecord->id . '.' . $this->getFileExtension($pdfFile->getClientOriginalName());
+                    $sync = $this->createOneDriveSync($training, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                 }
             }
         }
@@ -125,11 +150,20 @@ class TrainingController extends Controller
                 TrainingPermission::create([
                     'training_id' => $training->id,
                     'user_type_id' => $permission['user_type_id'],
-                    'can_view' => $permission['can_view'] ?? false,
-                    'can_download' => $permission['can_download'] ?? false,
+                    'can_view' => isset($permission['can_view']) ? (bool)$permission['can_view'] : false,
+                    'can_download' => isset($permission['can_download']) ? (bool)$permission['can_download'] : false,
                 ]);
             }
         }
+
+        // Administrador sempre tem permissão total
+        TrainingPermission::updateOrCreate([
+            'training_id' => $training->id,
+            'user_type_id' => 1, // ID do Administrador
+        ], [
+            'can_view' => true,
+            'can_download' => true,
+        ]);
 
         // Criar notificação automática para usuários com permissão
         NotificationService::notifyNewTraining($training->id, $training->name);
@@ -177,11 +211,21 @@ class TrainingController extends Controller
                 'name', 'description', 'training_category_id', 'status'
             ]));
 
+        $publishOneDrive = $request->boolean('publish_onedrive');
+
         if ($request->hasFile('thumbnail')) {
             $thumb = $request->file('thumbnail');
             $thumbPath = $thumb->store('private/training/' . $training->id . '/thumb', 'private');
             $training->thumbnail_path = $thumbPath;
             $training->save();
+            
+            // OneDrive (assíncrono)
+            if ($publishOneDrive && $thumbPath) {
+                $localPath = storage_path('app/' . $thumbPath);
+                $remotePath = 'Training/' . $training->id . '/thumb-' . $training->id . '.' . $this->getFileExtension($thumb->getClientOriginalName());
+                $sync = $this->createOneDriveSync($training, $thumbPath, $remotePath);
+                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+            }
         }
 
         // Handle new video uploads
@@ -196,6 +240,14 @@ class TrainingController extends Controller
                     'size' => $videoFile->getSize(),
                     'file_type' => 'video',
                 ]);
+                
+                // OneDrive (assíncrono)
+                if ($publishOneDrive && $path) {
+                    $localPath = storage_path('app/' . $path);
+                    $remotePath = 'Training/' . $training->id . '/video-' . $training->id . '.' . $this->getFileExtension($videoFile->getClientOriginalName());
+                    $sync = $this->createOneDriveSync($training, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                }
             }
         }
 
@@ -211,22 +263,46 @@ class TrainingController extends Controller
                     'size' => $pdfFile->getSize(),
                     'file_type' => 'pdf',
                 ]);
+                
+                // OneDrive (assíncrono)
+                if ($publishOneDrive && $path) {
+                    $localPath = storage_path('app/' . $path);
+                    $remotePath = 'Training/' . $training->id . '/pdf-' . $training->id . '.' . $this->getFileExtension($pdfFile->getClientOriginalName());
+                    $sync = $this->createOneDriveSync($training, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                }
             }
         }
 
         // Update permissions (simple sync for now, can be more complex)
-        $training->permissions()->delete(); // Remove existing
+        $training->permissions()->where('user_type_id', '!=', 1)->delete(); // Remove existing (exceto admin)
         
         if ($request->has('permissions')) {
             foreach ($request->permissions as $permission) {
-                TrainingPermission::create([
-                    'training_id' => $training->id,
-                    'user_type_id' => $permission['user_type_id'],
-                    'can_view' => $permission['can_view'] ?? false,
-                    'can_download' => $permission['can_download'] ?? false,
-                ]);
+                try {
+                    TrainingPermission::create([
+                        'training_id' => $training->id,
+                        'user_type_id' => $permission['user_type_id'],
+                        'can_view' => isset($permission['can_view']) ? (bool)$permission['can_view'] : false,
+                        'can_download' => isset($permission['can_download']) ? (bool)$permission['can_download'] : false,
+                    ]);
+                } catch (\Exception $e) {
+                    // Ignorar erro de duplicata (admin já existe)
+                    if (!str_contains($e->getMessage(), 'Duplicate entry')) {
+                        throw $e;
+                    }
+                }
             }
         }
+
+        // Administrador sempre tem permissão total
+        TrainingPermission::updateOrCreate([
+            'training_id' => $training->id,
+            'user_type_id' => 1, // ID do Administrador
+        ], [
+            'can_view' => true,
+            'can_download' => true,
+        ]);
 
             DB::commit();
 
@@ -258,7 +334,7 @@ class TrainingController extends Controller
     {
         $request->validate([
             'videos' => 'nullable|array',
-            'videos.*' => 'mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:102400',
+            'videos.*' => 'mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:512000',
             'pdfs' => 'nullable|array',
             'pdfs.*' => 'mimetypes:application/pdf|max:10240',
         ]);
@@ -368,8 +444,109 @@ class TrainingController extends Controller
         return response()->json(['success' => true]);
     }
     
+    private function getFileType($mimeType)
+    {
+        if (str_starts_with($mimeType, 'image/')) {
+            return 'image';
+        } elseif (str_starts_with($mimeType, 'video/')) {
+            return 'video';
+        } elseif (str_starts_with($mimeType, 'audio/')) {
+            return 'audio';
+        } elseif (in_array($mimeType, ['application/pdf'])) {
+            return 'pdf';
+        } else {
+            return 'pdf'; // Default para outros tipos de arquivo
+        }
+    }
+    
     private function getFileExtension($filename)
     {
         return strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    }
+
+    private function createOneDriveSync($training, $filePath, $remotePath)
+    {
+        $sync = OneDriveSync::create([
+            'syncable_type' => get_class($training),
+            'syncable_id' => $training->id,
+            'file_path' => $filePath,
+            'remote_path' => $remotePath,
+            'status' => 'pending'
+        ]);
+
+        return $sync;
+    }
+
+    public function syncToOneDrive(Training $training)
+    {
+        try {
+            $syncedCount = 0;
+            
+            // Sincronizar arquivos que ainda não foram enviados
+            foreach ($training->files as $file) {
+                // Verificar se já existe sync para este arquivo
+                $existingSync = OneDriveSync::where('syncable_type', get_class($training))
+                    ->where('syncable_id', $training->id)
+                    ->where('file_path', $file->path)
+                    ->first();
+                
+                if (!$existingSync) {
+                    // Criar novo sync
+                    $localPath = storage_path('app/' . $file->path);
+                    $remotePath = 'Training/' . $training->id . '/' . $file->name;
+                    
+                    $sync = $this->createOneDriveSync($training, $file->path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                    $syncedCount++;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Sincronização iniciada para {$syncedCount} arquivo(s).",
+                'synced_count' => $syncedCount
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao iniciar sincronização: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function retryOneDriveSync(Training $training)
+    {
+        try {
+            $retryCount = 0;
+            
+            // Reenviar arquivos que falharam
+            $failedSyncs = OneDriveSync::where('syncable_type', get_class($training))
+                ->where('syncable_id', $training->id)
+                ->where('status', 'failed')
+                ->get();
+            
+            foreach ($failedSyncs as $sync) {
+                $localPath = storage_path('app/' . $sync->file_path);
+                
+                if (file_exists($localPath)) {
+                    $sync->update(['status' => 'pending']);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $sync->remote_path, $sync->id);
+                    $retryCount++;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Tentativa de reenvio iniciada para {$retryCount} arquivo(s).",
+                'retry_count' => $retryCount
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao tentar reenviar: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

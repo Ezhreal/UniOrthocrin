@@ -108,9 +108,9 @@
         </div>
     </div>
     <!-- Acervo Digital -->
-    <div class="bg-[#FAFAFA] py-12">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center gap-8">
-            <div class="flex-1 min-w-0">
+    <div class="bg-[#FAFAFA]">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-end gap-8">
+            <div class="flex-1 min-w-0 py-12">
                 <div class="text-[#747474] font-bold text-sm mb-1">Plataforma UniOrthocrin</div>
                 <div class="text-[#910039] font-bold text-3xl mb-4">Acervo Digital</div>
                 <p class="text-gray-700 mb-8 text-base">Bem-vindo à nossa plataforma de acervo digital! Aqui, franquias, representantes e lojistas Orthocrin encontram uma seleção completa de materiais de marketing e produtos, incluindo campanhas prontas para suas mídias digitais e e-commerce.</p>
@@ -135,8 +135,8 @@
                     </li>
                 </ul>
             </div>
-            <div class="flex-1 flex justify-center items-center">
-                <img src="https://placehold.co/420x320" alt="Acervo Digital" class="w-96 max-w-full rounded-lg shadow">
+            <div class="flex-1 flex justify-center items-end">
+                <img src="{{ asset('images/unniorthocrin-home-middle.png') }}" alt="Acervo Digital" class="">
             </div>
         </div>
     </div>
