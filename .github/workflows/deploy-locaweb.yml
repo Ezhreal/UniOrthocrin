@@ -28,6 +28,7 @@ jobs:
       - name: Generate Application Key
         run: |
           cd uniorthocrin
+          cp .env.example .env
           php artisan key:generate --force
 
       - name: Run Migrations and Seed (if needed)
