@@ -1,0 +1,59 @@
+name: Deploy via FTP to Locaweb
+
+on:
+  push:
+    branches:
+      - main # Only deploy when pushing to the main branch
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2' # Use your PHP version
+          extensions: mbstring, pdo_mysql, dom, gd, json, fileinfo
+          ini-values: post_max_size=256M, upload_max_filesize=256M, memory_limit=512M
+          coverage: none
+
+      - name: Install Composer Dependencies
+        run: |
+          cd uniorthocrin
+          composer install --no-dev --prefer-dist
+
+      - name: Generate Application Key
+        run: |
+          cd uniorthocrin
+          php artisan key:generate --force
+
+      - name: Run Migrations and Seed (if needed)
+        run: |
+          cd uniorthocrin
+          php artisan migrate --force
+
+      - name: Clear Caches
+        run: |
+          cd uniorthocrin
+          php artisan cache:clear
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+
+      - name: Create Storage Link
+        run: |
+          cd uniorthocrin
+          php artisan storage:link
+
+      - name: FTP Deploy to Locaweb
+        uses: locaweb/ftp-deploy@1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          user: ${{ secrets.USER }}
+          password: ${{ secrets.PASS }}
+          localDir: "uniorthocrin" # Deploy only the Laravel project directory
+          remoteDir: "public_html" # Or your specific remote directory
+          forceSsl: true
