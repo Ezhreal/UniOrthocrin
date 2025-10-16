@@ -57,4 +57,4 @@ jobs:
           password: ${{ secrets.PASS }}
           localDir: "uniorthocrin" # Deploy only the Laravel project directory
           remoteDir: "public_html" # Or your specific remote directory
-          forceSsl: true
+          forceSsl: false
