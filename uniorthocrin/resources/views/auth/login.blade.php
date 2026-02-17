@@ -27,14 +27,14 @@
 </head>
 
 <body class="font-sans min-h-screen min-w-screen">
-    <div class="flex w-screen h-screen">
+    <div class="flex flex-col lg:flex-row w-screen h-screen">
         <!-- Coluna Esquerda: Splash -->
-        <div class="w-1/2 h-full flex items-center justify-center p-6">
+        <div class="hidden lg:flex lg:w-1/2 h-full items-center justify-center p-6">
             <img src="{{ asset('images/login-page.jpg') }}" alt="UniOrthocrin" class="object-cover w-full h-full rounded-lg" />
         </div>
         <!-- Coluna Direita: Formulário -->
-        <div class="w-1/2 h-full flex items-center justify-center">
-            <div class="w-full max-w-md px-8">
+        <div class="w-full lg:w-1/2 h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-md px-4 sm:px-8">
                 <!-- Logo -->
                 <div class="mb-8 flex flex-col items-center">
                     <img src="{{ asset('images/logo.png') }}" alt="UniOrthocrin Logo" class="mb-2 w-32 h-16 object-contain" />

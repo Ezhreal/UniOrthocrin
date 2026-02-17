@@ -72,7 +72,7 @@ class TrainingController extends Controller
 
         if ($request->hasFile('thumbnail')) {
             $thumb = $request->file('thumbnail');
-            $thumbPath = $thumb->store('private/training/' . $training->id . '/thumb', 'private');
+            $thumbPath = $thumb->store('private/trainings/' . $training->id . '/thumb', 'private');
             $training->thumbnail_path = $thumbPath;
             $training->save();
         }
@@ -81,7 +81,7 @@ class TrainingController extends Controller
         // Handle video uploads
         if ($request->hasFile('videos')) {
             foreach ($request->file('videos') as $videoFile) {
-                $path = $videoFile->store('private/training/' . $training->id, 'private');
+                $path = $videoFile->store('private/trainings/' . $training->id, 'private');
                 
                 // Criar o arquivo na tabela files
                 $fileRecord = File::create([
@@ -114,7 +114,7 @@ class TrainingController extends Controller
         // Handle PDF uploads
         if ($request->hasFile('pdfs')) {
             foreach ($request->file('pdfs') as $pdfFile) {
-                $path = $pdfFile->store('private/training/' . $training->id, 'private');
+                $path = $pdfFile->store('private/trainings/' . $training->id, 'private');
                 
                 // Criar o arquivo na tabela files
                 $fileRecord = File::create([
@@ -215,7 +215,7 @@ class TrainingController extends Controller
 
         if ($request->hasFile('thumbnail')) {
             $thumb = $request->file('thumbnail');
-            $thumbPath = $thumb->store('private/training/' . $training->id . '/thumb', 'private');
+            $thumbPath = $thumb->store('private/trainings/' . $training->id . '/thumb', 'private');
             $training->thumbnail_path = $thumbPath;
             $training->save();
             
@@ -231,20 +231,30 @@ class TrainingController extends Controller
         // Handle new video uploads
         if ($request->hasFile('videos')) {
             foreach ($request->file('videos') as $videoFile) {
-                $path = $videoFile->store('private/training/' . $training->id, 'private');
-                $training->videos()->create([
+                $path = $videoFile->store('private/trainings/' . $training->id, 'private');
+                
+                // Criar o arquivo na tabela files
+                $fileRecord = File::create([
                     'name' => $videoFile->getClientOriginalName(),
                     'path' => $path,
-                    'disk' => 'private',
+                    'type' => 'video',
+                    'extension' => $this->getFileExtension($videoFile->getClientOriginalName()),
                     'mime_type' => $videoFile->getMimeType(),
                     'size' => $videoFile->getSize(),
+                    'order' => 0,
+                ]);
+                
+                // Associar o arquivo ao training
+                $training->files()->attach($fileRecord->id, [
                     'file_type' => 'video',
+                    'sort_order' => 0,
+                    'is_primary' => true
                 ]);
                 
                 // OneDrive (assíncrono)
                 if ($publishOneDrive && $path) {
                     $localPath = storage_path('app/' . $path);
-                    $remotePath = 'Training/' . $training->id . '/video-' . $training->id . '.' . $this->getFileExtension($videoFile->getClientOriginalName());
+                    $remotePath = 'Training/' . $training->id . '/video-' . $fileRecord->id . '.' . $this->getFileExtension($videoFile->getClientOriginalName());
                     $sync = $this->createOneDriveSync($training, $path, $remotePath);
                     \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                 }
@@ -254,20 +264,30 @@ class TrainingController extends Controller
         // Handle new PDF uploads
         if ($request->hasFile('pdfs')) {
             foreach ($request->file('pdfs') as $pdfFile) {
-                $path = $pdfFile->store('private/training/' . $training->id, 'private');
-                $training->files()->create([
+                $path = $pdfFile->store('private/trainings/' . $training->id, 'private');
+                
+                // Criar o arquivo na tabela files
+                $fileRecord = File::create([
                     'name' => $pdfFile->getClientOriginalName(),
                     'path' => $path,
-                    'disk' => 'private',
+                    'type' => 'pdf',
+                    'extension' => $this->getFileExtension($pdfFile->getClientOriginalName()),
                     'mime_type' => $pdfFile->getMimeType(),
                     'size' => $pdfFile->getSize(),
+                    'order' => 0,
+                ]);
+                
+                // Associar o arquivo ao training
+                $training->files()->attach($fileRecord->id, [
                     'file_type' => 'pdf',
+                    'sort_order' => 0,
+                    'is_primary' => true
                 ]);
                 
                 // OneDrive (assíncrono)
                 if ($publishOneDrive && $path) {
                     $localPath = storage_path('app/' . $path);
-                    $remotePath = 'Training/' . $training->id . '/pdf-' . $training->id . '.' . $this->getFileExtension($pdfFile->getClientOriginalName());
+                    $remotePath = 'Training/' . $training->id . '/pdf-' . $fileRecord->id . '.' . $this->getFileExtension($pdfFile->getClientOriginalName());
                     $sync = $this->createOneDriveSync($training, $path, $remotePath);
                     \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                 }
@@ -344,7 +364,7 @@ class TrainingController extends Controller
         // Handle video uploads
         if ($request->hasFile('videos')) {
             foreach ($request->file('videos') as $videoFile) {
-                $path = $videoFile->store('private/training/' . $training->id, 'private');
+                $path = $videoFile->store('private/trainings/' . $training->id, 'private');
                 
                 // Criar o arquivo
                 $fileRecord = File::create([
@@ -371,7 +391,7 @@ class TrainingController extends Controller
         // Handle PDF uploads
         if ($request->hasFile('pdfs')) {
             foreach ($request->file('pdfs') as $pdfFile) {
-                $path = $pdfFile->store('private/training/' . $training->id, 'private');
+                $path = $pdfFile->store('private/trainings/' . $training->id, 'private');
                 
                 // Criar o arquivo
                 $fileRecord = File::create([
@@ -493,7 +513,7 @@ class TrainingController extends Controller
                 if (!$existingSync) {
                     // Criar novo sync
                     $localPath = storage_path('app/' . $file->path);
-                    $remotePath = 'Training/' . $training->id . '/' . $file->name;
+                    $remotePath = 'Training/' . $training->id . '/' . $file->type . '-' . $file->id . '.' . $file->extension;
                     
                     $sync = $this->createOneDriveSync($training, $file->path, $remotePath);
                     \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);

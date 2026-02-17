@@ -7,31 +7,12 @@
         $showMarketingForUser = $user && in_array($user->user_type_id, [1, 2]); // Admin e Franqueado
     @endphp
     @if($showMarketingForUser && isset($featuredCampaigns) && $featuredCampaigns->count() > 0)
-        @if($featuredCampaigns->count() === 1)
-            <div class="w-full h-56 md:h-80 flex items-center justify-center mb-8">
-                <img src="/{{ $featuredCampaigns->first()->banner_path }}" alt="Banner Campanha" class="w-full h-full object-cover" />
-            </div>
-        @else
-            <div class="w-full mb-8">
-                <div class="relative overflow-hidden">
-                    <button type="button" id="carousel-prev" class="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/70 hover:bg-white text-gray-800 rounded-full h-10 w-10 items-center justify-center shadow">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </button>
-                    <button type="button" id="carousel-next" class="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/70 hover:bg-white text-gray-800 rounded-full h-10 w-10 items-center justify-center shadow">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                    <div id="banner-track" class="flex gap-4 overflow-x-auto snap-x scroll-smooth">
-                        @foreach($featuredCampaigns as $camp)
-                            <a href="{{ route('marketing.detail', $camp->id) }}" class="block flex-shrink-0 w-full snap-start">
-                                <div class="w-full h-56 md:h-80 bg-gray-100">
-                                    <img src="/{{ $camp->banner_path }}" alt="{{ $camp->name }}" class="w-full h-full object-cover" />
-                                </div>
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        @endif
+        @php $camp = $featuredCampaigns->first(); @endphp
+        <div class="w-full h-56 md:h-80 flex items-center justify-center mb-8">
+            <a href="{{ route('marketing.detail', $camp->id) }}" class="block w-full h-full">
+                <img src="/{{ $camp->banner_path }}" alt="{{ $camp->name }}" class="w-full h-full object-cover" />
+            </a>
+        </div>
     @elseif($showMarketingForUser)
         <!-- Placeholder quando não há campanhas featured -->
         <div class="w-full h-56 md:h-80 flex items-center justify-center mb-8 bg-[#910039]">

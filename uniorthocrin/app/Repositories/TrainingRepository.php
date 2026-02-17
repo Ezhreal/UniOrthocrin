@@ -93,7 +93,7 @@ class TrainingRepository implements RepositoryInterface
     public function getTrainingVideos($training)
     {
         // Buscar vídeos relacionados ao treinamento
-        $videos = $training->files()->where('type', 'video')->get();
+        $videos = $training->videos()->get();
         
         return $videos->map(function($file) use ($training) {
             return [
@@ -109,7 +109,7 @@ class TrainingRepository implements RepositoryInterface
     public function getTrainingPdfs($training)
     {
         // Buscar PDFs relacionados ao treinamento
-        $pdfs = $training->files()->where('type', 'pdf')->get();
+        $pdfs = $training->pdfs()->get();
         
         return $pdfs->map(function($file) use ($training) {
             return [

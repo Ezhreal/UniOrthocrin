@@ -122,17 +122,17 @@
                             <div x-show="(sidebarOpen || mobileMenuOpen) && productsOpen" class="ml-6 space-y-1 rounded-lg p-2" style="background-color: #510020;">
                                 <a href="{{ route('admin.products.index') }}" 
                                    @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
-                                   class="block px-3 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 rounded transition-colors duration-200">
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
                                     Ver todos
                                 </a>
                                 <a href="{{ route('admin.product-categories.index') }}" 
                                    @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
-                                   class="block px-3 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 rounded transition-colors duration-200">
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
                                     Categorias
                                 </a>
                                 <a href="{{ route('admin.product-series.index') }}" 
                                    @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
-                                   class="block px-3 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 rounded transition-colors duration-200">
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
                                     Séries
                                 </a>
                             </div>
@@ -152,12 +152,12 @@
                             <div x-show="(sidebarOpen || mobileMenuOpen) && newsOpen" class="ml-6 space-y-1 rounded-lg p-2" style="background-color: #510020;">
                                 <a href="{{ route('admin.news.index') }}" 
                                    @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
-                                   class="block px-3 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 rounded transition-colors duration-200">
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
                                     Ver todas
                                 </a>
                                 <a href="{{ route('admin.news-categories.index') }}" 
                                    @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
-                                   class="block px-3 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 rounded transition-colors duration-200">
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
                                     Categorias
                                 </a>
                             </div>
@@ -177,12 +177,12 @@
                             <div x-show="(sidebarOpen || mobileMenuOpen) && libraryOpen" class="ml-6 space-y-1 rounded-lg p-2" style="background-color: #510020;">
                                 <a href="{{ route('admin.library.index') }}" 
                                    @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
-                                   class="block px-3 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 rounded transition-colors duration-200">
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
                                     Ver todas
                                 </a>
                                 <a href="{{ route('admin.library-categories.index') }}" 
                                    @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
-                                   class="block px-3 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 rounded transition-colors duration-200">
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
                                     Categorias
                                 </a>
                             </div>
@@ -202,12 +202,12 @@
                             <div x-show="(sidebarOpen || mobileMenuOpen) && trainingOpen" class="ml-6 space-y-1 rounded-lg p-2" style="background-color: #510020;">
                                 <a href="{{ route('admin.training.index') }}" 
                                    @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
-                                   class="block px-3 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 rounded transition-colors duration-200">
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
                                     Ver todos
                                 </a>
                                 <a href="{{ route('admin.training-categories.index') }}" 
                                    @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
-                                   class="block px-3 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 rounded transition-colors duration-200">
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
                                     Categorias
                                 </a>
                             </div>

@@ -1,6 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
+@if(!isset($campaign) || !$campaign)
+    <div class="bg-[#F9F9F9] min-h-screen flex items-center justify-center">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-gray-800 mb-4">Campanha não encontrada</h1>
+            <p class="text-gray-600 mb-6">A campanha solicitada não existe ou você não tem permissão para acessá-la.</p>
+            <a href="{{ route('marketing.list') }}" class="inline-flex items-center px-4 py-2 bg-[#910039] text-white rounded-lg hover:bg-[#7a0030] transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Voltar para Marketing
+            </a>
+        </div>
+    </div>
+@else
 <div class="bg-[#F9F9F9] min-h-screen">
     <!-- Banner com breadcrumb e título -->
     <div class="bg-[#910039] w-full py-12">
@@ -9,10 +21,10 @@
                 <div class="text-sm mb-2">
                     <a href="{{ route('home') }}" class="hover:underline">Home</a> > 
                     <a href="{{ route('marketing.list') }}" class="hover:underline">Marketing</a> > 
-                    {{ $campaign->name }}
+                    {{ $campaign->name ?? 'Campanha' }}
                 </div>
-                <h1 class="text-3xl font-bold">{{ $campaign->name }}</h1>
-                @if($campaign->description)
+                <h1 class="text-3xl font-bold">{{ $campaign->name ?? 'Campanha' }}</h1>
+                @if(isset($campaign->description) && $campaign->description)
                     <p class="text-lg mt-2">{{ $campaign->description }}</p>
                 @endif
             </div>
@@ -31,11 +43,11 @@
                     <div>
                         <span class="text-gray-600 text-sm">Vigência:</span>
                         <p class="text-gray-800">
-                            @if($campaign->start_date && $campaign->end_date)
+                            @if(isset($campaign->start_date) && $campaign->start_date && isset($campaign->end_date) && $campaign->end_date)
                                 {{ $campaign->start_date->format('d/m/Y') }} a {{ $campaign->end_date->format('d/m/Y') }}
-                            @elseif($campaign->start_date)
+                            @elseif(isset($campaign->start_date) && $campaign->start_date)
                                 A partir de {{ $campaign->start_date->format('d/m/Y') }}
-                            @elseif($campaign->end_date)
+                            @elseif(isset($campaign->end_date) && $campaign->end_date)
                                 Até {{ $campaign->end_date->format('d/m/Y') }}
                             @else
                                 Vigência indefinida
@@ -45,8 +57,8 @@
                     
                     <div>
                         <span class="text-gray-600 text-sm">Status:</span>
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $campaign->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            {{ $campaign->status === 'active' ? 'Ativa' : 'Inativa' }}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ (isset($campaign->status) && $campaign->status === 'active') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                            {{ (isset($campaign->status) && $campaign->status === 'active') ? 'Ativa' : 'Inativa' }}
                         </span>
                     </div>
                     
@@ -54,29 +66,45 @@
                         $totalSize = 0;
                         $totalFiles = 0;
                         
-                        // Calcular tamanho total dos arquivos
-                        foreach($campaign->posts()->with('files')->get() as $post) {
-                            foreach($post->files as $file) {
-                                $totalSize += $file->size;
-                                $totalFiles++;
+                        // Calcular tamanho total dos arquivos com verificações de segurança
+                        if (method_exists($campaign, 'posts')) {
+                            foreach($campaign->posts()->with('files')->get() as $post) {
+                                if ($post->files) {
+                                    foreach($post->files as $file) {
+                                        $totalSize += $file->size ?? 0;
+                                        $totalFiles++;
+                                    }
+                                }
                             }
                         }
-                        foreach($campaign->folders()->with('files')->get() as $folder) {
-                            foreach($folder->files as $file) {
-                                $totalSize += $file->size;
-                                $totalFiles++;
+                        if (method_exists($campaign, 'folders')) {
+                            foreach($campaign->folders()->with('files')->get() as $folder) {
+                                if ($folder->files) {
+                                    foreach($folder->files as $file) {
+                                        $totalSize += $file->size ?? 0;
+                                        $totalFiles++;
+                                    }
+                                }
                             }
                         }
-                        foreach($campaign->videos()->with('files')->get() as $video) {
-                            foreach($video->files as $file) {
-                                $totalSize += $file->size;
-                                $totalFiles++;
+                        if (method_exists($campaign, 'videos')) {
+                            foreach($campaign->videos()->with('files')->get() as $video) {
+                                if ($video->files) {
+                                    foreach($video->files as $file) {
+                                        $totalSize += $file->size ?? 0;
+                                        $totalFiles++;
+                                    }
+                                }
                             }
                         }
-                        foreach($campaign->miscellaneous()->with('files')->get() as $misc) {
-                            foreach($misc->files as $file) {
-                                $totalSize += $file->size;
-                                $totalFiles++;
+                        if (method_exists($campaign, 'miscellaneous')) {
+                            foreach($campaign->miscellaneous()->with('files')->get() as $misc) {
+                                if ($misc->files) {
+                                    foreach($misc->files as $file) {
+                                        $totalSize += $file->size ?? 0;
+                                        $totalFiles++;
+                                    }
+                                }
                             }
                         }
                         
@@ -108,7 +136,7 @@
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <h2 class="text-[#910039] text-xl font-bold mb-4">Folhetos</h2>
                 
-                @if($campaign->folders()->active()->count() > 0)
+                @if(method_exists($campaign, 'folders') && $campaign->folders()->active()->count() > 0)
                 <div class="space-y-3 mb-4">
                     @foreach($campaign->folders()->active()->with('files')->get() as $folder)
                     <div class="flex items-center justify-between p-3 border-t border-gray-200 {{ $loop->last ? 'border-b' : '' }}">
@@ -160,7 +188,7 @@
         </div>
 
         <!-- Posts - Galeria de Imagens com Tabs -->
-        @if($campaign->posts()->active()->count() > 0)
+        @if(method_exists($campaign, 'posts') && $campaign->posts()->active()->count() > 0)
         <div class="mb-12 bg-white p-8 rounded-lg shadow-sm">
             <h2 class="text-[#910039] text-2xl font-bold mb-8">Posts - Galeria de Imagens</h2>
             
@@ -281,7 +309,7 @@
         @endif
 
         <!-- Vídeos com Tabs -->
-        @if($campaign->videos()->active()->count() > 0)
+        @if(method_exists($campaign, 'videos') && $campaign->videos()->active()->count() > 0)
         <div class="mb-12 bg-white p-8 rounded-lg shadow-sm">
             <h2 class="text-[#910039] text-2xl font-bold mb-8">Vídeos</h2>
             
@@ -412,7 +440,7 @@
         </div>
         @endif
 
-        @if($campaign->miscellaneous()->active()->count() > 0)
+        @if(method_exists($campaign, 'miscellaneous') && $campaign->miscellaneous()->active()->count() > 0)
         <div class="mb-12 bg-white p-8 rounded-lg shadow-sm">
         <div class="space-y-3 mb-4">
                     @foreach($campaign->miscellaneous()->active()->with('files')->get() as $item)
@@ -481,18 +509,26 @@
 <!-- Dados para o JavaScript -->
 <script>
 // Preparar dados para o componente MarketingDetail
-const campaignData = {
-    postsByType: @json($postsByType),
-    videosByType: @json($videosByType)
+var campaignData = {
+    postsByType: {!! json_encode(isset($postsByType) ? $postsByType : []) !!},
+    videosByType: {!! json_encode(isset($videosByType) ? $videosByType : []) !!}
 };
 
 // Inicializar o componente quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('MarketingDetail: Dados da campanha:', campaignData);
+    
     if (window.MarketingDetail) {
-        new window.MarketingDetail(campaignData);
+        try {
+            new window.MarketingDetail(campaignData);
+            console.log('MarketingDetail: Componente inicializado com sucesso');
+        } catch (error) {
+            console.error('MarketingDetail: Erro ao inicializar componente:', error);
+        }
     } else {
-        console.error('MarketingDetail component not found');
+        console.error('MarketingDetail: Componente não encontrado');
     }
 });
 </script>
+@endif
 @endsection 
