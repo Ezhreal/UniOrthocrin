@@ -93,34 +93,114 @@
         return false;
     }
 
-    // Marcar notificação como lida (front) — botão fora do Livewire para evitar problema de clique
+    // Notificações: marcar como lida e remover (event delegation para funcionar com Livewire)
+    function getCsrf() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    }
+    var notificationsUnreadUrl = '{{ url()->route("notifications.unread-count") }}';
+    function refreshNotifications() {
+        if (typeof window.Livewire !== 'undefined') {
+            window.Livewire.dispatch('notifications-updated');
+        }
+        fetch(notificationsUnreadUrl, { method: 'GET', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var badge = document.querySelector('[data-notification-badge]');
+                if (!badge) return;
+                var n = (data && data.data && data.data.unread_count !== undefined) ? data.data.unread_count : 0;
+                badge.textContent = n > 99 ? '99+' : n;
+                if (n > 0) {
+                    badge.classList.remove('hidden');
+                    badge.style.display = '';
+                } else {
+                    badge.classList.add('hidden');
+                    badge.style.display = 'none';
+                }
+            })
+            .catch(function() {});
+    }
+    // Fase de CAPTURA (true) para rodar ANTES do Alpine/Livewire e garantir que Marcar como Lida / Excluir funcionem
     document.addEventListener('click', async function (e) {
-        const btn = e.target.closest('.notification-mark-read-btn');
-        if (!btn || btn.disabled) return;
-        const id = btn.getAttribute('data-notification-id');
-        const url = btn.getAttribute('data-mark-read-url');
-        if (!id || !url) return;
-        e.preventDefault();
-        btn.disabled = true;
-        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrf || '',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ notification_id: parseInt(id, 10) })
-            });
-            const data = await res.json();
-            if (data && data.success && typeof Livewire !== 'undefined') {
-                Livewire.dispatch('notifications-updated');
+        const verLink = e.target.closest('.notification-ver-btn');
+        const markReadBtn = e.target.closest('.notification-mark-read-btn');
+        const deleteBtn = e.target.closest('.notification-delete-btn');
+        if (verLink && verLink.href) {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = verLink.getAttribute('data-notification-id');
+            const url = verLink.getAttribute('data-mark-read-url');
+            const href = verLink.getAttribute('data-href');
+            if (id && url && href) {
+                try {
+                    await fetch(url, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': getCsrf(),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ notification_id: parseInt(id, 10) })
+                    });
+                } catch (err) {}
+                window.location.href = href;
+            } else {
+                if (href) window.location.href = href;
             }
-        } catch (err) {}
-        btn.disabled = false;
-    });
+            return;
+        }
+        if (markReadBtn && !markReadBtn.disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = markReadBtn.getAttribute('data-notification-id');
+            const url = markReadBtn.getAttribute('data-mark-read-url');
+            if (!id || !url) return;
+            markReadBtn.disabled = true;
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrf(),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ notification_id: parseInt(id, 10) })
+                });
+                const data = await res.json();
+                if (data && data.success) refreshNotifications();
+            } catch (err) {}
+            markReadBtn.disabled = false;
+            return;
+        }
+        if (deleteBtn && !deleteBtn.disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!confirm('Remover esta notificação?')) return;
+            const id = deleteBtn.getAttribute('data-notification-id');
+            const url = deleteBtn.getAttribute('data-delete-url');
+            if (!id || !url) return;
+            deleteBtn.disabled = true;
+            try {
+                const deleteUrl = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'notification_id=' + encodeURIComponent(id);
+                const res = await fetch(deleteUrl, {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrf(),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await res.json();
+                if (data && data.success) refreshNotifications();
+            } catch (err) {}
+            deleteBtn.disabled = false;
+            return;
+        }
+    }, true);
     </script>
 </body>
 </html> 

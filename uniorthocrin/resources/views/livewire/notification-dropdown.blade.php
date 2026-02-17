@@ -10,12 +10,8 @@
         <!-- Ícone de Notificação -->
         <i class="fas fa-bell text-xl"></i>
         
-        <!-- Contador de Notificações Não Lidas -->
-        @if($unreadCount > 0)
-            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
-                {{ $unreadCount > 99 ? '99+' : $unreadCount }}
-            </span>
-        @endif
+        <!-- Contador de Notificações Não Lidas (data-notification-badge para atualização via JS) -->
+        <span data-notification-badge class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold {{ $unreadCount > 0 ? '' : 'hidden' }}" style="{{ $unreadCount > 0 ? '' : 'display: none;' }}">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
         
         <!-- Indicador de Carregamento -->
         <div wire:loading class="absolute inset-0 flex items-center justify-center">
@@ -106,30 +102,30 @@
                                         @endif
                                     </div>
                                     
-                                    <!-- Ações da Notificação (link direto + formulário para não depender só do Livewire) -->
-                                    <div class="flex items-center space-x-2 mt-3" @click.stop>
+                                    <!-- Ações: Ver | Marcar como Lida | Excluir (sem @click.stop para o listener do layout receber o clique) -->
+                                    <div class="flex items-center gap-2 flex-nowrap mt-4 pt-3 border-t border-gray-100">
                                         @if($relatedUrl)
                                             <a href="{{ $relatedUrl }}"
-                                               class="text-xs text-[#910039] hover:text-[#7a0030] font-medium transition-colors duration-200">
-                                                Ver conteúdo
+                                               class="notification-ver-btn inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-[#910039] hover:text-[#7a0030] hover:bg-[#910039]/5 transition-colors"
+                                               data-notification-id="{{ $notification['id'] }}"
+                                               data-mark-read-url="{{ route('notifications.mark-read') }}"
+                                               data-href="{{ $relatedUrl }}">
+                                                Ver
                                             </a>
                                         @endif
-                                        
                                         @if(!$notification['is_read'])
                                             <button type="button"
-                                                    class="notification-mark-read-btn text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                                                    class="notification-mark-read-btn inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-colors"
                                                     data-notification-id="{{ $notification['id'] }}"
                                                     data-mark-read-url="{{ route('notifications.mark-read') }}">
-                                                Marcar como lida
+                                                Marcar como Lida
                                             </button>
                                         @endif
-                                        
                                         <button type="button"
-                                                wire:click="deleteNotification({{ $notification['id'] }})"
-                                                wire:loading.attr="disabled"
-                                                wire:loading.class="opacity-50 cursor-not-allowed"
-                                                class="text-xs text-red-500 hover:text-red-700 transition-colors duration-200">
-                                            Remover
+                                                class="notification-delete-btn inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
+                                                data-notification-id="{{ $notification['id'] }}"
+                                                data-delete-url="{{ route('notifications.delete') }}">
+                                            Excluir
                                         </button>
                                     </div>
                                 </div>
