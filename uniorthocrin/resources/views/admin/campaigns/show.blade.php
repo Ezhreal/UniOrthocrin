@@ -142,10 +142,10 @@
                 <div class="space-modern-sm">
                     @if($campaign->folders && $campaign->folders->count() > 0)
                     <div class="space-y-6">
-                        <!-- MG/SP -->
+                        <!-- MG -->
                         @if($campaign->folders->where('state', 'MG/SP')->count() > 0)
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Folhetos MG/SP ({{ $campaign->folders->where('state', 'MG/SP')->count() }})</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Folhetos MG ({{ $campaign->folders->where('state', 'MG/SP')->count() }})</h4>
                             <div class="space-y-3">
                                 @foreach($campaign->folders->where('state', 'MG/SP') as $folder)
                                 <div class="flex items-center space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
@@ -163,10 +163,10 @@
                         </div>
                         @endif
                         
-                        <!-- DF/ES -->
+                        <!-- Outros Estados -->
                         @if($campaign->folders->where('state', 'DF/ES')->count() > 0)
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Folhetos DF/ES ({{ $campaign->folders->where('state', 'DF/ES')->count() }})</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Folhetos Outros Estados ({{ $campaign->folders->where('state', 'DF/ES')->count() }})</h4>
                             <div class="space-y-3">
                                 @foreach($campaign->folders->where('state', 'DF/ES') as $folder)
                                 <div class="flex items-center space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
@@ -230,10 +230,10 @@
                         </div>
                         @endif
                         
-                        <!-- Stories MG/SP -->
+                        <!-- Stories MG -->
                         @if($campaign->posts->where('type', 'stories_mg_sp')->count() > 0)
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Stories MG/SP ({{ $campaign->posts->where('type', 'stories_mg_sp')->count() }})</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Stories MG ({{ $campaign->posts->where('type', 'stories_mg_sp')->count() }})</h4>
                             <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                                 @foreach($campaign->posts->where('type', 'stories_mg_sp') as $post)
                                 <div class="relative group">
@@ -250,10 +250,10 @@
                         </div>
                         @endif
                         
-                        <!-- Stories DF/ES -->
+                        <!-- Stories Outros Estados -->
                         @if($campaign->posts->where('type', 'stories_df_es')->count() > 0)
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Stories DF/ES ({{ $campaign->posts->where('type', 'stories_df_es')->count() }})</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Stories Outros Estados ({{ $campaign->posts->where('type', 'stories_df_es')->count() }})</h4>
                             <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                                 @foreach($campaign->posts->where('type', 'stories_df_es') as $post)
                                 <div class="relative group">
@@ -359,7 +359,7 @@
                         </div>
                         <div>
                             <h3 class="modern-card-title">Diversos</h3>
-                            <p class="modern-card-subtitle">Spot, Tag, Sticker e Script</p>
+                            <p class="modern-card-subtitle">Spot, Tag e Materiais Internos</p>
                         </div>
                     </div>
                 </div>
@@ -419,36 +419,10 @@
                         </div>
                         @endif
                         
-                        <!-- Sticker -->
-                        @if($campaign->miscellaneous->where('type', 'sticker')->count() > 0)
-                        <div>
-                            <h4 class="text-modern-body font-medium mb-4">Sticker ({{ $campaign->miscellaneous->where('type', 'sticker')->count() }})</h4>
-                            <div class="space-y-3">
-                                @foreach($campaign->miscellaneous->where('type', 'sticker') as $misc)
-                                <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="flex-shrink-0">
-                                            <div class="bg-gray-100 rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-sticky-note text-gray-400 text-lg"></i>
-                                            </div>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p>
-                                        </div>
-                                    </div>
-                                    <span class="text-gray-400">
-                                        <i class="fas fa-eye text-sm"></i>
-                                    </span>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
-                        
-                        <!-- Script -->
+                        <!-- Materiais Internos -->
                         @if($campaign->miscellaneous->where('type', 'script')->count() > 0)
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Script ({{ $campaign->miscellaneous->where('type', 'script')->count() }})</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Materiais Internos ({{ $campaign->miscellaneous->where('type', 'script')->count() }})</h4>
                             <div class="space-y-3">
                                 @foreach($campaign->miscellaneous->where('type', 'script') as $misc)
                                 <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">

@@ -150,9 +150,9 @@
                     </div>
                     
                     <div class="space-modern-sm">
-                        <!-- MG/SP -->
+                        <!-- MG -->
                         <div class="mb-6">
-                            <h4 class="text-modern-body font-medium mb-4">Folhetos MG/SP</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Folhetos MG</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -162,15 +162,15 @@
                                            class="hidden" accept=".pdf,.jpg,.jpeg,.png">
                                     <label for="folder_mg_sp" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Folhetos MG/SP
+                                        Selecionar Folhetos MG
                                     </label>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- DF/ES -->
+                        <!-- Outros Estados -->
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Folhetos DF/ES</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Folhetos Outros Estados</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -180,7 +180,7 @@
                                            class="hidden" accept=".pdf,.jpg,.jpeg,.png">
                                     <label for="folder_df_es" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Folhetos DF/ES
+                                        Selecionar Folhetos Outros Estados
                                     </label>
                                 </div>
                             </div>
@@ -221,9 +221,9 @@
                             </div>
                         </div>
                         
-                        <!-- Stories MG/SP -->
+                        <!-- Stories MG -->
                         <div class="mb-6">
-                            <h4 class="text-modern-body font-medium mb-4">Stories MG/SP</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Stories MG</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -233,15 +233,15 @@
                                            class="hidden" accept=".jpg,.jpeg,.png">
                                     <label for="posts_stories_mg_sp" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Stories MG/SP
+                                        Selecionar Stories MG
                                     </label>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Stories DF/ES -->
+                        <!-- Stories Outros Estados -->
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Stories DF/ES</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Stories Outros Estados</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -251,7 +251,7 @@
                                            class="hidden" accept=".jpg,.jpeg,.png">
                                     <label for="posts_stories_df_es" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Stories DF/ES
+                                        Selecionar Stories Outros Estados
                                     </label>
                                 </div>
                             </div>
@@ -321,7 +321,7 @@
                             </div>
                             <div>
                                 <h3 class="modern-card-title">Diversos</h3>
-                                <p class="modern-card-subtitle">Spot, Tag, Sticker e Script</p>
+                                <p class="modern-card-subtitle">Spot, Tag e Materiais Internos</p>
                             </div>
                         </div>
                     </div>
@@ -363,27 +363,9 @@
                             </div>
                         </div>
                         
-                        <!-- Adesivo -->
-                        <div class="mb-6">
-                            <h4 class="text-modern-body font-medium mb-4">Adesivo</h4>
-                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
-                                <div class="text-center">
-                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
-                                    <p class="text-modern-body font-medium mb-2">Arraste e solte o arquivo aqui</p>
-                                    <p class="text-modern-caption mb-4">ou clique para selecionar</p>
-                                    <input type="file" id="misc_sticker" name="misc_sticker[]" multiple
-                                           class="hidden" accept=".pdf,.jpg,.jpeg,.png">
-                                    <label for="misc_sticker" class="btn-modern-secondary cursor-pointer">
-                                        <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Adesivo
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Roteiro -->
+                        <!-- Materiais Internos -->
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Roteiro</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Materiais Internos</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -393,7 +375,7 @@
                                            class="hidden" accept=".pdf,.doc,.docx,.txt">
                                     <label for="misc_script" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Roteiro
+                                        Selecionar Materiais Internos
                                     </label>
                                 </div>
                             </div>
@@ -510,7 +492,6 @@ window.selectedFiles = {
     videos_campaigns: [],
     misc_spot: [],
     misc_tag: [],
-    misc_sticker: [],
     misc_script: []
 };
 
@@ -539,7 +520,6 @@ function initializeFileUploads() {
     // Upload de diversos
     initializeFileUpload('misc_spot', 'misc_spot_preview');
     initializeFileUpload('misc_tag', 'misc_tag_preview');
-    initializeFileUpload('misc_sticker', 'misc_sticker_preview');
     initializeFileUpload('misc_script', 'misc_script_preview');
 }
 
@@ -759,7 +739,6 @@ function findInputIdByPreview(previewContainer) {
         'videos_campaigns_preview': 'videos_campaigns',
         'misc_spot_preview': 'misc_spot',
         'misc_tag_preview': 'misc_tag',
-        'misc_sticker_preview': 'misc_sticker',
         'misc_script_preview': 'misc_script'
     };
     

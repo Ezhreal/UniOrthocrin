@@ -159,9 +159,9 @@
                     </div>
                     
                     <div class="space-modern-sm">
-                        <!-- MG/SP -->
+                        <!-- MG -->
                         <div class="mb-6">
-                            <h4 class="text-modern-body font-medium mb-4">Folhetos MG/SP</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Folhetos MG</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -171,15 +171,15 @@
                                            class="hidden" accept=".pdf,.jpg,.jpeg,.png">
                                     <label for="folder_mg_sp" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Folhetos MG/SP
+                                        Selecionar Folhetos MG
                                     </label>
                                 </div>
                             </div>
                             
-                            <!-- Lista dos Folhetos Existentes MG/SP -->
+                            <!-- Lista dos Folhetos Existentes MG -->
                             @if($campaign->folders && $campaign->folders->where('state', 'MG/SP')->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">Folhetos Existentes MG/SP ({{ $campaign->folders->where('state', 'MG/SP')->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">Folhetos Existentes MG ({{ $campaign->folders->where('state', 'MG/SP')->count() }})</h5>
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->folders->where('state', 'MG/SP') as $folder)
@@ -204,9 +204,9 @@
                             @endif
                         </div>
                         
-                        <!-- DF/ES -->
+                        <!-- Outros Estados -->
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Folhetos DF/ES</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Folhetos Outros Estados</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -216,15 +216,15 @@
                                            class="hidden" accept=".pdf,.jpg,.jpeg,.png">
                                     <label for="folder_df_es" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Folhetos DF/ES
+                                        Selecionar Folhetos Outros Estados
                                     </label>
                                 </div>
                             </div>
                             
-                            <!-- Lista dos Folhetos Existentes DF/ES -->
+                            <!-- Lista dos Folhetos Existentes Outros Estados -->
                             @if($campaign->folders && $campaign->folders->where('state', 'DF/ES')->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">Folhetos Existentes DF/ES ({{ $campaign->folders->where('state', 'DF/ES')->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">Folhetos Existentes Outros Estados ({{ $campaign->folders->where('state', 'DF/ES')->count() }})</h5>
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->folders->where('state', 'DF/ES') as $folder)
@@ -308,9 +308,9 @@
                             @endif
                         </div>
                         
-                        <!-- Stories MG/SP -->
+                        <!-- Stories MG -->
                         <div class="mb-6">
-                            <h4 class="text-modern-body font-medium mb-4">Stories MG/SP</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Stories MG</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -320,7 +320,7 @@
                                            class="hidden" accept=".jpg,.jpeg,.png">
                                     <label for="posts_stories_mg_sp" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Stories MG/SP
+                                        Selecionar Stories MG
                                     </label>
                                 </div>
                             </div>
@@ -328,7 +328,7 @@
                             <!-- Miniaturas dos Stories MG/SP Existentes -->
                             @if($campaign->posts && $campaign->posts->where('type', 'stories_mg_sp')->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">Stories MG/SP Existentes ({{ $campaign->posts->where('type', 'stories_mg_sp')->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">Stories MG Existentes ({{ $campaign->posts->where('type', 'stories_mg_sp')->count() }})</h5>
                                  <div class="flex gap-4 mb-8">
                                      @foreach($campaign->posts->where('type', 'stories_mg_sp') as $post)
                                      <div class="relative">
@@ -350,9 +350,9 @@
                             @endif
                         </div>
                         
-                        <!-- Stories DF/ES -->
+                        <!-- Stories Outros Estados -->
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Stories DF/ES</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Stories Outros Estados</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -362,7 +362,7 @@
                                            class="hidden" accept=".jpg,.jpeg,.png">
                                     <label for="posts_stories_df_es" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Stories DF/ES
+                                        Selecionar Stories Outros Estados
                                     </label>
                                 </div>
                             </div>
@@ -370,7 +370,7 @@
                             <!-- Miniaturas dos Stories DF/ES Existentes -->
                             @if($campaign->posts && $campaign->posts->where('type', 'stories_df_es')->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">Stories DF/ES Existentes ({{ $campaign->posts->where('type', 'stories_df_es')->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">Stories Outros Estados Existentes ({{ $campaign->posts->where('type', 'stories_df_es')->count() }})</h5>
                                  <div class="flex gap-4 mb-8">
                                      @foreach($campaign->posts->where('type', 'stories_df_es') as $post)
                                      <div class="relative">
@@ -510,7 +510,7 @@
                             </div>
                             <div>
                                 <h3 class="modern-card-title">Diversos</h3>
-                                <p class="modern-card-subtitle">Spot, Tag, Sticker e Script</p>
+                                <p class="modern-card-subtitle">Spot, Tag e Materiais Internos</p>
                             </div>
                         </div>
                     </div>
@@ -606,54 +606,9 @@
                             @endif
                         </div>
                         
-                        <!-- Adesivo -->
-                        <div class="mb-6">
-                            <h4 class="text-modern-body font-medium mb-4">Adesivo</h4>
-                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
-                                <div class="text-center">
-                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
-                                    <p class="text-modern-body font-medium mb-2">Arraste e solte o arquivo aqui</p>
-                                    <p class="text-modern-caption mb-4">ou clique para selecionar</p>
-                                    <input type="file" id="misc_sticker" name="misc_sticker[]" multiple
-                                           class="hidden" accept=".pdf,.jpg,.jpeg,.png">
-                                    <label for="misc_sticker" class="btn-modern-secondary cursor-pointer">
-                                        <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Adesivo
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- Lista dos Adesivos Existentes -->
-                            @if($campaign->miscellaneous && $campaign->miscellaneous->where('type', 'sticker')->count() > 0)
-                            <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">Adesivos Existentes ({{ $campaign->miscellaneous->where('type', 'sticker')->count() }})</h5>
-                                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                                    <div class="divide-y divide-gray-200">
-                                        @foreach($campaign->miscellaneous->where('type', 'sticker') as $misc)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
-                                            <div class="flex items-center space-x-3">
-                                                <div class="flex-shrink-0">
-                                                    <i class="fas fa-sticky-note text-gray-400 text-lg"></i>
-                                                </div>
-                                                <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p>
-                                                </div>
-                                            </div>
-                                            <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                                    onclick="deleteMiscellaneous({{ $misc->id }})">
-                                                <i class="fas fa-trash text-sm"></i>
-                                            </button>
-                                        </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-                        </div>
-                        
-                        <!-- Roteiro -->
+                        <!-- Materiais Internos -->
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Roteiro</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Materiais Internos</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -663,15 +618,15 @@
                                            class="hidden" accept=".pdf,.doc,.docx,.txt">
                                     <label for="misc_script" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Roteiro
+                                        Selecionar Materiais Internos
                                     </label>
                                 </div>
                             </div>
                             
-                            <!-- Lista dos Roteiros Existentes -->
+                            <!-- Lista dos Materiais Internos Existentes -->
                             @if($campaign->miscellaneous && $campaign->miscellaneous->where('type', 'script')->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">Roteiros Existentes ({{ $campaign->miscellaneous->where('type', 'script')->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">Materiais Internos Existentes ({{ $campaign->miscellaneous->where('type', 'script')->count() }})</h5>
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->miscellaneous->where('type', 'script') as $misc)
@@ -800,7 +755,6 @@ window.selectedFiles = {
     videos_campaigns: [],
     misc_spot: [],
     misc_tag: [],
-    misc_sticker: [],
     misc_script: []
 };
 
@@ -829,7 +783,6 @@ function initializeFileUploads() {
     // Upload de diversos
     initializeFileUpload('misc_spot', 'misc_spot_preview');
     initializeFileUpload('misc_tag', 'misc_tag_preview');
-    initializeFileUpload('misc_sticker', 'misc_sticker_preview');
     initializeFileUpload('misc_script', 'misc_script_preview');
 }
 
@@ -1039,7 +992,6 @@ function findInputIdByPreview(previewContainer) {
         'videos_campaigns_preview': 'videos_campaigns',
         'misc_spot_preview': 'misc_spot',
         'misc_tag_preview': 'misc_tag',
-        'misc_sticker_preview': 'misc_sticker',
         'misc_script_preview': 'misc_script'
     };
     

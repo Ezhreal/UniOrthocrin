@@ -27,7 +27,7 @@
         <div class="w-full h-56 md:h-80 flex items-center justify-center mb-8 bg-[#910039]">
             <div class="text-center text-white max-w-4xl px-4">
                 <i class="fas fa-heart text-6xl mb-6 opacity-75"></i>
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">Bem-vindo à Plataforma Orthocrin</h2>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Bem-vindos à Plataforma Orthocrin</h2>
                 <p class="text-lg md:text-xl opacity-90 mb-4">Sua jornada de sucesso começa aqui</p>
                 <p class="text-sm md:text-base opacity-75 leading-relaxed">
                     Acesse produtos exclusivos, treinamentos especializados e materiais de alta qualidade 
@@ -94,7 +94,7 @@
             <div class="flex-1 min-w-0 py-12">
                 <div class="text-[#747474] font-bold text-sm mb-1">Plataforma UniOrthocrin</div>
                 <div class="text-[#910039] font-bold text-3xl mb-4">Acervo Digital</div>
-                <p class="text-gray-700 mb-8 text-base">Bem-vindo à nossa plataforma de acervo digital! Aqui, franquias, representantes e lojistas Orthocrin encontram uma seleção completa de materiais de marketing e produtos, incluindo campanhas prontas para suas mídias digitais e e-commerce.</p>
+                <p class="text-gray-700 mb-8 text-base">Bem-vindos à nossa plataforma de acervo digital! Aqui, franquias, representantes e lojistas Orthocrin encontram uma seleção completa de materiais de marketing e produtos, incluindo campanhas prontas para suas mídias digitais e e-commerce.</p>
                 <ul class="space-y-6">
                     <li class="flex items-start gap-4">
                         <span class="flex-shrink-0 flex flex-col items-center justify-center w-8 h-8 rounded-md bg-[#910039]">

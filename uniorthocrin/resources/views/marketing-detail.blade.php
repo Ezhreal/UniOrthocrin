@@ -143,7 +143,7 @@
                         <div class="flex items-center gap-3">
                             <i class="fas fa-file-pdf text-[#910039] text-lg"></i>
                             <div>
-                                <p class="font-medium text-gray-800">{{ strtoupper($folder->state) }}</p>
+                                <p class="font-medium text-gray-800">{{ $folder->state_label }}</p>
                                 <p class="text-sm text-gray-600">Arquivo .pdf ({{ round($folder->files->sum('size') / 1024 / 1024, 1) }}mb)</p>
                             </div>
                         </div>
@@ -208,10 +208,10 @@
                                     Feed
                                     @break
                                 @case('stories_mg_sp')
-                                    Stories MG/SP
+                                    Stories MG
                                     @break
                                 @case('stories_df_es')
-                                    Stories DF/ES
+                                    Stories Outros Estados
                                     @break
                                 @default
                                     {{ ucfirst($type) }}
@@ -440,10 +440,13 @@
         </div>
         @endif
 
-        @if(method_exists($campaign, 'miscellaneous') && $campaign->miscellaneous()->active()->count() > 0)
+        @php
+            $miscItems = method_exists($campaign, 'miscellaneous') ? $campaign->miscellaneous()->active()->with('files')->get()->where('type', '!=', 'sticker') : collect();
+        @endphp
+        @if($miscItems->count() > 0)
         <div class="mb-12 bg-white p-8 rounded-lg shadow-sm">
         <div class="space-y-3 mb-4">
-                    @foreach($campaign->miscellaneous()->active()->with('files')->get() as $item)
+                    @foreach($miscItems as $item)
                     <div class="flex items-center justify-between p-3 border-t border-gray-200 {{ $loop->last ? 'border-b' : '' }}">
                         <div class="flex items-center gap-3">
                             @if($item->type === 'audio')
@@ -456,7 +459,7 @@
                                 <i class="fas fa-file text-[#910039] text-lg"></i>
                             @endif
                             <div>
-                                <p class="font-medium text-gray-800">{{ strtoupper($item->type) }}</p>
+                                <p class="font-medium text-gray-800">{{ $item->type === 'script' ? 'Materiais Internos' : strtoupper($item->type) }}</p>
                                 <p class="text-sm text-gray-600">Arquivo.{{ $item->files->first() ? $item->files->first()->extension : 'pdf' }} ({{ round($item->files->sum('size') / 1024 / 1024, 1) }}mb)</p>
                             </div>
                         </div>
@@ -476,11 +479,11 @@
                 
                 <!-- Download todos os diversos -->
                 @php
-                    $totalMiscSize = $campaign->miscellaneous()->active()->with('files')->get()->sum(function($item) {
+                    $totalMiscSize = $miscItems->sum(function($item) {
                         return $item->files->sum('size');
                     });
                     $totalMiscSizeMB = round($totalMiscSize / 1024 / 1024, 1);
-                    $totalMiscFiles = $campaign->miscellaneous()->active()->with('files')->get()->sum(function($item) {
+                    $totalMiscFiles = $miscItems->sum(function($item) {
                         return $item->files->count();
                     });
                 @endphp

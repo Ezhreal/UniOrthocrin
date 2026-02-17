@@ -103,9 +103,7 @@
                                     <span class="text-gray-500 text-sm">
                                         @php
                                             $folderStates = $campaigns['featured']->folders()->active()->pluck('state')->unique();
-                                            $stateLabels = $folderStates->map(function($state) {
-                                                return $state;
-                                            })->implode(' • ');
+                                            $stateLabels = $folderStates->map(fn($state) => \App\Models\CampaignFolder::getStateDisplayLabel($state))->implode(' • ');
                                         @endphp
                                         {{ $stateLabels }}
                                     </span>
@@ -173,12 +171,11 @@
                                     <span class="text-gray-500 text-sm">
                                         @php
                                             $miscTypes = $campaigns['featured']->miscellaneous()->active()->pluck('type')->unique();
-                                            $miscTypeLabels = $miscTypes->map(function($type) {
+                                            $miscTypeLabels = $miscTypes->reject(fn($type) => $type === 'sticker')->map(function($type) {
                                                 return match($type) {
                                                     'spot' => 'Spot',
                                                     'tag' => 'Tag',
-                                                    'sticker' => 'Adesivo',
-                                                    'script' => 'Roteiro',
+                                                    'script' => 'Materiais Internos',
                                                     default => ucfirst($type)
                                                 };
                                             })->implode(' • ');

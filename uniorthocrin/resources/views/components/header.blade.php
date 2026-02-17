@@ -23,8 +23,8 @@
         
         <!-- Busca e usuário Desktop -->
         <div class="hidden md:flex items-center gap-4">
-            <form action="#" method="GET" class="relative">
-                <input type="text" name="q" placeholder="Buscar" class="pl-4 pr-10 py-2 rounded-full bg-[#F3F3F3] text-sm text-gray-700 focus:outline-none w-56 placeholder:text-gray-400">
+            <form action="{{ route('produtos.list') }}" method="GET" class="relative">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Buscar" class="pl-4 pr-10 py-2 rounded-full bg-[#F3F3F3] text-sm text-gray-700 focus:outline-none w-56 placeholder:text-gray-400">
                 <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-[#910039]">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </button>
@@ -62,11 +62,14 @@
         <!-- Mobile Menu Button -->
         <div class="md:hidden flex items-center gap-3">
             <!-- Busca Mobile -->
-            <button class="p-2 text-gray-600 hover:text-[#910039] transition-colors duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </button>
+            <form action="{{ route('produtos.list') }}" method="GET" class="relative">
+                <input type="text" name="search" placeholder="Buscar" class="pl-3 pr-9 py-1.5 rounded-full bg-[#F3F3F3] text-sm text-gray-700 focus:outline-none w-36 placeholder:text-gray-400">
+                <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-[#910039]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </form>
             
             <!-- Menu Hambúrguer -->
             <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 text-gray-600 hover:text-[#910039] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#910039] focus:ring-opacity-50 rounded-lg">

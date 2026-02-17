@@ -59,8 +59,9 @@ class ProductRepository implements RepositoryInterface
             });
 
         // Filtro por categoria
-        if (!empty($filters['category_id'])) {
-            $query->where('product_category_id', $filters['category_id']);
+        $categoryId = $filters['category_id'] ?? $filters['product_category_id'] ?? null;
+        if (!empty($categoryId)) {
+            $query->where('product_category_id', $categoryId);
         }
 
         // Filtro por busca

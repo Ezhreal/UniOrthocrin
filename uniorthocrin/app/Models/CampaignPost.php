@@ -65,8 +65,8 @@ class CampaignPost extends Model
     {
         return match($this->type) {
             'feeds' => 'Feeds',
-            'stories_mg_sp' => 'Stories MG/SP',
-            'stories_df_es' => 'Stories DF/ES',
+            'stories_mg_sp' => 'Stories MG',
+            'stories_df_es' => 'Stories Outros Estados',
             default => ucfirst($this->type)
         };
     }

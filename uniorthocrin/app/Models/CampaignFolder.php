@@ -59,11 +59,23 @@ class CampaignFolder extends Model
     }
 
     /**
-     * Get the state label.
+     * Get the state label (exibição: SP removido, DF → Outros Estados).
      */
     public function getStateLabelAttribute(): string
     {
-        return $this->state ?? 'N/A';
+        return self::getStateDisplayLabel($this->state ?? '');
+    }
+
+    /**
+     * Retorna o rótulo de exibição para um valor de state (para uso em listas/views).
+     */
+    public static function getStateDisplayLabel(?string $state): string
+    {
+        return match ($state ?? '') {
+            'MG/SP' => 'MG',
+            'DF/ES' => 'Outros Estados',
+            default => $state ?? 'N/A',
+        };
     }
 
     /**
@@ -72,8 +84,8 @@ class CampaignFolder extends Model
     public static function getAvailableStates(): array
     {
         return [
-            'MG/SP' => 'Minas Gerais / São Paulo',
-            'DF/ES' => 'Distrito Federal / Espírito Santo',
+            'MG/SP' => 'MG',
+            'DF/ES' => 'Outros Estados',
             'RJ' => 'Rio de Janeiro',
             'RS' => 'Rio Grande do Sul',
             'SC' => 'Santa Catarina',
