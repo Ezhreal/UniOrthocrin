@@ -61,10 +61,13 @@ class LibraryRepository implements RepositoryInterface
             });
         }
 
+        // Ordem alfabética por nome
+        $query->orderBy('name');
+
         // Paginação
         $perPage = $filters['per_page'] ?? 12;
         
-        return $query->latest('id')->paginate($perPage);
+        return $query->paginate($perPage);
     }
 
     public function getDocumentsByCategory(User $user)
@@ -75,6 +78,7 @@ class LibraryRepository implements RepositoryInterface
                 $q->where('user_type_id', $user->user_type_id)
                   ->where('can_view', true);
             })
+            ->orderBy('name')
             ->get()
             ->groupBy('library_category_id');
 
@@ -92,12 +96,18 @@ class LibraryRepository implements RepositoryInterface
                 ];
             }
             
+            // Documentos já vêm ordenados por name; garantir ordem alfabética dentro do grupo
+            $documentsSorted = $documents->sortBy('name')->values();
+            
             $result[] = [
                 'category' => $category,
-                'documents' => $documents
+                'documents' => $documentsSorted
             ];
         }
-
-        return collect($result);
+        
+        // Ordenar grupos por nome da categoria
+        return collect($result)->sortBy(function ($group) {
+            return $group['category']->name ?? '';
+        })->values();
     }
 } 

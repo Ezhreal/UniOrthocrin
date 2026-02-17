@@ -44,10 +44,11 @@
                 </h3>
                 @if($unreadCount > 0)
                     <button 
+                        type="button"
                         wire:click="markAllAsRead"
-                        class="text-xs text-[#910039] hover:text-[#7a0030] font-medium transition-colors duration-200"
                         wire:loading.attr="disabled"
                         wire:loading.class="opacity-50 cursor-not-allowed"
+                        class="text-xs text-[#910039] hover:text-[#7a0030] font-medium transition-colors duration-200"
                     >
                         Marcar todas como lidas
                     </button>
@@ -73,7 +74,8 @@
             @else
                 <!-- Lista de Notificações -->
                 @foreach($notifications as $notification)
-                    <div class="border-b border-gray-100 last:border-b-0">
+                    @php $relatedUrl = $this->getRelatedUrl($notification); @endphp
+                    <div class="border-b border-gray-100 last:border-b-0" wire:key="notification-{{ $notification['id'] }}">
                         <div class="p-4 hover:bg-gray-50 transition-colors duration-200">
                             <div class="flex items-start space-x-3">
                                 <!-- Ícone do Tipo -->
@@ -104,32 +106,29 @@
                                         @endif
                                     </div>
                                     
-                                    <!-- Ações da Notificação -->
-                                    <div class="flex items-center space-x-2 mt-3">
-                                        @if($notification['related_type'] && $notification['related_id'])
-                                            <button 
-                                                wire:click="navigateToRelated({{ json_encode($notification) }})"
-                                                class="text-xs text-[#910039] hover:text-[#7a0030] font-medium transition-colors duration-200"
-                                            >
+                                    <!-- Ações da Notificação (link direto + formulário para não depender só do Livewire) -->
+                                    <div class="flex items-center space-x-2 mt-3" @click.stop>
+                                        @if($relatedUrl)
+                                            <a href="{{ $relatedUrl }}"
+                                               class="text-xs text-[#910039] hover:text-[#7a0030] font-medium transition-colors duration-200">
                                                 Ver conteúdo
+                                            </a>
+                                        @endif
+                                        
+                                        @if(!$notification['is_read'])
+                                            <button type="button"
+                                                    class="notification-mark-read-btn text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                                                    data-notification-id="{{ $notification['id'] }}"
+                                                    data-mark-read-url="{{ route('notifications.mark-read') }}">
+                                                Marcar como lida
                                             </button>
                                         @endif
                                         
-                                        <button 
-                                            wire:click="markAsRead({{ $notification['id'] }})"
-                                            class="text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                                            wire:loading.attr="disabled"
-                                            wire:loading.class="opacity-50 cursor-not-allowed"
-                                        >
-                                            Marcar como lida
-                                        </button>
-                                        
-                                        <button 
-                                            wire:click="deleteNotification({{ $notification['id'] }})"
-                                            class="text-xs text-red-500 hover:text-red-700 transition-colors duration-200"
-                                            wire:loading.attr="disabled"
-                                            wire:loading.class="opacity-50 cursor-not-allowed"
-                                        >
+                                        <button type="button"
+                                                wire:click="deleteNotification({{ $notification['id'] }})"
+                                                wire:loading.attr="disabled"
+                                                wire:loading.class="opacity-50 cursor-not-allowed"
+                                                class="text-xs text-red-500 hover:text-red-700 transition-colors duration-200">
                                             Remover
                                         </button>
                                     </div>

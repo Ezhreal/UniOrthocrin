@@ -36,16 +36,61 @@ class NotificationController extends Controller
 
     public function recent()
     {
-        $notifications = Notification::orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
+        $userId = Auth::id();
+        $notifications = Notification::forUser($userId)
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function (Notification $n) use ($userId) {
+                $readAt = $n->isReadBy($userId);
+                return [
+                    'id' => $n->id,
+                    'title' => $n->title,
+                    'message' => $n->message,
+                    'type' => $n->type,
+                    'created_at' => $n->created_at->toIso8601String(),
+                    'read_at' => $readAt ? $n->updated_at->toIso8601String() : null,
+                    'related_url' => $this->relatedUrlForNotification($n),
+                ];
+            });
 
-        $unreadCount = Notification::unreadCountForUser(Auth::id());
+        $unreadCount = Notification::unreadCountForUser($userId);
 
         return response()->json([
             'notifications' => $notifications,
             'unread_count' => $unreadCount
         ]);
+    }
+
+    /**
+     * URL do admin para o conteúdo relacionado à notificação (quando houver).
+     */
+    private function relatedUrlForNotification(Notification $n): ?string
+    {
+        if (!$n->related_type || !$n->related_id) {
+            return null;
+        }
+        switch ($n->related_type) {
+            case 'App\Models\Campaign':
+                return route('admin.campaigns.show', $n->related_id);
+            case 'App\Models\Product':
+                return route('admin.products.show', $n->related_id);
+            case 'App\Models\Training':
+                return route('admin.training.show', $n->related_id);
+            case 'App\Models\Library':
+                return route('admin.library.show', $n->related_id);
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Marca uma notificação como lida pelo usuário atual (para o dropdown do header).
+     */
+    public function markAsRead(Notification $notification)
+    {
+        $notification->markAsReadBy(Auth::id());
+        return response()->json(['ok' => true, 'unread_count' => Notification::unreadCountForUser(Auth::id())]);
     }
 
 

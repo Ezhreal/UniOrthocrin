@@ -359,7 +359,7 @@
                         </div>
                         <div>
                             <h3 class="modern-card-title">Diversos</h3>
-                            <p class="modern-card-subtitle">Spot, Tag e Materiais Internos</p>
+                            <p class="modern-card-subtitle">Spot, Tag, Adesivo, Banner, Faixa e Materiais Internos</p>
                         </div>
                     </div>
                 </div>
@@ -413,6 +413,60 @@
                                     <span class="text-gray-400">
                                         <i class="fas fa-eye text-sm"></i>
                                     </span>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- Adesivo -->
+                        @if($campaign->miscellaneous->where('type', 'adesivo')->count() > 0)
+                        <div>
+                            <h4 class="text-modern-body font-medium mb-4">Adesivo ({{ $campaign->miscellaneous->where('type', 'adesivo')->count() }})</h4>
+                            <div class="space-y-3">
+                                @foreach($campaign->miscellaneous->where('type', 'adesivo') as $misc)
+                                <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="flex-shrink-0"><div class="bg-gray-100 rounded-lg flex items-center justify-center"><i class="fas fa-sticky-note text-gray-400 text-lg"></i></div></div>
+                                        <div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p></div>
+                                    </div>
+                                    <span class="text-gray-400"><i class="fas fa-eye text-sm"></i></span>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- Banner -->
+                        @if($campaign->miscellaneous->where('type', 'banner')->count() > 0)
+                        <div>
+                            <h4 class="text-modern-body font-medium mb-4">Banner ({{ $campaign->miscellaneous->where('type', 'banner')->count() }})</h4>
+                            <div class="space-y-3">
+                                @foreach($campaign->miscellaneous->where('type', 'banner') as $misc)
+                                <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="flex-shrink-0"><div class="bg-gray-100 rounded-lg flex items-center justify-center"><i class="fas fa-image text-gray-400 text-lg"></i></div></div>
+                                        <div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p></div>
+                                    </div>
+                                    <span class="text-gray-400"><i class="fas fa-eye text-sm"></i></span>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- Faixa -->
+                        @if($campaign->miscellaneous->where('type', 'faixa')->count() > 0)
+                        <div>
+                            <h4 class="text-modern-body font-medium mb-4">Faixa ({{ $campaign->miscellaneous->where('type', 'faixa')->count() }})</h4>
+                            <div class="space-y-3">
+                                @foreach($campaign->miscellaneous->where('type', 'faixa') as $misc)
+                                <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="flex-shrink-0"><div class="bg-gray-100 rounded-lg flex items-center justify-center"><i class="fas fa-align-center text-gray-400 text-lg"></i></div></div>
+                                        <div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p></div>
+                                    </div>
+                                    <span class="text-gray-400"><i class="fas fa-eye text-sm"></i></span>
                                 </div>
                                 @endforeach
                             </div>

@@ -66,8 +66,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     Route::put('profile/password', [UserController::class, 'updatePassword'])->name('profile.password.update');
     
     // Notifications
-    Route::resource('notifications', NotificationController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::get('notifications/recent', [NotificationController::class, 'recent'])->name('notifications.recent');
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+    Route::resource('notifications', NotificationController::class)->only(['index', 'create', 'store', 'destroy']);
     
     // Library
     Route::resource('library', LibraryController::class);

@@ -67,7 +67,10 @@ class CampaignMiscellaneous extends Model
             'spot' => 'Spot',
             'tag' => 'Tag',
             'sticker' => 'Sticker',
-            'script' => 'Script',
+            'script' => 'Materiais Internos',
+            'adesivo' => 'Adesivo',
+            'banner' => 'Banner',
+            'faixa' => 'Faixa',
             default => ucfirst($this->type)
         };
     }
@@ -82,6 +85,9 @@ class CampaignMiscellaneous extends Model
             'tag' => 'fas fa-tag',
             'sticker' => 'fas fa-sticky-note',
             'script' => 'fas fa-file-alt',
+            'adesivo' => 'fas fa-sticky-note',
+            'banner' => 'fas fa-image',
+            'faixa' => 'fas fa-align-center',
             default => 'fas fa-file'
         };
     }
@@ -96,6 +102,9 @@ class CampaignMiscellaneous extends Model
             'tag' => 'text-green-600',
             'sticker' => 'text-yellow-600',
             'script' => 'text-purple-600',
+            'adesivo' => 'text-yellow-600',
+            'banner' => 'text-indigo-600',
+            'faixa' => 'text-teal-600',
             default => 'text-gray-600'
         };
     }

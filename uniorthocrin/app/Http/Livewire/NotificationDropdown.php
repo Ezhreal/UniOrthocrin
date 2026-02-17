@@ -73,6 +73,8 @@ class NotificationDropdown extends Component
             return;
         }
         
+        $notificationId = (int) $notificationId;
+        
         try {
             $success = $this->notificationService->markAsRead($notificationId);
             
@@ -172,25 +174,40 @@ class NotificationDropdown extends Component
     }
     
     /**
-     * Navega para o item relacionado à notificação
+     * Navega para o item relacionado à notificação (recebe apenas o ID para evitar quebra no HTML)
      */
-    public function navigateToRelated($notification)
+    public function navigateToRelated($notificationId)
     {
-        if (!$notification['related_type'] || !$notification['related_id']) {
+        $notificationId = (int) $notificationId;
+        $notification = collect($this->notifications)->firstWhere('id', $notificationId);
+        
+        if (!$notification || empty($notification['related_type']) || empty($notification['related_id'])) {
             return;
         }
         
         // Marca como lida primeiro
-        $this->markAsRead($notification['id']);
+        $this->markAsRead($notificationId);
         
-        // Navega para o item relacionado
         $route = $this->getRouteForType($notification['related_type'], $notification['related_id']);
         
         if ($route) {
-            return redirect()->to($route);
+            return $this->redirect($route);
         }
     }
     
+    /**
+     * URL para o conteúdo relacionado (uso na view para link direto)
+     */
+    public function getRelatedUrl(array $notification): ?string
+    {
+        $type = $notification['related_type'] ?? null;
+        $id = $notification['related_id'] ?? null;
+        if (!$type || !$id) {
+            return null;
+        }
+        return $this->getRouteForType($type, $id);
+    }
+
     /**
      * Obtém a rota para o tipo de conteúdo
      */

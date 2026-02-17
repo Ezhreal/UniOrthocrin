@@ -321,7 +321,7 @@
                             </div>
                             <div>
                                 <h3 class="modern-card-title">Diversos</h3>
-                                <p class="modern-card-subtitle">Spot, Tag e Materiais Internos</p>
+                                <p class="modern-card-subtitle">Spot, Tag, Adesivo, Banner, Faixa e Materiais Internos</p>
                             </div>
                         </div>
                     </div>
@@ -358,6 +358,60 @@
                                     <label for="misc_tag" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
                                         Selecionar Tag
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Adesivo -->
+                        <div class="mb-6">
+                            <h4 class="text-modern-body font-medium mb-4">Adesivo</h4>
+                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
+                                <div class="text-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-modern-body font-medium mb-2">Arraste e solte o arquivo aqui</p>
+                                    <p class="text-modern-caption mb-4">ou clique para selecionar</p>
+                                    <input type="file" id="misc_adesivo" name="misc_adesivo[]" multiple
+                                           class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                    <label for="misc_adesivo" class="btn-modern-secondary cursor-pointer">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Selecionar Adesivo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Banner -->
+                        <div class="mb-6">
+                            <h4 class="text-modern-body font-medium mb-4">Banner</h4>
+                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
+                                <div class="text-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-modern-body font-medium mb-2">Arraste e solte o arquivo aqui</p>
+                                    <p class="text-modern-caption mb-4">ou clique para selecionar</p>
+                                    <input type="file" id="misc_banner" name="misc_banner[]" multiple
+                                           class="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp">
+                                    <label for="misc_banner" class="btn-modern-secondary cursor-pointer">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Selecionar Banner
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Faixa -->
+                        <div class="mb-6">
+                            <h4 class="text-modern-body font-medium mb-4">Faixa</h4>
+                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
+                                <div class="text-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-modern-body font-medium mb-2">Arraste e solte o arquivo aqui</p>
+                                    <p class="text-modern-caption mb-4">ou clique para selecionar</p>
+                                    <input type="file" id="misc_faixa" name="misc_faixa[]" multiple
+                                           class="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp">
+                                    <label for="misc_faixa" class="btn-modern-secondary cursor-pointer">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Selecionar Faixa
                                     </label>
                                 </div>
                             </div>
@@ -492,6 +546,9 @@ window.selectedFiles = {
     videos_campaigns: [],
     misc_spot: [],
     misc_tag: [],
+    misc_adesivo: [],
+    misc_banner: [],
+    misc_faixa: [],
     misc_script: []
 };
 
@@ -520,6 +577,9 @@ function initializeFileUploads() {
     // Upload de diversos
     initializeFileUpload('misc_spot', 'misc_spot_preview');
     initializeFileUpload('misc_tag', 'misc_tag_preview');
+    initializeFileUpload('misc_adesivo', 'misc_adesivo_preview');
+    initializeFileUpload('misc_banner', 'misc_banner_preview');
+    initializeFileUpload('misc_faixa', 'misc_faixa_preview');
     initializeFileUpload('misc_script', 'misc_script_preview');
 }
 
@@ -739,6 +799,9 @@ function findInputIdByPreview(previewContainer) {
         'videos_campaigns_preview': 'videos_campaigns',
         'misc_spot_preview': 'misc_spot',
         'misc_tag_preview': 'misc_tag',
+        'misc_adesivo_preview': 'misc_adesivo',
+        'misc_banner_preview': 'misc_banner',
+        'misc_faixa_preview': 'misc_faixa',
         'misc_script_preview': 'misc_script'
     };
     

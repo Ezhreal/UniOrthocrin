@@ -21,8 +21,13 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-8">
                     @foreach($categoryGroup['documents'] as $document)
                     <div class="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
-                        <div class="w-full h-32 bg-gray-100 rounded-t-lg flex items-center justify-center">
-                            <i class="fas fa-file-alt text-4xl text-gray-400"></i>
+                        <div class="w-full h-32 rounded-t-lg flex items-center justify-center overflow-hidden bg-gray-100 relative">
+                            @if(!empty($document->thumbnail_path))
+                                <img src="{{ url('/' . ltrim($document->thumbnail_path, '/')) }}" alt="{{ $document->name }}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                <span class="hidden absolute inset-0 flex items-center justify-center"><i class="fas fa-file-alt text-4xl text-gray-400"></i></span>
+                            @else
+                                <i class="fas fa-file-alt text-4xl text-gray-400"></i>
+                            @endif
                         </div>
                         <div class="p-4 flex-1 flex flex-col justify-between">
                             <div>
@@ -66,8 +71,13 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-8">
                 @forelse($documents as $document)
                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
-                    <div class="w-full h-32 bg-gray-100 rounded-t-lg flex items-center justify-center">
-                        <i class="fas fa-file-alt text-4xl text-gray-400"></i>
+                    <div class="w-full h-32 rounded-t-lg flex items-center justify-center overflow-hidden bg-gray-100 relative">
+                        @if(!empty($document->thumbnail_path))
+                            <img src="{{ url('/' . ltrim($document->thumbnail_path, '/')) }}" alt="{{ $document->name }}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                            <span class="hidden absolute inset-0 flex items-center justify-center"><i class="fas fa-file-alt text-4xl text-gray-400"></i></span>
+                        @else
+                            <i class="fas fa-file-alt text-4xl text-gray-400"></i>
+                        @endif
                     </div>
                     <div class="p-4 flex-1 flex flex-col justify-between">
                         <div>

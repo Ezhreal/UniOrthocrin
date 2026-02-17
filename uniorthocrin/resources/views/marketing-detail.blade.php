@@ -459,7 +459,7 @@
                                 <i class="fas fa-file text-[#910039] text-lg"></i>
                             @endif
                             <div>
-                                <p class="font-medium text-gray-800">{{ $item->type === 'script' ? 'Materiais Internos' : strtoupper($item->type) }}</p>
+                                <p class="font-medium text-gray-800">{{ $item->type_label }}</p>
                                 <p class="text-sm text-gray-600">Arquivo.{{ $item->files->first() ? $item->files->first()->extension : 'pdf' }} ({{ round($item->files->sum('size') / 1024 / 1024, 1) }}mb)</p>
                             </div>
                         </div>

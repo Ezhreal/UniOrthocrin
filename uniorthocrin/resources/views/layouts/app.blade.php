@@ -92,6 +92,35 @@
         }
         return false;
     }
+
+    // Marcar notificação como lida (front) — botão fora do Livewire para evitar problema de clique
+    document.addEventListener('click', async function (e) {
+        const btn = e.target.closest('.notification-mark-read-btn');
+        if (!btn || btn.disabled) return;
+        const id = btn.getAttribute('data-notification-id');
+        const url = btn.getAttribute('data-mark-read-url');
+        if (!id || !url) return;
+        e.preventDefault();
+        btn.disabled = true;
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf || '',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ notification_id: parseInt(id, 10) })
+            });
+            const data = await res.json();
+            if (data && data.success && typeof Livewire !== 'undefined') {
+                Livewire.dispatch('notifications-updated');
+            }
+        } catch (err) {}
+        btn.disabled = false;
+    });
     </script>
 </body>
 </html> 

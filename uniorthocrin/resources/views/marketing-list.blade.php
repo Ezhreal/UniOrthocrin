@@ -176,6 +176,9 @@
                                                     'spot' => 'Spot',
                                                     'tag' => 'Tag',
                                                     'script' => 'Materiais Internos',
+                                                    'adesivo' => 'Adesivo',
+                                                    'banner' => 'Banner',
+                                                    'faixa' => 'Faixa',
                                                     default => ucfirst($type)
                                                 };
                                             })->implode(' • ');

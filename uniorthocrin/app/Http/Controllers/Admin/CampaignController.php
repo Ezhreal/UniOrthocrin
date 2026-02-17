@@ -70,6 +70,9 @@ class CampaignController extends Controller
             'misc_tag' => 'nullable|array',
             'misc_sticker' => 'nullable|array',
             'misc_script' => 'nullable|array',
+            'misc_adesivo' => 'nullable|array',
+            'misc_banner' => 'nullable|array',
+            'misc_faixa' => 'nullable|array',
         ], FileValidationRequest::getProductValidationRules());
 
         $request->validate($validationRules, (new FileValidationRequest())->messages());
@@ -156,6 +159,9 @@ class CampaignController extends Controller
             'misc_tag' => 'nullable|array',
             'misc_sticker' => 'nullable|array',
             'misc_script' => 'nullable|array',
+            'misc_adesivo' => 'nullable|array',
+            'misc_banner' => 'nullable|array',
+            'misc_faixa' => 'nullable|array',
         ], FileValidationRequest::getProductValidationRules());
 
         $request->validate($validationRules, (new FileValidationRequest())->messages());
@@ -678,7 +684,10 @@ class CampaignController extends Controller
             'misc_spot' => 'spot',
             'misc_tag' => 'tag',
             'misc_sticker' => 'sticker',
-            'misc_script' => 'script'
+            'misc_script' => 'script',
+            'misc_adesivo' => 'adesivo',
+            'misc_banner' => 'banner',
+            'misc_faixa' => 'faixa',
         ];
 
         foreach ($miscTypes as $inputName => $type) {

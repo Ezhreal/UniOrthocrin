@@ -294,7 +294,7 @@
                 </div>
 
                 <!-- Modern User Menu -->
-                <div class="flex items-center space-x-4" x-data="{ open: false, notificationsOpen: false, notifications: [], unreadCount: 0 }">
+                <div id="admin-notifications-dropdown" class="flex items-center space-x-4" x-data="adminNotificationDropdown()" x-init="markReadUrl = '{{ route('admin.notifications.mark-read', ['notification' => 0]) }}'">
                         <!-- Notifications -->
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open; loadNotifications()" 
@@ -352,6 +352,14 @@
                                                     <p class="text-sm font-medium text-gray-900 truncate" x-text="notification.title"></p>
                                                     <p class="text-xs text-gray-500 mt-1 line-clamp-2" x-text="notification.message"></p>
                                                     <p class="text-xs text-gray-400 mt-1" x-text="formatDate(notification.created_at)"></p>
+                                                    <div class="flex items-center gap-2 mt-2" @click.stop>
+                                                        <template x-if="notification.related_url">
+                                                            <a :href="notification.related_url" class="text-xs text-primary-600 hover:text-primary-700 font-medium">Ver conteúdo</a>
+                                                        </template>
+                                                        <template x-if="!notification.read_at">
+                                                            <button type="button" @click="markAsRead(notification)" class="text-xs text-gray-500 hover:text-gray-700">Marcar como lida</button>
+                                                        </template>
+                                                    </div>
                                                 </div>
                                                 <div class="flex-shrink-0">
                                                     <div x-show="!notification.read_at" class="h-2 w-2 rounded-full bg-primary-500"></div>
@@ -415,12 +423,40 @@
     </div>
 
     <script>
+        function adminNotificationDropdown() {
+            return {
+                open: false,
+                notificationsOpen: false,
+                notifications: [],
+                unreadCount: 0,
+                markReadUrl: '',
+                markAsRead(notification) {
+                    const url = this.markReadUrl.replace(/\/0\/read$/, '/' + notification.id + '/read');
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        notification.read_at = new Date().toISOString();
+                        if (data.unread_count !== undefined) this.unreadCount = data.unread_count;
+                        else this.unreadCount = Math.max(0, this.unreadCount - 1);
+                    })
+                    .catch(() => {});
+                }
+            };
+        }
         // Função para carregar notificações
         function loadNotifications() {
-            // Verificar se existe componente de notificação antes de fazer requisição
-            const notificationComponent = document.querySelector('[x-data*="notifications"]');
+            const notificationComponent = document.getElementById('admin-notifications-dropdown');
             if (!notificationComponent) {
-                return; // Não fazer requisição se não houver componente
+                return;
             }
 
             fetch('{{ route("admin.notifications.recent") }}', {
@@ -475,9 +511,8 @@
         // Adicionar função formatDate ao contexto global
         window.formatDate = formatDate;
 
-        // Inicializar notificações apenas se o componente existir
         document.addEventListener('DOMContentLoaded', function() {
-            const notificationComponent = document.querySelector('[x-data*="notifications"]');
+            const notificationComponent = document.getElementById('admin-notifications-dropdown');
             if (notificationComponent) {
                 // Carregar notificações após 1 segundo (aguardar Alpine.js inicializar)
                 setTimeout(() => {
