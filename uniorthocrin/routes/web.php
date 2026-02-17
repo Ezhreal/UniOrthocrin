@@ -14,6 +14,7 @@ use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserAccountController;
 
 // Rotas de Autenticação (sem middleware de autenticação)
@@ -79,11 +80,13 @@ Route::middleware(['auth', \App\Http\Middleware\NoStoreForAuthenticated::class])
 
     // Rotas de Biblioteca
     Route::get('/biblioteca-list', [LibraryController::class, 'index'])->name('biblioteca.list');
+    Route::get('/biblioteca/{id}', [LibraryController::class, 'show'])->name('biblioteca.detail');
+
+    // Busca global (resultados)
+    Route::get('/resultados', [SearchController::class, 'index'])->name('search.results');
 
     // Rotas de News
-    Route::get('/news/{id}', function ($id) {
-        return view('news-detail', ['id' => $id]);
-    })->name('news.detail');
+    Route::get('/news/{id}', [NewsController::class, 'show'])->name('news.detail');
 
     // Rota de My Account
     Route::get('/my-account', [UserAccountController::class, 'index'])->name('my.account');
