@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ProductSeriesController;
 use App\Http\Controllers\Admin\TrainingCategoryController;
 use App\Http\Controllers\Admin\NewsCategoryController;
 use App\Http\Controllers\Admin\LibraryCategoryController;
+use App\Http\Controllers\Admin\HelpController;
 
 // Login admin dedicado
 Route::get('admin/login', [\App\Http\Controllers\Auth\AuthController::class, 'showLoginForm'])->name('admin.login')->middleware('guest');
@@ -113,6 +114,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     // News Categories
     Route::resource('news-categories', NewsCategoryController::class)->only(['index', 'store', 'destroy']);
     
+    // Como usar (ajuda)
+    Route::get('como-usar', [HelpController::class, 'index'])->name('help.index');
+    Route::get('como-usar/{topic}', [HelpController::class, 'show'])->name('help.show')->where('topic', '[a-z0-9_-]+');
+
     // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/users', [ReportController::class, 'users'])->name('reports.users');

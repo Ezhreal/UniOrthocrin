@@ -262,6 +262,15 @@
                             <i class="fas fa-bell text-base"></i>
                             <span x-show="sidebarOpen || mobileMenuOpen" class="ml-3 transition-opacity duration-200">Notificações</span>
                         </a>
+
+                        <!-- Como usar -->
+                        <a href="{{ route('admin.help.index') }}" 
+                           @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
+                           class="flex items-center px-3 py-2 text-white rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.help.*') ? 'bg-primary-600' : 'hover:bg-primary-600' }}"
+                           :class="(sidebarOpen || mobileMenuOpen) ? 'justify-start' : 'justify-center'">
+                            <i class="fas fa-question-circle text-base"></i>
+                            <span x-show="sidebarOpen || mobileMenuOpen" class="ml-3 transition-opacity duration-200">Como usar</span>
+                        </a>
                     </div>
                 </div>
             </nav>
