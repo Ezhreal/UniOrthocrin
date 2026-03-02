@@ -74,6 +74,44 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal aviso de novo endereço da plataforma -->
+    <div id="address-change-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6">
+            <div class="flex items-start gap-3 mb-4">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
+                    <i class="fas fa-info text-sm"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-primary mb-1">A plataforma mudou de endereço</h2>
+                    <p class="text-sm text-text">
+                        Para acessar a versão atual da plataforma UniOrthocrin, use o link abaixo. Recomendamos atualizar seus favoritos.
+                    </p>
+                </div>
+            </div>
+            <a href="https://uniorthocrin.com/login/" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center justify-center w-full px-4 py-2.5 mb-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-secondary transition-colors duration-200">
+                Ir para a plataforma atual
+            </a>
+            <button type="button" id="close-address-change-modal"
+                    class="w-full px-4 py-2.5 rounded-full border border-border text-xs font-semibold text-text hover:bg-background transition-colors duration-150">
+                Continuar nesta tela mesmo assim
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Fecha o modal quando o usuário clicar no botão de fechar
+        document.addEventListener('DOMContentLoaded', function () {
+            var closeBtn = document.getElementById('close-address-change-modal');
+            var modal = document.getElementById('address-change-modal');
+            if (closeBtn && modal) {
+                closeBtn.addEventListener('click', function () {
+                    modal.classList.add('hidden');
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

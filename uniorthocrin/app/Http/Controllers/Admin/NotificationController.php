@@ -127,13 +127,15 @@ class NotificationController extends Controller
                 $estimatedCount = User::where('status', 'active')->count();
                 break;
             case 'user_types':
-                $targetIds = $request->user_types;
+                // Garantir que IDs sejam inteiros para bater com o JSON do banco
+                $targetIds = array_map('intval', $request->user_types ?? []);
                 $estimatedCount = User::whereIn('user_type_id', $targetIds)
                     ->where('status', 'active')
                     ->count();
                 break;
             case 'specific_users':
-                $targetIds = $request->specific_users;
+                // Garantir que IDs sejam inteiros
+                $targetIds = array_map('intval', $request->specific_users ?? []);
                 $estimatedCount = count($targetIds);
                 break;
         }

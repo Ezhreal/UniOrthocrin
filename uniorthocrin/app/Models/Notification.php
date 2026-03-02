@@ -98,16 +98,33 @@ class Notification extends Model
      */
     public static function forUser(int $userId): \Illuminate\Database\Eloquent\Builder
     {
-        return static::where(function ($query) use ($userId) {
-            $query->where('target_type', 'all')
-                ->orWhere(function ($q) use ($userId) {
+        $user = User::find($userId);
+        $userTypeId = $user?->user_type_id;
+
+        return static::where(function ($query) use ($userId, $userTypeId) {
+            // Notificações para todos
+            $query->where('target_type', 'all');
+
+            // Notificações por tipo de usuário
+            if ($userTypeId) {
+                $query->orWhere(function ($q) use ($userTypeId) {
                     $q->where('target_type', 'user_types')
-                      ->whereJsonContains('target_ids', User::find($userId)?->user_type_id);
-                })
-                ->orWhere(function ($q) use ($userId) {
-                    $q->where('target_type', 'specific_users')
-                      ->whereJsonContains('target_ids', $userId);
+                      ->where(function ($sub) use ($userTypeId) {
+                          // Compatível com JSON salvo como número ou string
+                          $sub->whereJsonContains('target_ids', (int) $userTypeId)
+                              ->orWhereJsonContains('target_ids', (string) $userTypeId);
+                      });
                 });
+            }
+
+            // Notificações para usuários específicos
+            $query->orWhere(function ($q) use ($userId) {
+                $q->where('target_type', 'specific_users')
+                  ->where(function ($sub) use ($userId) {
+                      $sub->whereJsonContains('target_ids', (int) $userId)
+                          ->orWhereJsonContains('target_ids', (string) $userId);
+                  });
+            });
         });
     }
 
