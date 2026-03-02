@@ -78,16 +78,11 @@
     <!-- Modal aviso de novo endereço da plataforma -->
     <div id="address-change-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6">
-            <div class="flex items-start gap-3 mb-4">
-                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
-                    <i class="fas fa-info text-sm"></i>
-                </div>
-                <div>
-                    <h2 class="text-lg font-semibold text-primary mb-1">A plataforma mudou de endereço</h2>
-                    <p class="text-sm text-text">
-                        Para acessar a versão atual da plataforma UniOrthocrin, use o link abaixo. Recomendamos atualizar seus favoritos.
-                    </p>
-                </div>
+            <div class="mb-4">
+                <h2 class="text-lg font-semibold text-primary mb-2">A plataforma mudou de endereço</h2>
+                <p class="text-sm text-text">
+                    O endereço de acesso à plataforma Uniorthocrin foi alterado. Acesse a plataforma pelo link abaixo e continue usufruindo normalmente de todos os conteúdos e serviços disponibilizados.
+                </p>
             </div>
             <a href="https://uniorthocrin.com/login/" target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center justify-center w-full px-4 py-2.5 mb-3 rounded-full bg-primary text-white text-sm font-semibold hover:bg-secondary transition-colors duration-200">
