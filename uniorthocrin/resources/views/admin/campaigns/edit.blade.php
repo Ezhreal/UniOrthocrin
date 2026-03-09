@@ -289,9 +289,9 @@
                             @if($campaign->posts && $campaign->posts->where('type', 'feeds')->count() > 0)
                             <div class="mt-4">
                                 <h5 class="text-modern-body font-medium mb-3">Posts Feed Existentes ({{ $campaign->posts->where('type', 'feeds')->count() }})</h5>
-                                 <div class="flex gap-4 mb-8">
+                                 <div class="flex flex-wrap gap-4 mb-8">
                                      @foreach($campaign->posts->where('type', 'feeds') as $post)
-                                     <div class="relative">
+                                     <div class="relative shrink-0">
                                          <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
                                              @if($post->mainImage())
                                                  <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
@@ -331,9 +331,9 @@
                             @if($campaign->posts && $campaign->posts->where('type', 'stories_mg_sp')->count() > 0)
                             <div class="mt-4">
                                 <h5 class="text-modern-body font-medium mb-3">Stories MG Existentes ({{ $campaign->posts->where('type', 'stories_mg_sp')->count() }})</h5>
-                                 <div class="flex gap-4 mb-8">
+                                 <div class="flex flex-wrap gap-4 mb-8">
                                      @foreach($campaign->posts->where('type', 'stories_mg_sp') as $post)
-                                     <div class="relative">
+                                     <div class="relative shrink-0">
                                          <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
                                              @if($post->mainImage())
                                                  <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
@@ -373,9 +373,9 @@
                             @if($campaign->posts && $campaign->posts->where('type', 'stories_df_es')->count() > 0)
                             <div class="mt-4">
                                 <h5 class="text-modern-body font-medium mb-3">Stories Outros Estados Existentes ({{ $campaign->posts->where('type', 'stories_df_es')->count() }})</h5>
-                                 <div class="flex gap-4 mb-8">
+                                 <div class="flex flex-wrap gap-4 mb-8">
                                      @foreach($campaign->posts->where('type', 'stories_df_es') as $post)
-                                     <div class="relative">
+                                     <div class="relative shrink-0">
                                          <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
                                              @if($post->mainImage())
                                                  <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
@@ -427,6 +427,10 @@
                                     </label>
                                 </div>
                             </div>
+                            @php $reelsErrorKey = collect($errors->keys())->first(fn($k) => str_starts_with((string)$k, 'videos_reels.')); @endphp
+                            @if($reelsErrorKey)
+                                <p class="form-error-modern mt-2">{{ $errors->first($reelsErrorKey) }}</p>
+                            @endif
                             
                             <!-- Lista dos Reels Existentes -->
                             @if($campaign->videos && $campaign->videos->where('type', 'reels')->count() > 0)
@@ -472,6 +476,10 @@
                                     </label>
                                 </div>
                             </div>
+                            @php $campaignsErrorKey = collect($errors->keys())->first(fn($k) => str_starts_with((string)$k, 'videos_campaigns.')); @endphp
+                            @if($campaignsErrorKey)
+                                <p class="form-error-modern mt-2">{{ $errors->first($campaignsErrorKey) }}</p>
+                            @endif
                             
                             <!-- Lista das Campanhas Existentes -->
                             @if($campaign->videos && $campaign->videos->where('type', 'marketing_campaigns')->count() > 0)
@@ -975,7 +983,7 @@ function createPreviewContainer(inputId, previewId) {
     let contentContainer;
     if (isImage) {
         contentContainer = document.createElement('div');
-        contentContainer.className = 'flex gap-4 mb-8';
+        contentContainer.className = 'flex flex-wrap gap-4 mb-8';
     } else {
         // Estrutura EXATA como no edit
         const outerDiv = document.createElement('div');
@@ -1005,7 +1013,7 @@ function createPreviewContainer(inputId, previewId) {
 
 function createImageThumbnail(file, dataUrl, index) {
     const div = document.createElement('div');
-    div.className = 'relative';
+    div.className = 'relative shrink-0';
     
     div.innerHTML = `
         <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">

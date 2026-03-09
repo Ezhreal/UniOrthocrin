@@ -23,15 +23,15 @@
             <div class="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
                 <div class="flex flex-col lg:flex-row">
                     <!-- Coluna da Esquerda - Imagem -->
-                    <div class="lg:w-1/2 p-8 bg-gradient-to-br from-pink-50 to-pink-100">
-                        <div class="text-center">
+                    <div class="lg:w-1/2 min-h-[280px] bg-gray-100">
+                        <div class="w-full h-full min-h-[280px] flex items-stretch">
                             @if($campaigns['featured']->getMainThumbnailAttribute())
                                 <img src="{{ $campaigns['featured']->getMainThumbnailAttribute() }}" 
                                      alt="{{ $campaigns['featured']->name }}" 
-                                     class="w-full max-w-md mx-auto rounded-lg shadow-md">
+                                     class="w-full h-full object-cover rounded-l-lg">
                             @else
-                                <div class="w-full h-64 bg-gradient-to-br from-pink-200 to-pink-300 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-bullhorn text-6xl text-pink-400"></i>
+                                <div class="w-full h-full min-h-[280px] bg-gray-200 rounded-l-lg flex items-center justify-center">
+                                    <i class="fas fa-bullhorn text-6xl text-gray-400"></i>
                                 </div>
                             @endif
                         </div>

@@ -438,7 +438,7 @@ function initializeFileUpload(inputId, previewId) {
 
 function createImageThumbnail(file, dataUrl, index) {
     const div = document.createElement('div');
-    div.className = 'relative';
+    div.className = 'relative shrink-0';
     
     div.innerHTML = `
         <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">

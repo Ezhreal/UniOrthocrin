@@ -20,19 +20,20 @@ class NotificationService
         $userTypeIds = ProductPermission::where('product_id', $productId)
             ->where('can_view', true)
             ->pluck('user_type_id')
+            ->unique()
+            ->values()
             ->toArray();
 
-        if (empty($userTypeIds)) {
-            return;
-        }
+        // Se não houver permissões definidas, notificar todos os usuários
+        $targetType = empty($userTypeIds) ? 'all' : 'user_types';
+        $targetIds = empty($userTypeIds) ? null : $userTypeIds;
 
-        // Criar uma única notificação para todos os tipos de usuário
         Notification::create([
             'title' => 'Novo Produto Disponível',
             'message' => "Um novo produto foi adicionado: {$productName}",
             'type' => 'info',
-            'target_type' => 'user_types',
-            'target_ids' => $userTypeIds,
+            'target_type' => $targetType,
+            'target_ids' => $targetIds,
             'related_type' => 'App\Models\Product',
             'related_id' => $productId,
         ]);
@@ -43,23 +44,22 @@ class NotificationService
      */
     public static function notifyNewTraining($trainingId, $trainingName)
     {
-        // Buscar tipos de usuário que têm permissão para ver este treinamento
         $userTypeIds = TrainingPermission::where('training_id', $trainingId)
             ->where('can_view', true)
             ->pluck('user_type_id')
+            ->unique()
+            ->values()
             ->toArray();
 
-        if (empty($userTypeIds)) {
-            return;
-        }
+        $targetType = empty($userTypeIds) ? 'all' : 'user_types';
+        $targetIds = empty($userTypeIds) ? null : $userTypeIds;
 
-        // Criar uma única notificação para todos os tipos de usuário
         Notification::create([
             'title' => 'Novo Treinamento Disponível',
             'message' => "Um novo treinamento foi adicionado: {$trainingName}",
             'type' => 'info',
-            'target_type' => 'user_types',
-            'target_ids' => $userTypeIds,
+            'target_type' => $targetType,
+            'target_ids' => $targetIds,
             'related_type' => 'App\Models\Training',
             'related_id' => $trainingId,
         ]);
@@ -70,23 +70,22 @@ class NotificationService
      */
     public static function notifyNewNews($newsId, $newsTitle)
     {
-        // Buscar tipos de usuário que têm permissão para ver esta notícia
         $userTypeIds = NewsPermission::where('news_id', $newsId)
             ->where('can_view', true)
             ->pluck('user_type_id')
+            ->unique()
+            ->values()
             ->toArray();
 
-        if (empty($userTypeIds)) {
-            return;
-        }
+        $targetType = empty($userTypeIds) ? 'all' : 'user_types';
+        $targetIds = empty($userTypeIds) ? null : $userTypeIds;
 
-        // Criar uma única notificação para todos os tipos de usuário
         Notification::create([
             'title' => 'Nova Notícia Disponível',
             'message' => "Uma nova notícia foi publicada: {$newsTitle}",
             'type' => 'info',
-            'target_type' => 'user_types',
-            'target_ids' => $userTypeIds,
+            'target_type' => $targetType,
+            'target_ids' => $targetIds,
             'related_type' => 'App\Models\News',
             'related_id' => $newsId,
         ]);
@@ -97,23 +96,22 @@ class NotificationService
      */
     public static function notifyNewLibrary($libraryId, $libraryName)
     {
-        // Buscar tipos de usuário que têm permissão para ver esta biblioteca
         $userTypeIds = LibraryPermission::where('library_id', $libraryId)
             ->where('can_view', true)
             ->pluck('user_type_id')
+            ->unique()
+            ->values()
             ->toArray();
 
-        if (empty($userTypeIds)) {
-            return;
-        }
+        $targetType = empty($userTypeIds) ? 'all' : 'user_types';
+        $targetIds = empty($userTypeIds) ? null : $userTypeIds;
 
-        // Criar uma única notificação para todos os tipos de usuário
         Notification::create([
             'title' => 'Nova Biblioteca Disponível',
             'message' => "Um novo item foi adicionado à biblioteca: {$libraryName}",
             'type' => 'info',
-            'target_type' => 'user_types',
-            'target_ids' => $userTypeIds,
+            'target_type' => $targetType,
+            'target_ids' => $targetIds,
             'related_type' => 'App\Models\Library',
             'related_id' => $libraryId,
         ]);

@@ -463,11 +463,19 @@
             };
         }
         // Função para carregar notificações
+        let notificationsAbortController = null;
+        let notificationsIntervalId = null;
+
         function loadNotifications() {
             const notificationComponent = document.getElementById('admin-notifications-dropdown');
             if (!notificationComponent) {
                 return;
             }
+            // Cancela a requisição anterior se ainda estiver em andamento
+            if (notificationsAbortController) {
+                notificationsAbortController.abort();
+            }
+            notificationsAbortController = new AbortController();
 
             fetch('{{ route("admin.notifications.recent") }}', {
                 method: 'GET',
@@ -477,7 +485,8 @@
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                credentials: 'same-origin'
+                credentials: 'same-origin',
+                signal: notificationsAbortController.signal
             })
             .then(response => {
                 if (!response.ok) {
@@ -494,9 +503,26 @@
                 }
             })
             .catch(error => {
-                // Silenciar erro - não mostrar no console para não poluir
+                // Ignorar erro de abort (cancelamento intencional)
+                if (error.name === 'AbortError') return;
                 console.log('Notificações não disponíveis:', error.message);
             });
+        }
+
+        function startNotificationsPolling() {
+            if (notificationsIntervalId) return;
+            loadNotifications();
+            notificationsIntervalId = setInterval(loadNotifications, 60000); // A cada 1 minuto
+        }
+
+        function stopNotificationsPolling() {
+            if (notificationsIntervalId) {
+                clearInterval(notificationsIntervalId);
+                notificationsIntervalId = null;
+            }
+            if (notificationsAbortController) {
+                notificationsAbortController.abort();
+            }
         }
 
         // Função para formatar data
@@ -526,9 +552,16 @@
             if (notificationComponent) {
                 // Carregar notificações após 1 segundo (aguardar Alpine.js inicializar)
                 setTimeout(() => {
-                    loadNotifications();
-                    setInterval(loadNotifications, 30000); // Atualizar a cada 30 segundos
+                    startNotificationsPolling();
                 }, 1000);
+                // Pausar polling quando a aba não está visível; retomar quando voltar
+                document.addEventListener('visibilitychange', function() {
+                    if (document.hidden) {
+                        stopNotificationsPolling();
+                    } else {
+                        startNotificationsPolling();
+                    }
+                });
             }
         });
     </script>

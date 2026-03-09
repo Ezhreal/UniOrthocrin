@@ -31,7 +31,7 @@ class FileValidationRequest extends FormRequest
             'gallery_images' => 'nullable|array',
             'gallery_images.*' => 'image|mimes:jpeg,jpg,png,webp|max:10240', // 10MB
             'gallery_videos' => 'nullable|array', 
-            'gallery_videos.*' => 'file|mimes:mp4,mov,ogg|max:512000', // 500MB
+            'gallery_videos.*' => 'file|mimes:mp4,mov,ogg|max:102400', // 100MB
         ];
     }
 
@@ -63,7 +63,7 @@ class FileValidationRequest extends FormRequest
     {
         return [
             'videos' => 'nullable|array',
-            'videos.*' => 'file|mimes:mp4,mov,ogg,avi|max:512000', // 100MB
+            'videos.*' => 'file|mimes:mp4,mov,ogg,avi|max:102400', // 100MB
             'files' => 'nullable|array',
             'files.*' => 'file|mimes:pdf|max:512000', // 100MB
         ];
@@ -98,7 +98,7 @@ class FileValidationRequest extends FormRequest
     {
         return [
             'videos' => 'nullable|array',
-            'videos.*' => 'file|mimes:mp4,mov,ogg,avi|max:512000', // 100MB
+            'videos.*' => 'file|mimes:mp4,mov,ogg,avi|max:102400', // 100MB
         ];
     }
 
@@ -134,6 +134,7 @@ class FileValidationRequest extends FormRequest
             'gallery_images.*.image' => 'Apenas arquivos de imagem são permitidos na galeria.',
             'gallery_images.*.mimes' => 'As imagens devem ser nos formatos: JPEG, JPG, PNG ou WEBP.',
             'gallery_videos.*.mimes' => 'Os vídeos devem ser nos formatos: MP4, MOV ou OGG.',
+            'gallery_videos.*.max' => 'Cada vídeo pode ter no máximo 100 MB.',
             
             // Biblioteca
             'files.*.mimes' => 'Arquivos permitidos: imagens (JPEG, JPG, PNG, WEBP), PDF, DOC, DOCX, XLS, XLSX.',
@@ -144,11 +145,16 @@ class FileValidationRequest extends FormRequest
             
             // Treinamento
             'videos.*.mimes' => 'Os vídeos devem ser nos formatos: MP4, MOV, OGG ou AVI.',
+            'videos.*.max' => 'Cada vídeo pode ter no máximo 100 MB.',
             'files.*.mimes' => 'Apenas arquivos PDF são permitidos.',
             
             // Campanhas
             'images.*.mimes' => 'As imagens devem ser nos formatos: JPEG, JPG, PNG ou WEBP.',
             'videos.*.mimes' => 'Os vídeos devem ser nos formatos: MP4, MOV, OGG ou AVI.',
+            'videos_reels.*.mimes' => 'Os Reels devem ser nos formatos: MP4, AVI ou MOV.',
+            'videos_reels.*.max' => 'Cada vídeo de Reels pode ter no máximo 100 MB.',
+            'videos_campaigns.*.mimes' => 'Os vídeos de campanha devem ser nos formatos: MP4, AVI ou MOV.',
+            'videos_campaigns.*.max' => 'Cada vídeo de campanha pode ter no máximo 100 MB.',
             
             // Miscellaneous - Spot (áudio)
             'files.*.mimes' => 'Arquivos de áudio permitidos: MP3, WAV, OGG, AAC, M4A.',

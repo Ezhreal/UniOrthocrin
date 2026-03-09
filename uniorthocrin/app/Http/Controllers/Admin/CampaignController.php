@@ -65,7 +65,9 @@ class CampaignController extends Controller
             'posts_stories_mg_sp' => 'nullable|array',
             'posts_stories_df_es' => 'nullable|array',
             'videos_reels' => 'nullable|array',
+            'videos_reels.*' => 'nullable|file|mimes:mp4,avi,mov|max:102400',
             'videos_campaigns' => 'nullable|array',
+            'videos_campaigns.*' => 'nullable|file|mimes:mp4,avi,mov|max:102400',
             'misc_spot' => 'nullable|array',
             'misc_tag' => 'nullable|array',
             'misc_sticker' => 'nullable|array',
@@ -152,9 +154,9 @@ class CampaignController extends Controller
             'posts_stories_mg_sp' => 'nullable|array',
             'posts_stories_df_es' => 'nullable|array',
             'videos_reels' => 'nullable|array',
-            'videos_reels.*' => 'nullable|file|mimes:mp4,avi,mov|max:51200',
+            'videos_reels.*' => 'nullable|file|mimes:mp4,avi,mov|max:102400',
             'videos_campaigns' => 'nullable|array',
-            'videos_campaigns.*' => 'nullable|file|mimes:mp4,avi,mov|max:51200',
+            'videos_campaigns.*' => 'nullable|file|mimes:mp4,avi,mov|max:102400',
             'misc_spot' => 'nullable|array',
             'misc_tag' => 'nullable|array',
             'misc_sticker' => 'nullable|array',
@@ -620,7 +622,7 @@ class CampaignController extends Controller
 
                     if ($publishOneDrive && $path) {
                         $localPath = storage_path('app/' . $path);
-                        $remotePath = 'Campaigns/' . $campaign->id . '/folders/' . $type . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
+                        $remotePath = 'Campaigns/' . $campaign->id . '/folders/' . $state . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
                         $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
                         \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                     }

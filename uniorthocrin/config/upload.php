@@ -11,7 +11,7 @@ return [
     */
 
     'max_file_size' => 512000, // 500MB em KB
-    'max_video_size' => 512000, // 500MB em KB
+    'max_video_size' => 102400, // 100MB em KB
     'max_audio_size' => 512000, // 500MB em KB
     'max_document_size' => 512000, // 500MB em KB
     'max_image_size' => 10240, // 10MB em KB (imagens menores)

@@ -185,7 +185,7 @@
                             @error('gallery_images.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
-                            
+                            <div id="gallery_images_preview" class="mt-4"></div>
                             
                             <!-- Miniaturas das Imagens Existentes -->
                             @if($product->images && $product->images->count() > 0)
@@ -228,7 +228,7 @@
                             @error('gallery_videos.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
-                            
+                            <div id="gallery_videos_preview" class="mt-4"></div>
                             
                             <!-- Lista dos Vídeos Existentes -->
                             @if($product->videos && $product->videos->count() > 0)
@@ -445,6 +445,120 @@ document.addEventListener('DOMContentLoaded', function() {
             reader.readAsDataURL(file);
         });
     }
+
+    initializeImageUpload('gallery_images', 'gallery_images_preview');
+    initializeFileUpload('gallery_videos', 'gallery_videos_preview');
 });
+
+function initializeImageUpload(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    input.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        const previewContainer = document.getElementById(previewId);
+        if (!previewContainer) return;
+
+        previewContainer.innerHTML = '';
+        if (files.length === 0) return;
+
+        const title = document.createElement('h5');
+        title.className = 'text-modern-body font-medium mb-3';
+        title.textContent = 'Novos Arquivos Selecionados:';
+        previewContainer.appendChild(title);
+
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'flex flex-wrap gap-4 mb-8';
+        previewContainer.appendChild(imageContainer);
+
+        files.forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const thumbnail = createImageThumbnail(file, ev.target.result, index);
+                    imageContainer.appendChild(thumbnail);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+}
+
+function initializeFileUpload(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    input.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        const previewContainer = document.getElementById(previewId);
+        if (!previewContainer) return;
+
+        previewContainer.innerHTML = '';
+        if (files.length === 0) return;
+
+        const title = document.createElement('h5');
+        title.className = 'text-modern-body font-medium mb-3';
+        title.textContent = 'Novos Arquivos Selecionados:';
+        previewContainer.appendChild(title);
+
+        const outerDiv = document.createElement('div');
+        outerDiv.className = 'bg-white border border-gray-200 rounded-lg overflow-hidden';
+        const innerDiv = document.createElement('div');
+        innerDiv.className = 'divide-y divide-gray-200';
+        outerDiv.appendChild(innerDiv);
+        previewContainer.appendChild(outerDiv);
+
+        files.forEach((file, index) => {
+            const fileItem = createFileItem(file, index);
+            innerDiv.appendChild(fileItem);
+        });
+    });
+}
+
+function createImageThumbnail(file, dataUrl, index) {
+    const div = document.createElement('div');
+    div.className = 'relative shrink-0';
+    div.innerHTML = `
+        <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
+            <img src="${dataUrl}" alt="${file.name}" class="w-full h-full object-cover">
+        </div>
+        <button type="button" class="absolute h-8 w-8 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 text-xs" onclick="removeFilePreview(this, ${index})" style="bottom: -15px; right: -13px;">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    return div;
+}
+
+function createFileItem(file, index) {
+    const div = document.createElement('div');
+    div.className = 'flex items-center justify-between p-3 hover:bg-gray-50';
+    const icon = getFileIcon(file.type);
+    div.innerHTML = `
+        <div class="flex items-center space-x-3">
+            <div class="flex-shrink-0">
+                <i class="${icon} text-gray-400 text-lg"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">${file.name}</p>
+            </div>
+        </div>
+        <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200" onclick="removeFilePreview(this, ${index})">
+            <i class="fas fa-trash text-sm"></i>
+        </button>
+    `;
+    return div;
+}
+
+function getFileIcon(mimeType) {
+    if (mimeType.startsWith('image/')) return 'fas fa-image';
+    if (mimeType.startsWith('video/')) return 'fas fa-video';
+    if (mimeType.includes('pdf')) return 'fas fa-file-pdf';
+    return 'fas fa-file';
+}
+
+function removeFilePreview(button, index) {
+    const el = button.closest('.relative') || button.closest('.flex.items-center.justify-between');
+    if (el) el.remove();
+}
 </script>
 @endsection

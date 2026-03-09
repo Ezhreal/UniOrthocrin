@@ -354,7 +354,7 @@ class TrainingController extends Controller
     {
         $request->validate([
             'videos' => 'nullable|array',
-            'videos.*' => 'mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:512000',
+            'videos.*' => 'mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:102400',
             'pdfs' => 'nullable|array',
             'pdfs.*' => 'mimetypes:application/pdf|max:10240',
         ]);

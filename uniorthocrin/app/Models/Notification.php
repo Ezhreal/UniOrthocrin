@@ -130,11 +130,14 @@ class Notification extends Model
 
     /**
      * Buscar notificações não lidas para um usuário
+     * Considera não lida quando read_by é nulo/vazio ou não contém o userId
      */
     public static function unreadForUser(int $userId): \Illuminate\Database\Eloquent\Builder
     {
-        return static::forUser($userId)
-            ->whereJsonDoesntContain('read_by', $userId);
+        return static::forUser($userId)->where(function ($q) use ($userId) {
+            $q->whereNull('read_by')
+              ->orWhereJsonDoesntContain('read_by', $userId);
+        });
     }
 
     /**
