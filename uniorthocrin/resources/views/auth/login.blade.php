@@ -82,6 +82,7 @@
         </div>
     </div>
 
+    {{--
     <!-- Modal aviso de novo endereço da plataforma -->
     <div id="address-change-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6">
@@ -103,7 +104,6 @@
     </div>
 
     <script>
-        // Fecha o modal quando o usuário clicar no botão de fechar
         document.addEventListener('DOMContentLoaded', function () {
             var closeBtn = document.getElementById('close-address-change-modal');
             var modal = document.getElementById('address-change-modal');
@@ -114,6 +114,7 @@
             }
         });
     </script>
+    --}}
 </body>
 
 </html>
