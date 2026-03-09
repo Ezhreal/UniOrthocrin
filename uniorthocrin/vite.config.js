@@ -12,7 +12,7 @@ export default defineConfig({
         host: '0.0.0.0',
         port: 5173,
         hmr: {
-            host: '172.30.242.88', // Isso vai funcionar já que conseguimos acessar
+            host: '127.0.0.1',
             port: 5173,
         },
     },

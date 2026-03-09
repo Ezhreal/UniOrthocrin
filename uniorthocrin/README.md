@@ -1,3 +1,16 @@
+## Docker (desenvolvimento com hot reload)
+
+1. Ajuste o arquivo `.env` com base no `.env.docker.example` (principalmente `DB_HOST=db`, `APP_URL` e `VITE_DEV_SERVER_URL`).
+2. Suba os containers:
+   - `docker compose up --build`
+3. Acesse:
+   - Aplicacao Laravel: `http://localhost:8000`
+   - Vite (HMR): `http://localhost:5173`
+4. O banco MySQL fica persistido no volume `mysql_data`.
+5. O codigo da aplicacao roda por bind mount (`.:/var/www/html`), entao alteracoes locais refletem no container com hot reload.
+
+---
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

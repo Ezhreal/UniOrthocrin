@@ -1,0 +1,62 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uniorthocrin-app
+    working_dir: /var/www/html
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      APP_URL: http://localhost:8000
+      VITE_DEV_SERVER_URL: http://localhost:5173
+    volumes:
+      - ./:/var/www/html
+      - vendor_data:/var/www/html/vendor
+      - node_modules_data:/var/www/html/node_modules
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    command: >
+      sh -lc "composer install &&
+      php artisan migrate --force &&
+      php artisan serve --host=0.0.0.0 --port=8000"
+
+  vite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uniorthocrin-vite
+    working_dir: /var/www/html
+    environment:
+      VITE_DEV_SERVER_URL: http://localhost:5173
+    volumes:
+      - ./:/var/www/html
+      - node_modules_data:/var/www/html/node_modules
+    ports:
+      - "5173:5173"
+    command: >
+      sh -lc "npm install &&
+      npm run dev -- --host 0.0.0.0 --port 5173"
+
+  db:
+    image: mysql:8.4
+    container_name: uniorthocrin-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+  vendor_data:
+  node_modules_data:
