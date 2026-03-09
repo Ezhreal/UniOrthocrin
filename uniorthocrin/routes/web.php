@@ -24,15 +24,8 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login')->m
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/esqueci-senha', [PasswordResetController::class, 'showRequestForm'])->name('password.request')->middleware('guest');
 Route::post('/esqueci-senha', [PasswordResetController::class, 'sendRandomPassword'])->name('password.email')->middleware('guest');
-Route::get('/cadastro', [RegisterController::class, 'selectProfile'])->name('register.select')->middleware('guest');
-Route::get('/cadastro/{profile}', [RegisterController::class, 'showForm'])
-    ->whereIn('profile', ['franquia', 'representante', 'lojista'])
-    ->name('register.profile')
-    ->middleware('guest');
-Route::post('/cadastro/{profile}', [RegisterController::class, 'store'])
-    ->whereIn('profile', ['franquia', 'representante', 'lojista'])
-    ->name('register.profile.store')
-    ->middleware('guest');
+Route::get('/cadastro', [RegisterController::class, 'showForm'])->name('register.profile')->middleware('guest');
+Route::post('/cadastro', [RegisterController::class, 'store'])->name('register.profile.store')->middleware('guest');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Rota raiz - home do site (logado ou não)

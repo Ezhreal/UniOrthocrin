@@ -17,14 +17,12 @@ class RegisterController extends Controller
         'representante' => 4,
     ];
 
-    public function selectProfile()
+    public function showForm(Request $request)
     {
-        return view('auth.register-select');
-    }
-
-    public function showForm(string $profile)
-    {
-        abort_unless($this->isValidProfile($profile), 404);
+        $profile = $request->old('profile', 'franquia');
+        if (! $this->isValidProfile($profile)) {
+            $profile = 'franquia';
+        }
 
         return view('auth.register-profile', [
             'profile' => $profile,
@@ -32,19 +30,19 @@ class RegisterController extends Controller
         ]);
     }
 
-    public function store(Request $request, string $profile)
+    public function store(Request $request)
     {
-        abort_unless($this->isValidProfile($profile), 404);
-
-        $userTypeId = $this->resolveUserTypeId($profile);
-
         $rules = [
+            'profile' => ['required', 'string', Rule::in(array_keys(self::PROFILE_TYPES))],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
 
         $validated = $request->validate($rules);
+
+        $profile = $validated['profile'];
+        $userTypeId = $this->resolveUserTypeId($profile);
 
         $payload = [
             'name' => $validated['name'],

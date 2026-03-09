@@ -71,7 +71,7 @@
                     @endif
                     <div class="flex justify-between mb-2">
                         <a href="{{ route('password.request') }}" class="text-xs text-primary font-semibold hover:underline">Esqueceu a senha?</a>
-                        <a href="{{ route('register.select') }}" class="text-xs text-primary font-semibold hover:underline">Cadastrar-se</a>
+                        <a href="{{ route('register.profile') }}" class="text-xs text-primary font-semibold hover:underline">Cadastrar-se</a>
                     </div>
                     <button type="submit"
                         class="w-full py-3 bg-primary text-white font-bold rounded-full hover:bg-secondary transition-colors duration-200 uppercase tracking-wider text-sm">
