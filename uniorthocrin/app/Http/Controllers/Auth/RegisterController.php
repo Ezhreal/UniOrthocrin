@@ -1,0 +1,102 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\UserType;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+
+class RegisterController extends Controller
+{
+    private const PROFILE_TYPES = [
+        'franquia' => 2,
+        'lojista' => 3,
+        'representante' => 4,
+    ];
+
+    public function selectProfile()
+    {
+        return view('auth.register-select');
+    }
+
+    public function showForm(string $profile)
+    {
+        abort_unless($this->isValidProfile($profile), 404);
+
+        return view('auth.register-profile', [
+            'profile' => $profile,
+            'profileLabel' => $this->profileLabel($profile),
+        ]);
+    }
+
+    public function store(Request $request, string $profile)
+    {
+        abort_unless($this->isValidProfile($profile), 404);
+
+        $userTypeId = $this->resolveUserTypeId($profile);
+
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ];
+
+        $validated = $request->validate($rules);
+
+        $payload = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'user_type_id' => $userTypeId,
+            'status' => 'active',
+        ];
+
+        User::create($payload);
+
+        return redirect()
+            ->route('login')
+            ->with('success', 'Cadastro realizado com sucesso. Faça login para continuar.');
+    }
+
+    private function isValidProfile(string $profile): bool
+    {
+        return array_key_exists($profile, self::PROFILE_TYPES);
+    }
+
+    private function profileLabel(string $profile): string
+    {
+        return match ($profile) {
+            'franquia' => 'Franquia',
+            'representante' => 'Representante',
+            'lojista' => 'Lojista',
+            default => 'Perfil',
+        };
+    }
+
+    private function resolveUserTypeId(string $profile): int
+    {
+        $fallback = self::PROFILE_TYPES[$profile];
+
+        $nameLike = match ($profile) {
+            'franquia' => ['franqueado', 'franquia'],
+            'representante' => ['representante'],
+            'lojista' => ['lojista'],
+            default => [],
+        };
+
+        foreach ($nameLike as $needle) {
+            $found = UserType::query()
+                ->whereRaw('LOWER(name) LIKE ?', ['%' . mb_strtolower($needle) . '%'])
+                ->value('id');
+
+            if ($found) {
+                return (int) $found;
+            }
+        }
+
+        return $fallback;
+    }
+}

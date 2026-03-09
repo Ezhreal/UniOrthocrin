@@ -44,6 +44,7 @@
                     <label for="thumbnail" class="form-label-modern">Thumbnail (imagem)</label>
                     <input type="file" id="thumbnail" name="thumbnail" accept=".jpg,.jpeg,.png"
                            class="form-input-modern @error('thumbnail') border-error-500 @enderror">
+                    <p class="text-xs text-gray-500 mt-1">Tamanho aceito: 640 x 360px (proporção 16:9).</p>
                     @error('thumbnail')
                         <p class="form-error-modern">{{ $message }}</p>
                     @enderror
@@ -298,7 +299,8 @@
                     </div>
                     
                     <div class="space-modern-sm">
-                        <!-- Checkbox OneDrive -->
+                        {{--
+                        <!-- Checkbox OneDrive (temporariamente oculto) -->
                         <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                             <label class="inline-flex items-center space-x-2 cursor-pointer">
                                 <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox text-blue-600">
@@ -306,6 +308,7 @@
                             </label>
                             <p class="text-xs text-blue-600 mt-1">Uploads serão sincronizados automaticamente</p>
                         </div>
+                        --}}
                         
                         <div class="space-y-3">
                             <button type="submit" class="btn-modern-primary w-full">

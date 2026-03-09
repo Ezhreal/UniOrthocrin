@@ -6,7 +6,7 @@
 <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
     <div class="w-full max-w-md py-10">
         <div class="mb-8 flex flex-col items-center">
-            <img src="{{ asset('images/logo.png') }}" alt="UniOrthocrin Logo" class="mb-2 w-32 h-16 object-contain" />
+            <img src="{{ asset('images/std-ver.png') }}" alt="UniOrthocrin Logo" class="mb-2 w-32 h-16 object-contain" />
         </div>
         <h1 class="text-2xl font-bold text-[#910039] mb-2 text-center">Acesso do Administrador</h1>
         <p class="text-[#747474] text-sm text-center mb-8 max-w-xs mx-auto">Entre com suas credenciais para acessar o painel administrativo.</p>

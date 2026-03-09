@@ -47,6 +47,7 @@
                     <label for="thumbnail" class="form-label-modern">Thumbnail (imagem)</label>
                     <input type="file" id="thumbnail" name="thumbnail" accept=".jpg,.jpeg,.png"
                            class="form-input-modern @error('thumbnail') border-error-500 @enderror">
+                    <p class="text-xs text-gray-500 mt-1">Tamanho aceito: 640 x 360px (proporção 16:9).</p>
                     @if($library->thumbnail_path)
                         <p class="text-sm text-gray-600 mt-1">Atual: <a href="/{{ $library->thumbnail_path }}" target="_blank" class="text-primary-600 underline">ver thumbnail</a></p>
                     @endif
@@ -294,7 +295,8 @@
                     
                     <div class="space-modern-sm">
 
-                        <!-- Status OneDrive -->
+                        {{--
+                        <!-- Status OneDrive (temporariamente oculto) -->
                         <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                             <h4 class="text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-cloud mr-1"></i>Status OneDrive
@@ -304,6 +306,7 @@
                                 <x-onedrive-sync-button :item="$library" type="library" />
                             </div>
                         </div>
+                        --}}
                         
                         <div class="space-y-3">
                             <button type="submit" class="btn-modern-primary w-full">

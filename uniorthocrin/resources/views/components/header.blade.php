@@ -3,7 +3,7 @@
         <!-- Logo -->
         <div class="flex items-center flex-shrink-0">
             <a href="/">
-                <img src="{{ asset('images/logo.png') }}" alt="UniOrthocrin" class="h-12 w-auto">
+                <img src="{{ asset('images/std-hor.png') }}" alt="UniOrthocrin" class="h-12 w-auto">
             </a>
         </div>
         
@@ -106,7 +106,7 @@
         
         <!-- Mobile Menu Header -->
         <div class="flex items-center justify-between p-6 border-b border-gray-200">
-            <img src="{{ asset('images/logo.png') }}" alt="UniOrthocrin" class="h-8 w-auto">
+            <img src="{{ asset('images/std-hor.png') }}" alt="UniOrthocrin" class="h-8 w-auto">
             <button @click="mobileMenuOpen = false" class="p-2 text-gray-600 hover:text-[#910039] transition-colors duration-200">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />

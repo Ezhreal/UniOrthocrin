@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - UniOrthocrin</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/std-icon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -37,7 +38,7 @@
             <div class="w-full max-w-md px-4 sm:px-8">
                 <!-- Logo -->
                 <div class="mb-8 flex flex-col items-center">
-                    <img src="{{ asset('images/logo.png') }}" alt="UniOrthocrin Logo" class="mb-2 w-32 h-16 object-contain" />
+                    <img src="{{ asset('images/std-ver.png') }}" alt="UniOrthocrin Logo" class="mb-2 w-32 h-16 object-contain" />
                 </div>
                 <!-- Título -->
                 <h1 class="text-2xl font-bold text-primary mb-2 text-center">Bem vindo de volta</h1>
@@ -63,8 +64,14 @@
                         @endforeach
                     </div>
                     @endif
-                    <div class="flex justify-end mb-2">
-                        <a href="#" class="text-xs text-primary font-semibold hover:underline">Esqueceu a senha?</a>
+                    @if (session('success'))
+                    <div class="text-emerald-600 text-xs mb-2">
+                        <p>{{ session('success') }}</p>
+                    </div>
+                    @endif
+                    <div class="flex justify-between mb-2">
+                        <a href="{{ route('password.request') }}" class="text-xs text-primary font-semibold hover:underline">Esqueceu a senha?</a>
+                        <a href="{{ route('register.select') }}" class="text-xs text-primary font-semibold hover:underline">Cadastrar-se</a>
                     </div>
                     <button type="submit"
                         class="w-full py-3 bg-primary text-white font-bold rounded-full hover:bg-secondary transition-colors duration-200 uppercase tracking-wider text-sm">

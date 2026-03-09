@@ -8,15 +8,15 @@
     @endphp
     @if($showMarketingForUser && isset($featuredCampaigns) && $featuredCampaigns->count() > 0)
         @php $camp = $featuredCampaigns->first(); @endphp
-        <div class="w-full h-56 md:h-80 flex items-center justify-center mb-8">
+        <div class="w-full flex items-center justify-center mb-8" style="height:600px;">
             <a href="{{ route('marketing.detail', $camp->id) }}" class="block w-full h-full">
                 <img src="/{{ $camp->banner_path }}" alt="{{ $camp->name }}" class="w-full h-full object-cover" />
             </a>
         </div>
     @elseif($showMarketingForUser)
         <!-- Placeholder quando não há campanhas featured -->
-        <div class="w-full h-56 md:h-80 flex items-center justify-center mb-8 bg-[#910039]">
-            <div class="text-center text-white">
+        <div class="w-full flex items-center justify-center mb-8 bg-[#910039] py-12 md:py-16">
+            <div class="text-center text-white px-4">
                 <i class="fas fa-bullhorn text-6xl mb-4 opacity-50"></i>
                 <h3 class="text-xl font-bold mb-2">Campanhas de Marketing</h3>
                 <p class="text-sm opacity-75">Em breve, novas campanhas exclusivas para franqueados</p>
@@ -24,7 +24,7 @@
         </div>
     @else
         <!-- Mensagem de boas-vindas para Lojista e Representante -->
-        <div class="w-full h-56 md:h-80 flex items-center justify-center mb-8 bg-[#910039]">
+        <div class="w-full flex items-center justify-center mb-8 bg-[#910039] py-12 md:py-16">
             <div class="text-center text-white max-w-4xl px-4">
                 <i class="fas fa-heart text-6xl mb-6 opacity-75"></i>
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">Bem-vindos à Plataforma Orthocrin</h2>

@@ -27,6 +27,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin - UniOrthocrin')</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/std-icon.png') }}">
     @vite(['resources/css/app.css', 'resources/css/admin-modern.css', 'resources/js/app.js'])
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -64,12 +65,12 @@
             <div class="flex items-center justify-between h-16 px-4">
                 <template x-if="sidebarOpen || mobileMenuOpen">
                     <div class="flex items-center space-x-3">
-                        <img src="{{ asset('images/logo.png') }}" alt="UniOrthocrin" class="h-8 w-auto">
+                        <img src="{{ asset('images/red-hor.png') }}" alt="UniOrthocrin" class="h-8 w-auto">
                     </div>
                 </template>
                 <template x-if="!sidebarOpen && !mobileMenuOpen">
                     <div class="flex items-center justify-center">
-                        <img src="{{ asset('images/logo.png') }}" alt="UniOrthocrin" class="h-8 w-auto">
+                        <img src="{{ asset('images/red-hor.png') }}" alt="UniOrthocrin" class="h-8 w-auto">
                     </div>
                 </template>
                 

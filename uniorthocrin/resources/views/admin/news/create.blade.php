@@ -117,6 +117,7 @@
                                     <i class="fas fa-plus mr-2"></i>
                                     Selecionar Imagem
                                 </label>
+                                <p class="text-xs text-gray-500 mt-3">Tamanho aceito: 640 x 360px (proporção 16:9).</p>
                             </div>
                         </div>
                         
@@ -222,7 +223,8 @@
                     </div>
                     
                     <div class="space-modern-sm">
-                        <!-- Checkbox OneDrive -->
+                        {{--
+                        <!-- Integração OneDrive (temporariamente oculta) -->
                         <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                             <label class="inline-flex items-center space-x-2 cursor-pointer">
                                 <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox text-blue-600">
@@ -231,7 +233,6 @@
                             <p class="text-xs text-blue-600 mt-1">Uploads serão sincronizados automaticamente</p>
                         </div>
 
-                        <!-- Status OneDrive (será preenchido após criação) -->
                         <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                             <h4 class="text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-cloud mr-1"></i>Status OneDrive
@@ -241,6 +242,7 @@
                                 <span class="text-sm font-medium text-gray-500">Status será exibido após salvar</span>
                             </div>
                         </div>
+                        --}}
                         
                         <div class="space-y-3">
                             <button type="submit" class="btn-modern-primary w-full">
@@ -256,10 +258,12 @@
         </div>
 
         <div class="flex justify-end space-x-3">
+            {{--
             <label class="inline-flex items-center space-x-2 mr-auto">
                 <input type="checkbox" name="publish_onedrive" value="1" class="form-checkbox">
                 <span class="text-modern-body">Publicar no OneDrive</span>
             </label>
+            --}}
             <a href="{{ route('admin.news.index') }}" class="btn-modern-secondary">Cancelar</a>
         </div>
     </form>

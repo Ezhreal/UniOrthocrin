@@ -124,6 +124,7 @@
                                         <i class="fas fa-plus mr-2"></i>
                                         Selecionar Imagem
                                     </label>
+                                    <p class="text-xs text-gray-500 mt-3">Tamanho aceito: 640 x 360px (proporção 16:9).</p>
                                 </div>
                             </div>
                             <div id="image-preview" class="mt-4"></div>
@@ -257,7 +258,8 @@
                     
                     <div class="space-modern-sm">
 
-                        <!-- Status OneDrive -->
+                        {{--
+                        <!-- Status OneDrive (temporariamente oculto) -->
                         <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                             <h4 class="text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-cloud mr-1"></i>Status OneDrive
@@ -267,6 +269,7 @@
                                 <x-onedrive-sync-button :item="$news" type="news" />
                             </div>
                         </div>
+                        --}}
                         
                         <div class="space-y-3">
                             <button type="submit" class="btn-modern-primary w-full">
