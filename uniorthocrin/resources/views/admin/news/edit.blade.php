@@ -52,16 +52,6 @@
                             @enderror
                         </div>
 
-                        <div>
-                            <label for="content" class="form-label-modern">Conteúdo *</label>
-                            <textarea id="content" name="content" rows="8" 
-                                      class="form-textarea-modern @error('content') border-error-500 @enderror" required
-                                      placeholder="Digite o conteúdo da notícia...">{{ old('content', $news->content) }}</textarea>
-                            @error('content')
-                                <p class="form-error-modern">{{ $message }}</p>
-                            @enderror
-                        </div>
-
                         <div class="grid-modern grid-modern-2">
                             <div>
                                 <label for="news_category_id" class="form-label-modern">Categoria *</label>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FileValidationRequest;
+use App\Models\File;
 use App\Models\News;
 use App\Models\NewsCategory;
 use App\Models\UserType;
@@ -53,7 +54,6 @@ class NewsController extends Controller
         // Validações básicas + validações específicas de arquivo
         $validationRules = array_merge([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
             'news_category_id' => 'required|exists:news_categories,id',
             'status' => 'required|in:published,draft',
             'permissions' => 'nullable|array',
@@ -64,16 +64,20 @@ class NewsController extends Controller
 
         $request->validate($validationRules, (new FileValidationRequest())->messages());
 
-        $news = News::create($request->only([
-            'title', 'content', 'news_category_id', 'status'
-        ]));
+        $news = News::create([
+            'author_id' => auth()->id(),
+            'title' => $request->input('title'),
+            'content' => $request->input('content'),
+            'news_category_id' => $request->input('news_category_id'),
+            'status' => $request->input('status'),
+        ]);
 
         $publishOneDrive = $request->boolean('publish_onedrive');
         // Handle image upload
         if ($request->hasFile('image')) {
             $imageFile = $request->file('image');
             $path = $imageFile->store('private/news/' . $news->id, 'private');
-            
+
             // Criar o arquivo na tabela files
             $fileRecord = File::create([
                 'name' => $imageFile->getClientOriginalName(),
@@ -84,13 +88,10 @@ class NewsController extends Controller
                 'size' => $imageFile->getSize(),
                 'order' => 0,
             ]);
-            
-            // Associar o arquivo ao news
-            $news->files()->attach($fileRecord->id, [
-                'file_type' => 'image',
-                'sort_order' => 0,
-                'is_primary' => true
-            ]);
+
+            // Associar o arquivo principal à notícia
+            $news->news_file_id = $fileRecord->id;
+            $news->save();
 
             if ($publishOneDrive && $path) {
                 $localPath = storage_path('app/' . $path);
@@ -146,7 +147,6 @@ class NewsController extends Controller
         // Validações básicas + validações específicas de arquivo
         $validationRules = array_merge([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
             'news_category_id' => 'required|exists:news_categories,id',
             'status' => 'required|in:published,draft',
             'permissions' => 'nullable|array',
@@ -161,7 +161,7 @@ class NewsController extends Controller
         try {
             // Atualizar news
             $news->update($request->only([
-                'title', 'content', 'news_category_id', 'status'
+                'title', 'news_category_id', 'status'
             ]));
 
         $publishOneDrive = $request->boolean('publish_onedrive');
@@ -175,14 +175,20 @@ class NewsController extends Controller
 
             $imageFile = $request->file('image');
             $path = $imageFile->store('private/news/' . $news->id, 'private');
-            $news->image()->create([
+
+            // Criar o arquivo na tabela files e associar como principal
+            $fileRecord = File::create([
                 'name' => $imageFile->getClientOriginalName(),
                 'path' => $path,
-                'disk' => 'private',
+                'type' => 'image',
+                'extension' => $this->getFileExtension($imageFile->getClientOriginalName()),
                 'mime_type' => $imageFile->getMimeType(),
                 'size' => $imageFile->getSize(),
-                'file_type' => 'image',
+                'order' => 0,
             ]);
+
+            $news->news_file_id = $fileRecord->id;
+            $news->save();
 
             if ($publishOneDrive && $path) {
                 $localPath = storage_path('app/' . $path);
@@ -255,14 +261,18 @@ class NewsController extends Controller
 
         $imageFile = $request->file('image');
         $path = $imageFile->store('private/news/' . $news->id, 'private');
-        $uploadedImage = $news->image()->create([
+        $uploadedImage = File::create([
             'name' => $imageFile->getClientOriginalName(),
             'path' => $path,
-            'disk' => 'private',
+            'type' => 'image',
+            'extension' => $this->getFileExtension($imageFile->getClientOriginalName()),
             'mime_type' => $imageFile->getMimeType(),
             'size' => $imageFile->getSize(),
-            'file_type' => 'image',
+            'order' => 0,
         ]);
+
+        $news->news_file_id = $uploadedImage->id;
+        $news->save();
 
         return response()->json([
             'success' => true,

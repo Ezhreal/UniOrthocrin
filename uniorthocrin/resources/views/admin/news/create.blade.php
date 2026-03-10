@@ -79,16 +79,6 @@
                                 @enderror
                             </div>
                         </div>
-
-                        <div>
-                            <label for="content" class="form-label-modern">Conteúdo *</label>
-                            <textarea id="content" name="content" rows="8" required
-                                      class="form-textarea-modern @error('content') border-error-500 @enderror"
-                                      placeholder="Digite o conteúdo da notícia...">{{ old('content') }}</textarea>
-                            @error('content')
-                                <p class="form-error-modern">{{ $message }}</p>
-                            @enderror
-                        </div>
                     </div>
                 </div>
 
