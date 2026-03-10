@@ -386,6 +386,94 @@ class ProductController extends Controller
             return response()->json(['error' => 'Erro ao deletar arquivo: ' . $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Upload incremental de imagens e vídeos via AJAX (edição)
+     */
+    public function uploadFiles(Request $request, Product $product)
+    {
+        // Reaproveita as mesmas regras de validação de arquivos dos formulários principais
+        $request->validate(
+            FileValidationRequest::getProductValidationRules(),
+            (new FileValidationRequest())->messages()
+        );
+
+        $publishOneDrive = $request->boolean('publish_onedrive');
+        $uploadedFiles = [];
+
+        // Imagens
+        if ($request->hasFile('gallery_images')) {
+            $currentCount = $product->images()->count();
+
+            foreach ($request->file('gallery_images') as $index => $image) {
+                $path = $image->store("private/products/{$product->id}/images", 'private');
+
+                $file = File::create([
+                    'name' => $image->getClientOriginalName(),
+                    'path' => $path,
+                    'size' => $image->getSize(),
+                    'mime_type' => $image->getMimeType(),
+                    'type' => 'image',
+                    'extension' => $this->getFileExtension($image->getClientOriginalName()),
+                    'order' => $currentCount + $index + 1,
+                ]);
+
+                $product->images()->attach($file->id, [
+                    'file_type' => 'image',
+                    'sort_order' => $currentCount + $index + 1,
+                    'is_primary' => $currentCount === 0 && $index === 0,
+                ]);
+
+                if ($publishOneDrive && $path) {
+                    $localPath = storage_path('app/' . $path);
+                    $remotePath = 'Products/' . $product->id . '/images/' . $file->id . '-image.' . $this->getFileExtension($image->getClientOriginalName());
+                    $sync = $this->createOneDriveSync($product, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                }
+
+                $uploadedFiles[] = $file;
+            }
+        }
+
+        // Vídeos
+        if ($request->hasFile('gallery_videos')) {
+            $currentCount = $product->videos()->count();
+
+            foreach ($request->file('gallery_videos') as $index => $video) {
+                $path = $video->store("private/products/{$product->id}/videos", 'private');
+
+                $file = File::create([
+                    'name' => $video->getClientOriginalName(),
+                    'path' => $path,
+                    'size' => $video->getSize(),
+                    'mime_type' => $video->getMimeType(),
+                    'type' => 'video',
+                    'extension' => $this->getFileExtension($video->getClientOriginalName()),
+                    'order' => $currentCount + $index + 1,
+                ]);
+
+                $product->videos()->attach($file->id, [
+                    'file_type' => 'video',
+                    'sort_order' => $currentCount + $index + 1,
+                    'is_primary' => $currentCount === 0 && $index === 0,
+                ]);
+
+                if ($publishOneDrive && $path) {
+                    $localPath = storage_path('app/' . $path);
+                    $remotePath = 'Products/' . $product->id . '/videos/' . $file->id . '-video.' . $this->getFileExtension($video->getClientOriginalName());
+                    $sync = $this->createOneDriveSync($product, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                }
+
+                $uploadedFiles[] = $file;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'files' => $uploadedFiles,
+        ]);
+    }
     
     private function getFileExtension($filename)
     {

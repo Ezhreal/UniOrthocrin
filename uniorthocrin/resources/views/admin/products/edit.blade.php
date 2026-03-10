@@ -448,7 +448,69 @@ document.addEventListener('DOMContentLoaded', function() {
 
     initializeImageUpload('gallery_images', 'gallery_images_preview');
     initializeFileUpload('gallery_videos', 'gallery_videos_preview');
+
+    // Upload assíncrono em lotes (mesmo padrão de campanhas)
+    setupProductAjaxUploads();
 });
+
+function setupProductAjaxUploads() {
+    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfTokenMeta) return;
+
+    const csrfToken = csrfTokenMeta.getAttribute('content');
+    const uploadUrl = "{{ route('admin.products.files.upload', $product) }}";
+    const BATCH_SIZE = 3; // arquivos por requisição
+
+    const fields = ['gallery_images', 'gallery_videos'];
+
+    fields.forEach((fieldId) => {
+        const input = document.getElementById(fieldId);
+        if (!input) return;
+
+        input.addEventListener('change', function (e) {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+
+            (async () => {
+                try {
+                    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+                        const batch = files.slice(i, i + BATCH_SIZE);
+                        const formData = new FormData();
+                        formData.append('_token', csrfToken);
+                        batch.forEach((file) => {
+                            formData.append(fieldId + '[]', file);
+                        });
+
+                        const response = await fetch(uploadUrl, {
+                            method: 'POST',
+                            body: formData,
+                        });
+
+                        if (!response.ok) {
+                            const text = await response.text();
+                            console.error('Erro no upload:', text);
+                            alert('Erro ao enviar arquivos. Tente enviar menos arquivos por vez.');
+                            return;
+                        }
+
+                        const data = await response.json().catch(() => ({}));
+                        if (!data.success) {
+                            alert((data.message || 'Erro ao enviar arquivos.') + ' Tente enviar menos arquivos por vez.');
+                            return;
+                        }
+                    }
+
+                    // Limpa o input e recarrega para mostrar os novos itens
+                    input.value = '';
+                    window.location.reload();
+                } catch (err) {
+                    console.error(err);
+                    alert('Erro inesperado ao enviar arquivos.');
+                }
+            })();
+        });
+    });
+}
 
 function initializeImageUpload(inputId, previewId) {
     const input = document.getElementById(inputId);

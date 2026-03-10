@@ -732,6 +732,58 @@ class CampaignController extends Controller
         }
     }
 
+    /**
+     * Upload incremental de arquivos via AJAX (posts, folhetos, vídeos, diversos).
+     * Reutiliza exatamente a mesma lógica de processFileUploads.
+     */
+    public function uploadFiles(Request $request, Campaign $campaign)
+    {
+        // Reaproveita as mesmas regras básicas usadas em store/update
+        $validationRules = [
+            'folder_mg_sp' => 'nullable|array',
+            'folder_mg_sp.*' => 'file|mimes:pdf,jpeg,jpg,png,webp|max:' . config('upload.max_document_size'),
+            'folder_df_es' => 'nullable|array',
+            'folder_df_es.*' => 'file|mimes:pdf,jpeg,jpg,png,webp|max:' . config('upload.max_document_size'),
+
+            'posts_feed' => 'nullable|array',
+            'posts_feed.*' => 'image|mimes:jpeg,jpg,png,webp|max:' . config('upload.max_image_size'),
+            'posts_stories_mg_sp' => 'nullable|array',
+            'posts_stories_mg_sp.*' => 'image|mimes:jpeg,jpg,png,webp|max:' . config('upload.max_image_size'),
+            'posts_stories_df_es' => 'nullable|array',
+            'posts_stories_df_es.*' => 'image|mimes:jpeg,jpg,png,webp|max:' . config('upload.max_image_size'),
+
+            'videos_reels' => 'nullable|array',
+            'videos_reels.*' => 'file|mimes:mp4,avi,mov|max:' . config('upload.max_video_size'),
+            'videos_campaigns' => 'nullable|array',
+            'videos_campaigns.*' => 'file|mimes:mp4,avi,mov|max:' . config('upload.max_video_size'),
+
+            'misc_spot' => 'nullable|array',
+            'misc_spot.*' => 'file|mimes:mp3,wav,ogg,aac,m4a|max:' . config('upload.max_audio_size'),
+            'misc_tag' => 'nullable|array',
+            'misc_tag.*' => 'file|mimes:pdf,jpeg,jpg,png,webp|max:' . config('upload.max_document_size'),
+            'misc_sticker' => 'nullable|array',
+            'misc_sticker.*' => 'file|mimes:pdf,jpeg,jpg,png,webp|max:' . config('upload.max_document_size'),
+            'misc_script' => 'nullable|array',
+            'misc_script.*' => 'file|mimes:pdf,doc,docx,txt|max:' . config('upload.max_document_size'),
+            'misc_adesivo' => 'nullable|array',
+            'misc_adesivo.*' => 'file|mimes:pdf,jpeg,jpg,png,webp|max:' . config('upload.max_document_size'),
+            'misc_banner' => 'nullable|array',
+            'misc_banner.*' => 'file|mimes:pdf,jpeg,jpg,png,webp|max:' . config('upload.max_document_size'),
+            'misc_faixa' => 'nullable|array',
+            'misc_faixa.*' => 'file|mimes:pdf,jpeg,jpg,png,webp|max:' . config('upload.max_document_size'),
+        ];
+
+        $request->validate($validationRules, (new FileValidationRequest())->messages());
+
+        // Processa somente os tipos que vieram neste request
+        $this->processFileUploads($request, $campaign);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Arquivos enviados com sucesso.',
+        ]);
+    }
+
     private function createOneDriveSync($campaign, $filePath, $remotePath)
     {
         $sync = OneDriveSync::create([

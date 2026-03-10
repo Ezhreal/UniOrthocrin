@@ -132,7 +132,13 @@
                 @if(isset($treinamentos))
                 @forelse($treinamentos as $treinamento)
             <div class="dashboard-card training-card bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
-                <img src="{{ $treinamento->thumbnail_path ? url('/private/' . $treinamento->thumbnail_path) : ($treinamento->files->first() ? $treinamento->files->first()->url : 'https://placehold.co/600x600?text=Treinamento') }}" alt="{{ $treinamento->name }}" class="w-full h-32 object-cover rounded-t-lg">
+                @php
+                    $imageFile = $treinamento->files->firstWhere('type', 'image');
+                    $thumbSrc = $treinamento->thumbnail_path
+                        ? url('/' . ltrim($treinamento->thumbnail_path, '/'))
+                        : ($imageFile ? $imageFile->url : 'https://placehold.co/600x600?text=Treinamento');
+                @endphp
+                <img src="{{ $thumbSrc }}" alt="{{ $treinamento->name }}" class="w-full h-32 object-cover rounded-t-lg">
                 <div class="p-4 flex-1 flex flex-col justify-between">
                     <div>
                         <div class="text-[#910039] font-bold text-base mb-1">{{ $treinamento->name }}</div>

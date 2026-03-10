@@ -96,6 +96,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     
     // Campaigns
     Route::resource('campaigns', CampaignController::class);
+    Route::post('campaigns/{campaign}/files', [CampaignController::class, 'uploadFiles'])->name('campaigns.files.upload');
     Route::post('campaigns/{campaign}/posts', [CampaignController::class, 'storePost'])->name('campaigns.posts.store');
     Route::post('campaigns/{campaign}/folders', [CampaignController::class, 'storeFolder'])->name('campaigns.folders.store');
     Route::post('campaigns/{campaign}/videos', [CampaignController::class, 'storeVideo'])->name('campaigns.videos.store');

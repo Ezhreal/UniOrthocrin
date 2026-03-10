@@ -882,11 +882,14 @@ window.selectedFiles = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar todos os uploads
+    // Inicializar todos os uploads (preview local)
     initializeFileUploads();
     
     // Restaurar arquivos selecionados se houver erro de validação
     restoreSelectedFiles();
+
+    // Inicializar uploads otimizados em lotes pequenos via AJAX
+    setupCampaignAjaxUploads();
 });
 
 function initializeFileUploads() {
@@ -1133,6 +1136,81 @@ function updateFileInput(input, files) {
     const dt = new DataTransfer();
     files.forEach(file => dt.items.add(file));
     input.files = dt.files;
+}
+
+/**
+ * Upload otimizado em lotes pequenos via AJAX para esta campanha.
+ * Envia poucos arquivos por request para evitar travamentos.
+ */
+function setupCampaignAjaxUploads() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const uploadUrl = "{{ route('admin.campaigns.files.upload', $campaign) }}";
+    const BATCH_SIZE = 3; // arquivos por requisição
+
+    const fields = [
+        'posts_feed',
+        'posts_stories_mg_sp',
+        'posts_stories_df_es',
+        'folder_mg_sp',
+        'folder_df_es',
+        'videos_reels',
+        'videos_campaigns',
+        'misc_spot',
+        'misc_tag',
+        'misc_adesivo',
+        'misc_banner',
+        'misc_faixa',
+        'misc_script',
+    ];
+
+    fields.forEach((fieldId) => {
+        const input = document.getElementById(fieldId);
+        if (!input) return;
+
+        input.addEventListener('change', function (e) {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+
+            // Enviar em lotes pequenos sequenciais
+            (async () => {
+                try {
+                    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+                        const batch = files.slice(i, i + BATCH_SIZE);
+                        const formData = new FormData();
+                        formData.append('_token', csrfToken);
+                        batch.forEach((file) => {
+                            formData.append(fieldId + '[]', file);
+                        });
+
+                        const response = await fetch(uploadUrl, {
+                            method: 'POST',
+                            body: formData,
+                        });
+
+                        if (!response.ok) {
+                            const text = await response.text();
+                            console.error('Erro no upload:', text);
+                            alert('Erro ao enviar arquivos. Tente enviar menos arquivos por vez.');
+                            return;
+                        }
+
+                        const data = await response.json().catch(() => ({}));
+                        if (!data.success) {
+                            alert((data.message || 'Erro ao enviar arquivos.') + ' Tente enviar menos arquivos por vez.');
+                            return;
+                        }
+                    }
+
+                    // Limpar input e recarregar para mostrar novos itens
+                    input.value = '';
+                    window.location.reload();
+                } catch (err) {
+                    console.error(err);
+                    alert('Erro inesperado ao enviar arquivos.');
+                }
+            })();
+        });
+    });
 }
 
 function restoreSelectedFiles() {
