@@ -428,64 +428,6 @@ document.addEventListener('DOMContentLoaded', function() {
             reader.readAsDataURL(file);
         });
     }
-
-    // Upload assíncrono em lotes para arquivos da biblioteca
-    setupLibraryAjaxUploads();
 });
-
-function setupLibraryAjaxUploads() {
-    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
-    if (!csrfTokenMeta) return;
-
-    const csrfToken = csrfTokenMeta.getAttribute('content');
-    const uploadUrl = "{{ route('admin.library.files.upload', $library) }}";
-    const BATCH_SIZE = 3; // arquivos por requisição
-
-    const input = document.getElementById('files');
-    if (!input) return;
-
-    input.addEventListener('change', function (e) {
-        const files = Array.from(e.target.files || []);
-        if (!files.length) return;
-
-        (async () => {
-            try {
-                for (let i = 0; i < files.length; i += BATCH_SIZE) {
-                    const batch = files.slice(i, i + BATCH_SIZE);
-                    const formData = new FormData();
-                    formData.append('_token', csrfToken);
-                    batch.forEach((file) => {
-                        formData.append('files[]', file);
-                    });
-
-                    const response = await fetch(uploadUrl, {
-                        method: 'POST',
-                        body: formData,
-                    });
-
-                    if (!response.ok) {
-                        const text = await response.text();
-                        console.error('Erro no upload:', text);
-                        alert('Erro ao enviar arquivos. Tente enviar menos arquivos por vez.');
-                        return;
-                    }
-
-                    const data = await response.json().catch(() => ({}));
-                    if (!data.success) {
-                        alert((data.message || 'Erro ao enviar arquivos.') + ' Tente enviar menos arquivos por vez.');
-                        return;
-                    }
-                }
-
-                // Limpa o input e recarrega para mostrar os novos itens
-                input.value = '';
-                window.location.reload();
-            } catch (err) {
-                console.error(err);
-                alert('Erro inesperado ao enviar arquivos.');
-            }
-        })();
-    });
-}
 </script>
 @endsection

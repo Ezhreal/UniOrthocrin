@@ -123,7 +123,7 @@
                         </div>
                     </div>
                     <div class="space-modern-sm">
-                        <!-- Galeria de Vídeos -->
+                            <!-- Galeria de Vídeos -->
                         <div>
                             <label for="videos" class="form-label-modern">Galeria de Vídeos</label>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
@@ -146,13 +146,22 @@
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
                             
-                            <!-- Miniaturas dos Vídeos Existentes -->
-                            @if($training->videos && $training->videos->count() > 0)
+                            @php
+                                // Compatível com dados antigos (sem file_type no pivot)
+                                $videoFiles = ($training->videos && $training->videos->count() > 0)
+                                    ? $training->videos
+                                    : $training->files->filter(function ($file) {
+                                        $pivotType = $file->pivot->file_type ?? null;
+                                        return $pivotType === 'video' || ($pivotType === null && $file->type === 'video');
+                                    });
+                            @endphp
+                            <!-- Lista de Vídeos Existentes -->
+                            @if($videoFiles->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">Vídeos Existentes ({{ $training->videos->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">Vídeos Existentes ({{ $videoFiles->count() }})</h5>
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
-                                        @foreach($training->videos as $video)
+                                        @foreach($videoFiles as $video)
                                         <div class="flex items-center justify-between p-3 hover:bg-gray-50">
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
@@ -196,14 +205,22 @@
                             @error('files.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
-                            
+                            @php
+                                // Compatível com dados antigos (sem file_type no pivot)
+                                $pdfFiles = ($training->pdfs && $training->pdfs->count() > 0)
+                                    ? $training->pdfs
+                                    : $training->files->filter(function ($file) {
+                                        $pivotType = $file->pivot->file_type ?? null;
+                                        return $pivotType === 'pdf' || ($pivotType === null && $file->type === 'pdf');
+                                    });
+                            @endphp
                             <!-- Lista dos PDFs Existentes -->
-                            @if($training->pdfs && $training->pdfs->count() > 0)
+                            @if($pdfFiles->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">PDFs Existentes ({{ $training->pdfs->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">PDFs Existentes ({{ $pdfFiles->count() }})</h5>
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
-                                        @foreach($training->pdfs as $file)
+                                        @foreach($pdfFiles as $file)
                                         <div class="flex items-center justify-between p-3 hover:bg-gray-50">
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
@@ -528,68 +545,6 @@ document.addEventListener('DOMContentLoaded', function() {
             reader.readAsDataURL(file);
         });
     }
-
-    // Upload assíncrono em lotes para vídeos e PDFs (mesmo padrão de campanhas)
-    setupTrainingAjaxUploads();
 });
-
-function setupTrainingAjaxUploads() {
-    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
-    if (!csrfTokenMeta) return;
-
-    const csrfToken = csrfTokenMeta.getAttribute('content');
-    const uploadUrl = "{{ route('admin.training.files.upload', $training) }}";
-    const BATCH_SIZE = 3; // arquivos por requisição
-
-    const fields = ['videos', 'files'];
-
-    fields.forEach((fieldId) => {
-        const input = document.getElementById(fieldId);
-        if (!input) return;
-
-        input.addEventListener('change', function (e) {
-            const files = Array.from(e.target.files || []);
-            if (!files.length) return;
-
-            (async () => {
-                try {
-                    for (let i = 0; i < files.length; i += BATCH_SIZE) {
-                        const batch = files.slice(i, i + BATCH_SIZE);
-                        const formData = new FormData();
-                        formData.append('_token', csrfToken);
-                        batch.forEach((file) => {
-                            formData.append(fieldId + '[]', file);
-                        });
-
-                        const response = await fetch(uploadUrl, {
-                            method: 'POST',
-                            body: formData,
-                        });
-
-                        if (!response.ok) {
-                            const text = await response.text();
-                            console.error('Erro no upload:', text);
-                            alert('Erro ao enviar arquivos. Tente enviar menos arquivos por vez.');
-                            return;
-                        }
-
-                        const data = await response.json().catch(() => ({}));
-                        if (!data.success) {
-                            alert((data.message || 'Erro ao enviar arquivos.') + ' Tente enviar menos arquivos por vez.');
-                            return;
-                        }
-                    }
-
-                    // Limpa o input e recarrega para mostrar os novos itens
-                    input.value = '';
-                    window.location.reload();
-                } catch (err) {
-                    console.error(err);
-                    alert('Erro inesperado ao enviar arquivos.');
-                }
-            })();
-        });
-    });
-}
 </script>
 @endsection

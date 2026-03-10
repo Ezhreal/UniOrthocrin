@@ -369,56 +369,7 @@ function deleteImage(newsId) {
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Upload assíncrono da imagem única (mesmo padrão geral, mas 1 arquivo)
-    setupNewsAjaxImageUpload();
+    // nada extra além do preview; upload volta a ser só pelo submit do form
 });
-
-function setupNewsAjaxImageUpload() {
-    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
-    if (!csrfTokenMeta) return;
-
-    const csrfToken = csrfTokenMeta.getAttribute('content');
-    const uploadUrl = "{{ route('admin.news.image.upload', $news) }}";
-
-    const input = document.getElementById('image');
-    if (!input) return;
-
-    input.addEventListener('change', function (e) {
-        const file = (e.target.files || [])[0];
-        if (!file) return;
-
-        (async () => {
-            try {
-                const formData = new FormData();
-                formData.append('_token', csrfToken);
-                formData.append('image', file);
-
-                const response = await fetch(uploadUrl, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                    const text = await response.text();
-                    console.error('Erro no upload:', text);
-                    alert('Erro ao enviar imagem. Tente novamente.');
-                    return;
-                }
-
-                const data = await response.json().catch(() => ({}));
-                if (!data.success) {
-                    alert((data.message || 'Erro ao enviar imagem.') + ' Tente novamente.');
-                    return;
-                }
-
-                input.value = '';
-                window.location.reload();
-            } catch (err) {
-                console.error(err);
-                alert('Erro inesperado ao enviar imagem.');
-            }
-        })();
-    });
-}
 </script>
 @endsection

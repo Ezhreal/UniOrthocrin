@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\UserNotificationRepository;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
@@ -19,14 +20,26 @@ class UserNotificationService
     
     /**
      * Obtém notificações não lidas para o usuário atual
+     *
+     * IMPORTANTE:
+     * - Agora usamos o model Notification (notifications_optimized),
+     *   que já suporta alvo por perfil (user_type), usuários específicos
+     *   e para todos, em vez de uma tabela separada por usuário.
      */
     public function getCurrentUserUnreadNotifications(int $limit = null): Collection
     {
         if (!Auth::check()) {
             return collect();
         }
-        
-        return $this->userNotificationRepository->getUnreadNotifications(Auth::id(), $limit);
+
+        $query = Notification::unreadForUser(Auth::id())
+            ->orderBy('created_at', 'desc');
+
+        if ($limit) {
+            $query->limit($limit);
+        }
+
+        return $query->get();
     }
     
     /**
@@ -37,8 +50,20 @@ class UserNotificationService
         if (!Auth::check()) {
             return collect();
         }
-        
-        return $this->userNotificationRepository->getUserNotifications(Auth::id(), $limit, $includeRead);
+
+        $query = Notification::forUser(Auth::id())
+            ->orderBy('created_at', 'desc');
+
+        if (!$includeRead) {
+            $query = Notification::unreadForUser(Auth::id())
+                ->orderBy('created_at', 'desc');
+        }
+
+        if ($limit) {
+            $query->limit($limit);
+        }
+
+        return $query->get();
     }
     
     /**
@@ -73,8 +98,16 @@ class UserNotificationService
         if (!Auth::check()) {
             return collect();
         }
-        
-        return $this->userNotificationRepository->getRecentNotifications(Auth::id(), $days, $limit);
+
+        $query = Notification::forUser(Auth::id())
+            ->where('created_at', '>=', Carbon::now()->subDays($days))
+            ->orderBy('created_at', 'desc');
+
+        if ($limit) {
+            $query->limit($limit);
+        }
+
+        return $query->get();
     }
     
     /**
@@ -85,14 +118,16 @@ class UserNotificationService
         if (!Auth::check()) {
             return false;
         }
-        
-        $notification = $this->userNotificationRepository->getUserNotifications(Auth::id())->where('id', $notificationId)->first();
-        
-        // Verifica se a notificação pertence ao usuário atual
-        if ($notification && $notification->user_id === Auth::id()) {
-            return $this->userNotificationRepository->markAsRead($notificationId);
+
+        $notification = Notification::forUser(Auth::id())
+            ->where('id', $notificationId)
+            ->first();
+
+        if ($notification) {
+            $notification->markAsReadBy(Auth::id());
+            return true;
         }
-        
+
         return false;
     }
     
@@ -104,18 +139,20 @@ class UserNotificationService
         if (!Auth::check()) {
             return 0;
         }
-        
-        // Filtra apenas notificações do usuário atual
-        $userNotifications = $this->userNotificationRepository->getUserNotifications(Auth::id())
+
+        $userId = Auth::id();
+
+        $notifications = Notification::forUser($userId)
             ->whereIn('id', $notificationIds)
-            ->pluck('id')
-            ->toArray();
-        
-        if (!empty($userNotifications)) {
-            return $this->userNotificationRepository->markMultipleAsRead($userNotifications);
+            ->get();
+
+        $count = 0;
+        foreach ($notifications as $notification) {
+            $notification->markAsReadBy($userId);
+            $count++;
         }
-        
-        return 0;
+
+        return $count;
     }
     
     /**
@@ -126,8 +163,17 @@ class UserNotificationService
         if (!Auth::check()) {
             return 0;
         }
-        
-        return $this->userNotificationRepository->markAllAsRead(Auth::id());
+
+        $userId = Auth::id();
+        $notifications = Notification::unreadForUser($userId)->get();
+        $count = 0;
+
+        foreach ($notifications as $notification) {
+            $notification->markAsReadBy($userId);
+            $count++;
+        }
+
+        return $count;
     }
     
     /**
@@ -138,14 +184,16 @@ class UserNotificationService
         if (!Auth::check()) {
             return false;
         }
-        
-        $notification = $this->userNotificationRepository->getUserNotifications(Auth::id())->where('id', $notificationId)->first();
-        
-        // Verifica se a notificação pertence ao usuário atual
-        if ($notification && $notification->user_id === Auth::id()) {
-            return $this->userNotificationRepository->markAsUnread($notificationId);
+
+        $notification = Notification::forUser(Auth::id())
+            ->where('id', $notificationId)
+            ->first();
+
+        if ($notification) {
+            $notification->markAsUnreadBy(Auth::id());
+            return true;
         }
-        
+
         return false;
     }
     
@@ -157,14 +205,17 @@ class UserNotificationService
         if (!Auth::check()) {
             return false;
         }
-        
-        $notification = $this->userNotificationRepository->getUserNotifications(Auth::id())->where('id', $notificationId)->first();
-        
-        // Verifica se a notificação pertence ao usuário atual
-        if ($notification && $notification->user_id === Auth::id()) {
-            return $this->userNotificationRepository->deleteNotification($notificationId);
+
+        // ATENÇÃO: hoje remover notificação no front remove o registro global.
+        // Mantemos o comportamento atual para não quebrar fluxos existentes.
+        $notification = Notification::forUser(Auth::id())
+            ->where('id', $notificationId)
+            ->first();
+
+        if ($notification) {
+            return (bool) $notification->delete();
         }
-        
+
         return false;
     }
     
@@ -176,18 +227,20 @@ class UserNotificationService
         if (!Auth::check()) {
             return 0;
         }
-        
-        // Filtra apenas notificações do usuário atual
-        $userNotifications = $this->userNotificationRepository->getUserNotifications(Auth::id())
+
+        $userId = Auth::id();
+
+        $notifications = Notification::forUser($userId)
             ->whereIn('id', $notificationIds)
-            ->pluck('id')
-            ->toArray();
-        
-        if (!empty($userNotifications)) {
-            return $this->userNotificationRepository->deleteMultipleNotifications($userNotifications);
+            ->get();
+
+        $ids = $notifications->pluck('id')->all();
+
+        if (empty($ids)) {
+            return 0;
         }
-        
-        return 0;
+
+        return Notification::whereIn('id', $ids)->delete();
     }
     
     /**
@@ -198,8 +251,22 @@ class UserNotificationService
         if (!Auth::check()) {
             return 0;
         }
-        
-        return $this->userNotificationRepository->deleteReadNotifications(Auth::id(), $daysOld);
+
+        $userId = Auth::id();
+
+        $threshold = Carbon::now()->subDays($daysOld);
+
+        $notifications = Notification::forUser($userId)
+            ->where('created_at', '<', $threshold)
+            ->get();
+
+        $ids = $notifications->pluck('id')->all();
+
+        if (empty($ids)) {
+            return 0;
+        }
+
+        return Notification::whereIn('id', $ids)->delete();
     }
     
     /**
@@ -210,8 +277,22 @@ class UserNotificationService
         if (!Auth::check()) {
             return [];
         }
-        
-        return $this->userNotificationRepository->getNotificationStats(Auth::id());
+
+        $userId = Auth::id();
+
+        $totalNotifications = Notification::forUser($userId)->count();
+        $unreadCount = Notification::unreadForUser($userId)->count();
+
+        // "Lidas" = total - não lidas (já que usamos read_by por usuário)
+        $readCount = max(0, $totalNotifications - $unreadCount);
+
+        return [
+            'total_notifications' => $totalNotifications,
+            'unread_count' => $unreadCount,
+            'read_count' => $readCount,
+            'notifications_by_type' => collect(), // não utilizado hoje no front
+            'last_notification_at' => Notification::forUser($userId)->max('created_at'),
+        ];
     }
     
     /**
@@ -222,8 +303,8 @@ class UserNotificationService
         if (!Auth::check()) {
             return 0;
         }
-        
-        return $this->userNotificationRepository->getUnreadCount(Auth::id());
+
+        return Notification::unreadCountForUser(Auth::id());
     }
     
     /**
@@ -234,8 +315,8 @@ class UserNotificationService
         if (!Auth::check()) {
             return false;
         }
-        
-        return $this->userNotificationRepository->hasUnreadNotifications(Auth::id());
+
+        return Notification::unreadForUser(Auth::id())->exists();
     }
     
     /**
@@ -246,8 +327,11 @@ class UserNotificationService
         if (!Auth::check()) {
             return collect();
         }
-        
-        return $this->userNotificationRepository->getNotificationsForDropdown(Auth::id(), $limit);
+
+        return Notification::unreadForUser(Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
     
     /**
@@ -315,7 +399,8 @@ class UserNotificationService
         if (!Auth::check()) {
             return [];
         }
-        
+
+        $userId = Auth::id();
         $notifications = $this->getCurrentUserNotificationsForDropdown($limit);
         
         return $notifications->map(function ($notification) {
@@ -328,7 +413,8 @@ class UserNotificationService
                 'related_id' => $notification->related_id,
                 'created_at' => $notification->created_at->diffForHumans(),
                 'created_at_raw' => $notification->created_at->toISOString(),
-                'is_read' => $notification->isRead(),
+                // Em notifications_optimized, "lida" = userId presente em read_by
+                'is_read' => $notification->isReadBy(Auth::id()),
                 'type_icon' => $this->getTypeIcon($notification->type),
                 'type_color' => $this->getTypeColor($notification->type),
             ];
