@@ -120,17 +120,17 @@
                             <i class="fas fa-file-pdf text-secondary-500"></i>
                         </div>
                         <div>
-                            <h3 class="modern-card-title">PDFs ({{ $training->files ? $training->files->count() : 0 }})</h3>
+                            <h3 class="modern-card-title">PDFs ({{ $training->pdfs ? $training->pdfs->count() : 0 }})</h3>
                             <p class="modern-card-subtitle">Materiais em PDF</p>
                         </div>
                     </div>
                 </div>
                 
                 <div class="space-modern-sm">
-                    @if($training->files && $training->files->count() > 0)
+                    @if($training->pdfs && $training->pdfs->count() > 0)
                     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                         <div class="divide-y divide-gray-200">
-                            @foreach($training->files as $file)
+                            @foreach($training->pdfs as $file)
                             <div class="flex items-center justify-between p-3 hover:bg-gray-50">
                                 <div class="flex items-center space-x-3">
                                     <div class="flex-shrink-0">

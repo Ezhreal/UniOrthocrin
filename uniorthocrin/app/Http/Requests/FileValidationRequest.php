@@ -31,7 +31,7 @@ class FileValidationRequest extends FormRequest
             'gallery_images' => 'nullable|array',
             'gallery_images.*' => 'image|mimes:jpeg,jpg,png,webp|max:10240', // 10MB
             'gallery_videos' => 'nullable|array', 
-            'gallery_videos.*' => 'file|mimes:mp4,mov,ogg|max:102400', // 100MB
+            'gallery_videos.*' => 'file|mimes:mp4,mov,ogg|max:' . config('upload.max_video_size'), // 500MB
         ];
     }
 
@@ -63,9 +63,9 @@ class FileValidationRequest extends FormRequest
     {
         return [
             'videos' => 'nullable|array',
-            'videos.*' => 'file|mimes:mp4,mov,ogg,avi|max:102400', // 100MB
+            'videos.*' => 'file|mimes:mp4,mov,ogg,avi|max:' . config('upload.max_video_size'), // 500MB
             'files' => 'nullable|array',
-            'files.*' => 'file|mimes:pdf|max:512000', // 100MB
+            'files.*' => 'file|mimes:pdf|max:512000', // 500MB
         ];
     }
 
@@ -98,7 +98,7 @@ class FileValidationRequest extends FormRequest
     {
         return [
             'videos' => 'nullable|array',
-            'videos.*' => 'file|mimes:mp4,mov,ogg,avi|max:102400', // 100MB
+            'videos.*' => 'file|mimes:mp4,mov,ogg,avi|max:' . config('upload.max_video_size'), // 500MB
         ];
     }
 
@@ -109,7 +109,7 @@ class FileValidationRequest extends FormRequest
     {
         return [
             'files' => 'nullable|array',
-            'files.*' => 'file|mimes:mp3,wav,ogg,aac,m4a|max:512000', // 100MB
+            'files.*' => 'file|mimes:mp3,wav,ogg,aac,m4a|max:512000', // 500MB
         ];
     }
 

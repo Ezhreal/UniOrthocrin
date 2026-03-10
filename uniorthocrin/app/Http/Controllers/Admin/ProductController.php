@@ -218,7 +218,7 @@ class ProductController extends Controller
                 if ($publishOneDrive && $thumbPath) {
                     $localPath = storage_path('app/' . $thumbPath);
                     $remotePath = 'Products/' . $product->id . '/thumb-' . $product->id . '.' . $this->getFileExtension($thumb->getClientOriginalName());
-                    $sync = $this->createOneDriveSync($product, $path, $remotePath);
+                    $sync = $this->createOneDriveSync($product, $thumbPath, $remotePath);
                     \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                 }
             }

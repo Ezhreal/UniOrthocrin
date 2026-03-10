@@ -191,7 +191,7 @@ class LibraryController extends Controller
             if ($publishOneDrive && $thumbPath) {
                 $localPath = storage_path('app/' . $thumbPath);
                 $remotePath = 'Library/' . $library->id . '/thumb-' . $library->id . '.' . $this->getFileExtension($thumb->getClientOriginalName());
-                $sync = $this->createOneDriveSync($library, $path, $remotePath);
+                $sync = $this->createOneDriveSync($library, $thumbPath, $remotePath);
                 \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
             }
         }

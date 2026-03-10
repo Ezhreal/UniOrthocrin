@@ -174,7 +174,7 @@
                             @endif
                         </div>
 
-                        <!-- Galeria de PDFs -->
+                            <!-- Galeria de PDFs -->
                         <div class="mt-6">
                             <label for="files" class="form-label-modern">Galeria de PDFs</label>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
@@ -197,13 +197,13 @@
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
                             
-                            <!-- Miniaturas dos PDFs Existentes -->
-                            @if($training->files && $training->files->count() > 0)
+                            <!-- Lista dos PDFs Existentes -->
+                            @if($training->pdfs && $training->pdfs->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">PDFs Existentes ({{ $training->files->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">PDFs Existentes ({{ $training->pdfs->count() }})</h5>
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
-                                        @foreach($training->files as $file)
+                                        @foreach($training->pdfs as $file)
                                         <div class="flex items-center justify-between p-3 hover:bg-gray-50">
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">

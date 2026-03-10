@@ -20,8 +20,14 @@
                 <h2 class="text-2xl font-bold text-[#910039] mb-6">{{ $categoryGroup['category']->name ?? 'Sem Categoria' }}</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-8">
                     @foreach($categoryGroup['trainings'] as $training)
+                    @php
+                        $imageFile = $training->files->firstWhere('type', 'image');
+                        $thumbSrc = $training->thumbnail_path
+                            ? url('/' . ltrim($training->thumbnail_path, '/'))
+                            : ($imageFile ? $imageFile->url : 'https://placehold.co/600x600?text=Treinamento');
+                    @endphp
                     <div class="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
-                        <img src="{{ $training->thumbnail_path ? url('/private/' . $training->thumbnail_path) : ($training->files->first() ? $training->files->first()->url : 'https://placehold.co/600x600?text=Treinamento') }}" alt="{{ $training->name }}" class="w-full h-32 object-cover rounded-t-lg">
+                        <img src="{{ $thumbSrc }}" alt="{{ $training->name }}" class="w-full h-32 object-cover rounded-t-lg">
                         <div class="p-4 flex-1 flex flex-col justify-between">
                             <div>
                                 <div class="text-[#910039] font-bold text-base mb-1">{{ $training->name }}</div>
@@ -67,8 +73,14 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-8">
                 @forelse($trainings as $training)
+                @php
+                    $imageFile = $training->files->firstWhere('type', 'image');
+                    $thumbSrc = $training->thumbnail_path
+                        ? url('/' . ltrim($training->thumbnail_path, '/'))
+                        : ($imageFile ? $imageFile->url : 'https://placehold.co/600x600?text=Treinamento');
+                @endphp
                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
-                    <img src="{{ $training->thumbnail_path ? url('/private/' . $training->thumbnail_path) : ($training->files->first() ? $training->files->first()->url : 'https://placehold.co/600x600?text=Treinamento') }}" alt="{{ $training->name }}" class="w-full h-32 object-cover rounded-t-lg">
+                    <img src="{{ $thumbSrc }}" alt="{{ $training->name }}" class="w-full h-32 object-cover rounded-t-lg">
                     <div class="p-4 flex-1 flex flex-col justify-between">
                         <div>
                             <div class="text-[#910039] font-bold text-base mb-1">{{ $training->name }}</div>

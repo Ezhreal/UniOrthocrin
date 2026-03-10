@@ -120,10 +120,15 @@
                     <h3 class="text-[#910039] font-bold text-lg mb-4">Lista de Vídeos</h3>
                     <div class="space-y-0">
                         @forelse($training->files()->where('type', 'video')->get() as $video)
+                        @php
+                            $thumbSrc = $training->thumbnail_path
+                                ? url('/' . ltrim($training->thumbnail_path, '/'))
+                                : 'https://placehold.co/600x600?text=Vídeo';
+                        @endphp
                         <div class="video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t {{ $loop->last ? 'border-b' : '' }} border-gray-200" data-video="{{ $video->id }}" data-title="{{ $video->name }}">
                             <div class="flex gap-3">
                                 <div class="w-20 h-12 bg-gray-300 rounded overflow-hidden flex-shrink-0">
-                                    <img src="{{ $training->thumbnail_path ? url('/private/' . $training->thumbnail_path) : 'https://placehold.co/600x600?text=Vídeo' }}" alt="Thumbnail" class="w-full h-full object-cover">
+                                    <img src="{{ $thumbSrc }}" alt="Thumbnail" class="w-full h-full object-cover">
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h4 class="text-[#910039] font-semibold text-sm mb-1">{{ $video->name }}</h4>
@@ -227,8 +232,14 @@
             
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                 @forelse(App\Models\Training::where('training_category_id', $training->training_category_id)->where('id', '!=', $training->id)->where('status', 'active')->take(3)->get() as $otherTraining)
+                @php
+                    $imageFile = $otherTraining->files->firstWhere('type', 'image');
+                    $otherThumbSrc = $otherTraining->thumbnail_path
+                        ? url('/' . ltrim($otherTraining->thumbnail_path, '/'))
+                        : ($imageFile ? $imageFile->url : 'https://placehold.co/600x600?text=Treinamento');
+                @endphp
                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
-                    <img src="{{ $otherTraining->thumbnail_path ? url('/private/' . $otherTraining->thumbnail_path) : ($otherTraining->files->first() ? $otherTraining->files->first()->url : 'https://placehold.co/600x600?text=Treinamento') }}" alt="{{ $otherTraining->name }}" class="w-full h-32 object-cover rounded-t-lg">
+                    <img src="{{ $otherThumbSrc }}" alt="{{ $otherTraining->name }}" class="w-full h-32 object-cover rounded-t-lg">
                     <div class="p-4 flex-1 flex flex-col justify-between">
                         <div>
                             <div class="text-[#910039] font-bold text-base mb-1">{{ $otherTraining->name }}</div>

@@ -111,9 +111,10 @@ class TrainingController extends Controller
             }
         }
 
-        // Handle PDF uploads
-        if ($request->hasFile('pdfs')) {
-            foreach ($request->file('pdfs') as $pdfFile) {
+        // Handle PDF uploads (aceita tanto 'files' quanto 'pdfs' para compatibilidade)
+        $pdfInputKey = $request->hasFile('files') ? 'files' : ($request->hasFile('pdfs') ? 'pdfs' : null);
+        if ($pdfInputKey !== null) {
+            foreach ($request->file($pdfInputKey) as $pdfFile) {
                 $path = $pdfFile->store('private/trainings/' . $training->id, 'private');
                 
                 // Criar o arquivo na tabela files
@@ -173,7 +174,7 @@ class TrainingController extends Controller
 
     public function show(Training $training)
     {
-        $training->load(['category', 'videos', 'files', 'permissions.userType']);
+        $training->load(['category', 'videos', 'files', 'pdfs', 'permissions.userType']);
         $userTypes = UserType::orderBy('name')->get();
         return view('admin.training.show', compact('training', 'userTypes'));
     }
@@ -182,7 +183,7 @@ class TrainingController extends Controller
     {
         $categories = TrainingCategory::orderBy('name')->get();
         $userTypes = UserType::orderBy('name')->get();
-        $training->load(['videos', 'files', 'permissions.userType']);
+        $training->load(['videos', 'files', 'pdfs', 'permissions.userType']);
 
         return view('admin.training.edit', compact('training', 'categories', 'userTypes'));
     }
@@ -261,9 +262,10 @@ class TrainingController extends Controller
             }
         }
 
-        // Handle new PDF uploads
-        if ($request->hasFile('pdfs')) {
-            foreach ($request->file('pdfs') as $pdfFile) {
+        // Handle new PDF uploads (aceita tanto 'files' quanto 'pdfs' para compatibilidade)
+        $pdfInputKey = $request->hasFile('files') ? 'files' : ($request->hasFile('pdfs') ? 'pdfs' : null);
+        if ($pdfInputKey !== null) {
+            foreach ($request->file($pdfInputKey) as $pdfFile) {
                 $path = $pdfFile->store('private/trainings/' . $training->id, 'private');
                 
                 // Criar o arquivo na tabela files
@@ -354,9 +356,12 @@ class TrainingController extends Controller
     {
         $request->validate([
             'videos' => 'nullable|array',
-            'videos.*' => 'mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:102400',
+            'videos.*' => 'mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:' . config('upload.max_video_size'),
+            // Aceita tanto 'pdfs' quanto 'files' para uploads de PDF
             'pdfs' => 'nullable|array',
             'pdfs.*' => 'mimetypes:application/pdf|max:10240',
+            'files' => 'nullable|array',
+            'files.*' => 'mimetypes:application/pdf|max:10240',
         ]);
 
         $uploadedFiles = [];
@@ -388,9 +393,10 @@ class TrainingController extends Controller
             }
         }
 
-        // Handle PDF uploads
-        if ($request->hasFile('pdfs')) {
-            foreach ($request->file('pdfs') as $pdfFile) {
+        // Handle PDF uploads (aceita tanto 'files' quanto 'pdfs')
+        $pdfInputKey = $request->hasFile('files') ? 'files' : ($request->hasFile('pdfs') ? 'pdfs' : null);
+        if ($pdfInputKey !== null) {
+            foreach ($request->file($pdfInputKey) as $pdfFile) {
                 $path = $pdfFile->store('private/trainings/' . $training->id, 'private');
                 
                 // Criar o arquivo
