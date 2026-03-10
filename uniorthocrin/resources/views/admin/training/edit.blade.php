@@ -145,6 +145,9 @@
                             @error('videos.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
+
+                            <!-- Preview dos NOVOS vídeos selecionados nesta edição -->
+                            <div id="videos_preview" class="mt-4"></div>
                             
                             @php
                                 // Compatível com dados antigos (sem file_type no pivot)
@@ -205,6 +208,10 @@
                             @error('files.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
+
+                            <!-- Preview dos NOVOS PDFs selecionados nesta edição -->
+                            <div id="files_preview" class="mt-4"></div>
+
                             @php
                                 // Compatível com dados antigos (sem file_type no pivot)
                                 $pdfFiles = ($training->pdfs && $training->pdfs->count() > 0)
@@ -321,7 +328,17 @@
                                 <div class="text-modern-caption">Vídeos</div>
                             </div>
                             <div class="text-center p-3 bg-secondary-50 rounded-xl">
-                                <div class="text-2xl font-bold text-secondary-500">{{ $training->files ? $training->files->count() : 0 }}</div>
+                                @php
+                                    $pdfCountStats = ($training->pdfs && $training->pdfs->count() > 0)
+                                        ? $training->pdfs->count()
+                                        : $training->files
+                                            ? $training->files->filter(function ($file) {
+                                                $pivotType = $file->pivot->file_type ?? null;
+                                                return $pivotType === 'pdf' || ($pivotType === null && $file->type === 'pdf');
+                                            })->count()
+                                            : 0;
+                                @endphp
+                                <div class="text-2xl font-bold text-secondary-500">{{ $pdfCountStats }}</div>
                                 <div class="text-modern-caption">PDFs</div>
                             </div>
                         </div>
@@ -545,6 +562,82 @@ document.addEventListener('DOMContentLoaded', function() {
             reader.readAsDataURL(file);
         });
     }
+
+    // Preview dos NOVOS vídeos/PDFs adicionados nesta edição
+    initializeFileUpload('videos', 'videos_preview');
+    initializeFileUpload('files', 'files_preview');
 });
+
+function initializeFileUpload(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    input.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files || []);
+        const previewContainer = document.getElementById(previewId);
+        if (!previewContainer) return;
+
+        // Limpar preview anterior
+        previewContainer.innerHTML = '';
+        if (files.length === 0) return;
+
+        // Título
+        const title = document.createElement('h5');
+        title.className = 'text-modern-body font-medium mb-3';
+        title.textContent = inputId === 'videos' ? 'Novos Vídeos Selecionados:' : 'Novos PDFs Selecionados:';
+        previewContainer.appendChild(title);
+
+        // Container de arquivos
+        const outerDiv = document.createElement('div');
+        outerDiv.className = 'bg-white border border-gray-200 rounded-lg overflow-hidden';
+
+        const innerDiv = document.createElement('div');
+        innerDiv.className = 'divide-y divide-gray-200';
+
+        outerDiv.appendChild(innerDiv);
+        previewContainer.appendChild(outerDiv);
+
+        files.forEach((file, index) => {
+            const fileItem = createFileItem(file, index);
+            innerDiv.appendChild(fileItem);
+        });
+    });
+}
+
+function createFileItem(file, index) {
+    const div = document.createElement('div');
+    div.className = 'flex items-center justify-between p-3 hover:bg-gray-50';
+
+    const icon = getFileIcon(file.type);
+
+    div.innerHTML = `
+        <div class="flex items-center space-x-3">
+            <div class="flex-shrink-0">
+                <i class="${icon} text-gray-400 text-lg"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">${file.name}</p>
+            </div>
+        </div>
+        <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200" onclick="removeFilePreview(this, ${index})">
+            <i class="fas fa-trash text-sm"></i>
+        </button>
+    `;
+
+    return div;
+}
+
+function getFileIcon(mimeType) {
+    if (mimeType.startsWith('video/')) return 'fas fa-video';
+    if (mimeType.includes('pdf')) return 'fas fa-file-pdf';
+    if (mimeType.startsWith('image/')) return 'fas fa-image';
+    return 'fas fa-file';
+}
+
+function removeFilePreview(button, index) {
+    // Aqui só removemos o item visual; o input continua com os arquivos selecionados
+    const el = button.closest('.flex');
+    if (el) el.remove();
+}
 </script>
 @endsection
