@@ -292,6 +292,15 @@
                                     </label>
                                 </div>
                             </div>
+                            @include('admin.partials.uppy-chunk-upload', [
+                                'containerId' => 'uppy-campaign-reels',
+                                'module' => 'campaign',
+                                'title' => 'Reels (arquivos grandes até 500 MB)',
+                                'accept' => '.mp4,.avi,.mov',
+                                'uploadUrl' => null,
+                                'inputName' => 'resolved_paths_reels[]',
+                                'pathsContainerId' => 'resolved_paths_reels_container',
+                            ])
                         </div>
                         
                         <!-- Campanhas -->
@@ -310,6 +319,15 @@
                                     </label>
                                 </div>
                             </div>
+                            @include('admin.partials.uppy-chunk-upload', [
+                                'containerId' => 'uppy-campaign-campaigns',
+                                'module' => 'campaign',
+                                'title' => 'Campanhas (arquivos grandes até 500 MB)',
+                                'accept' => '.mp4,.avi,.mov',
+                                'uploadUrl' => null,
+                                'inputName' => 'resolved_paths_campaigns[]',
+                                'pathsContainerId' => 'resolved_paths_campaigns_container',
+                            ])
                         </div>
                     </div>
                 </div>

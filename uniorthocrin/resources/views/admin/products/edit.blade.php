@@ -222,6 +222,14 @@
                                     </label>
                                 </div>
                             </div>
+                            @include('admin.partials.uppy-chunk-upload', [
+                                'containerId' => 'uppy-product-videos-edit',
+                                'module' => 'product',
+                                'title' => 'Vídeos grandes (até 500 MB)',
+                                'accept' => '.mp4,.avi,.mov',
+                                'uploadUrl' => route('admin.products.files.upload', $product),
+                                'uploadPayloadKey' => 'resolved_paths',
+                            ])
                             @error('gallery_videos')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror

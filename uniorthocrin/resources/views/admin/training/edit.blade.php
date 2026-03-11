@@ -139,6 +139,14 @@
                                     </label>
                                 </div>
                             </div>
+                            @include('admin.partials.uppy-chunk-upload', [
+                                'containerId' => 'uppy-training-videos-edit',
+                                'module' => 'training',
+                                'title' => 'Vídeos grandes (até 500 MB)',
+                                'accept' => '.mp4,.avi,.mov',
+                                'uploadUrl' => route('admin.training.files.upload', $training),
+                                'uploadPayloadKey' => 'resolved_paths',
+                            ])
                             @error('videos')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror

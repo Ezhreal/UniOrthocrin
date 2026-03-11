@@ -108,6 +108,9 @@ class CampaignController extends Controller
         // Processar uploads de arquivos
         $this->processFileUploads($request, $campaign);
 
+        // Processar vídeos enviados via chunk (create): mover de uploads/campaign/ e criar registros
+        $this->processResolvedPathsVideos($request, $campaign);
+
         // Criar notificação automática para usuários com permissão
         NotificationService::notifyNewCampaign($campaign->id, $campaign->name);
 
@@ -733,11 +736,173 @@ class CampaignController extends Controller
     }
 
     /**
-     * Upload incremental de arquivos via AJAX (posts, folhetos, vídeos, diversos).
+     * No create: processa resolved_paths_reels e resolved_paths_campaigns vindos do chunk upload.
+     * Move arquivos de uploads/campaign/ para private/campaigns/{id}/videos/ e cria File + CampaignVideo.
+     */
+    private function processResolvedPathsVideos(Request $request, Campaign $campaign): void
+    {
+        $types = [
+            'resolved_paths_reels'      => 'reels',
+            'resolved_paths_campaigns' => 'marketing_campaigns',
+        ];
+
+        foreach ($types as $inputKey => $videoType) {
+            $paths = (array) $request->input($inputKey, []);
+            foreach ($paths as $path) {
+                if (!is_string($path) || $path === '') {
+                    continue;
+                }
+                $absolutePath = storage_path('app/' . $path);
+                if (!file_exists($absolutePath)) {
+                    continue;
+                }
+
+                $content = file_get_contents($absolutePath);
+                $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                $filename = Str::uuid() . '.' . $extension;
+                $newPath = 'private/campaigns/' . $campaign->id . '/videos/' . $filename;
+
+                if (!Storage::disk('private')->put($newPath, $content)) {
+                    continue;
+                }
+                @unlink($absolutePath);
+
+                $mimeType = mime_content_type(storage_path('app/' . $newPath)) ?: 'application/octet-stream';
+                $size = @filesize(storage_path('app/' . $newPath)) ?: 0;
+
+                $fileRecord = File::create([
+                    'name'      => $filename,
+                    'path'      => $newPath,
+                    'type'      => 'video',
+                    'extension' => $extension,
+                    'mime_type' => $mimeType,
+                    'size'      => $size,
+                    'order'     => 0,
+                ]);
+
+                $video = $campaign->videos()->create([
+                    'name'   => $filename,
+                    'type'   => $videoType,
+                    'status' => 'active',
+                ]);
+
+                $video->files()->attach($fileRecord->id, [
+                    'file_type'  => 'video',
+                    'sort_order' => 0,
+                    'is_primary' => true,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Upload incremental de arquivos via AJAX
      * Reutiliza exatamente a mesma lógica de processFileUploads.
      */
     public function uploadFiles(Request $request, Campaign $campaign)
     {
+        // Suporte a caminhos já resolvidos por tipo (upload em chunks - edit)
+        if ($request->filled('resolved_paths_reels') || $request->filled('resolved_paths_campaigns')) {
+            $uploaded = [];
+            foreach (['resolved_paths_reels' => 'reels', 'resolved_paths_campaigns' => 'marketing_campaigns'] as $key => $type) {
+                $paths = (array) $request->input($key, []);
+                foreach ($paths as $path) {
+                    if (!is_string($path) || $path === '') {
+                        continue;
+                    }
+                    $absolutePath = storage_path('app/' . $path);
+                    if (!file_exists($absolutePath)) {
+                        continue;
+                    }
+
+                    $mimeType = mime_content_type($absolutePath) ?: 'application/octet-stream';
+                    $size = @filesize($absolutePath) ?: 0;
+                    $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+                    $name = basename($path);
+
+                    $fileType = $this->getFileType($mimeType);
+
+                    $fileRecord = File::create([
+                        'name'      => $name,
+                        'path'      => $path,
+                        'type'      => $fileType,
+                        'extension' => $extension,
+                        'mime_type' => $mimeType,
+                        'size'      => $size,
+                        'order'     => 0,
+                    ]);
+
+                    $video = $campaign->videos()->create([
+                        'name'   => $name,
+                        'type'   => $type,
+                        'status' => 'active',
+                    ]);
+
+                    $video->files()->attach($fileRecord->id, [
+                        'file_type'  => $fileType,
+                        'sort_order' => 0,
+                        'is_primary' => true,
+                    ]);
+
+                    $uploaded[] = $fileRecord;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'files'   => $uploaded,
+            ]);
+        }
+
+        // Suporte a caminhos já resolvidos (upload em chunks - legado, trata como reels)
+        if ($request->filled('resolved_paths')) {
+            $paths = (array) $request->input('resolved_paths');
+            $uploaded = [];
+
+            foreach ($paths as $path) {
+                $absolutePath = storage_path('app/' . $path);
+                if (!file_exists($absolutePath)) {
+                    continue;
+                }
+
+                $mimeType = mime_content_type($absolutePath) ?: 'application/octet-stream';
+                $size = @filesize($absolutePath) ?: 0;
+                $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+                $name = basename($absolutePath);
+
+                $fileType = $this->getFileType($mimeType);
+
+                $fileRecord = File::create([
+                    'name'      => $name,
+                    'path'      => $path,
+                    'type'      => $fileType,
+                    'extension' => $extension,
+                    'mime_type' => $mimeType,
+                    'size'      => $size,
+                    'order'     => 0,
+                ]);
+
+                $video = $campaign->videos()->create([
+                    'name'   => $name,
+                    'type'   => 'reels',
+                    'status' => 'active',
+                ]);
+
+                $video->files()->attach($fileRecord->id, [
+                    'file_type'  => $fileType,
+                    'sort_order' => 0,
+                    'is_primary' => true,
+                ]);
+
+                $uploaded[] = $fileRecord;
+            }
+
+            return response()->json([
+                'success' => true,
+                'files'   => $uploaded,
+            ]);
+        }
+
         // Reaproveita as mesmas regras básicas usadas em store/update
         $validationRules = [
             'folder_mg_sp' => 'nullable|array',

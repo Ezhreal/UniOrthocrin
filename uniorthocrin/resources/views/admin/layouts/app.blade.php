@@ -569,5 +569,6 @@
     <!-- Loading Scripts -->
     <script src="{{ asset('js/button-loading.js') }}"></script>
 
+    @stack('scripts')
 </body>
 </html>

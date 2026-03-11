@@ -120,9 +120,9 @@
                     </div>
                     
                     <div class="space-modern-sm">
-                        <!-- Upload de Arquivos -->
+                        <!-- Upload de Arquivos (pequenos) -->
                         <div>
-                            <label for="files" class="form-label-modern">Galeria de Arquivos</label>
+                            <label for="files" class="form-label-modern">Galeria de Arquivos (até limite do servidor)</label>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -144,6 +144,17 @@
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
                         </div>
+                        <!-- Upload em partes para arquivos grandes (até 500 MB) -->
+                        @include('admin.partials.uppy-chunk-upload', [
+                            'containerId' => 'uppy-library-files',
+                            'module' => 'library',
+                            'title' => 'Arquivos grandes (até 500 MB)',
+                            'accept' => '.pdf,.doc,.docx,.xlsx,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov',
+                            'note' => 'Use este upload para arquivos grandes. Envio em partes de 5 MB.',
+                            'uploadUrl' => null,
+                            'inputName' => 'resolved_paths[]',
+                            'pathsContainerId' => 'resolved_paths_library_container',
+                        ])
                     </div>
                 </div>
             </div>

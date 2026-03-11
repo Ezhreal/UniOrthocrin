@@ -111,7 +111,46 @@ class TrainingController extends Controller
             }
         }
 
-        // Handle PDF uploads (aceita tanto 'files' quanto 'pdfs' para compatibilidade)
+        // Vídeos enviados via chunk (create): mover de uploads/training/ e anexar
+        if ($request->filled('resolved_paths')) {
+            $paths = (array) $request->input('resolved_paths');
+            foreach ($paths as $path) {
+                if (!is_string($path) || $path === '') {
+                    continue;
+                }
+                $absolutePath = storage_path('app/' . $path);
+                if (!file_exists($absolutePath)) {
+                    continue;
+                }
+                $content = file_get_contents($absolutePath);
+                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                $filename = Str::uuid() . '.' . $ext;
+                $newPath = 'private/trainings/' . $training->id . '/' . $filename;
+                if (!Storage::disk('private')->put($newPath, $content)) {
+                    continue;
+                }
+                @unlink($absolutePath);
+                $mimeType = mime_content_type(storage_path('app/' . $newPath)) ?: 'application/octet-stream';
+                $size = @filesize(storage_path('app/' . $newPath)) ?: 0;
+                $type = str_starts_with($mimeType, 'video/') ? 'video' : 'pdf';
+                $fileRecord = File::create([
+                    'name' => $filename,
+                    'path' => $newPath,
+                    'type' => $type,
+                    'extension' => $ext,
+                    'mime_type' => $mimeType,
+                    'size' => $size,
+                    'order' => 0,
+                ]);
+                $training->files()->attach($fileRecord->id, [
+                    'file_type' => $type,
+                    'sort_order' => 0,
+                    'is_primary' => true,
+                ]);
+            }
+        }
+
+        // Handle PDF uploads
         $pdfInputKey = $request->hasFile('files') ? 'files' : ($request->hasFile('pdfs') ? 'pdfs' : null);
         if ($pdfInputKey !== null) {
             foreach ($request->file($pdfInputKey) as $pdfFile) {
@@ -354,6 +393,49 @@ class TrainingController extends Controller
 
     public function uploadFiles(Request $request, Training $training)
     {
+        // Suporte a caminhos já resolvidos (upload em chunks)
+        if ($request->filled('resolved_paths')) {
+            $paths = (array) $request->input('resolved_paths');
+            $uploadedFiles = [];
+
+            foreach ($paths as $path) {
+                $absolutePath = storage_path('app/' . $path);
+                if (!file_exists($absolutePath)) {
+                    continue;
+                }
+
+                $mimeType = mime_content_type($absolutePath) ?: 'application/octet-stream';
+                $size = @filesize($absolutePath) ?: 0;
+                $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+                $name = basename($absolutePath);
+
+                $type = str_starts_with($mimeType, 'video/') ? 'video' : 'pdf';
+
+                $fileRecord = File::create([
+                    'name'      => $name,
+                    'path'      => $path,
+                    'type'      => $type,
+                    'extension' => $extension,
+                    'mime_type' => $mimeType,
+                    'size'      => $size,
+                    'order'     => 0,
+                ]);
+
+                $training->files()->attach($fileRecord->id, [
+                    'file_type'  => $type,
+                    'sort_order' => 0,
+                    'is_primary' => true,
+                ]);
+
+                $uploadedFiles[] = $fileRecord;
+            }
+
+            return response()->json([
+                'success' => true,
+                'files'   => $uploadedFiles,
+            ]);
+        }
+
         $request->validate([
             'videos' => 'nullable|array',
             'videos.*' => 'mimetypes:video/mp4,video/avi,video/mov,video/wmv|max:' . config('upload.max_video_size'),

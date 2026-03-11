@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\ProductSeriesController;
 use App\Http\Controllers\Admin\TrainingCategoryController;
 use App\Http\Controllers\Admin\NewsCategoryController;
+use App\Http\Controllers\Admin\ChunkUploadController;
 use App\Http\Controllers\Admin\LibraryCategoryController;
 use App\Http\Controllers\Admin\HelpController;
 
@@ -41,6 +42,10 @@ Route::get('admin', function () {
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware\AdminOnly::class, \App\Http\Middleware\NoStoreForAuthenticated::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Upload em chunks (grandes arquivos)
+    Route::post('upload/chunk', [ChunkUploadController::class, 'uploadChunk'])->name('upload.chunk');
+    Route::post('upload/assemble', [ChunkUploadController::class, 'assemble'])->name('upload.assemble');
     
     // Products
     Route::resource('products', ProductController::class);

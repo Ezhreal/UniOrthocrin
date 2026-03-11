@@ -130,6 +130,46 @@ class ProductController extends Controller
                 }
             }
 
+            // Vídeos enviados via chunk (create): mover de uploads/product/ e anexar
+            if ($request->filled('resolved_paths')) {
+                $paths = (array) $request->input('resolved_paths');
+                $order = $product->videos()->count() + 1;
+                foreach ($paths as $path) {
+                    if (!is_string($path) || $path === '') {
+                        continue;
+                    }
+                    $absolutePath = storage_path('app/' . $path);
+                    if (!file_exists($absolutePath)) {
+                        continue;
+                    }
+                    $content = file_get_contents($absolutePath);
+                    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                    $filename = \Illuminate\Support\Str::uuid() . '.' . $ext;
+                    $newPath = 'private/products/' . $product->id . '/videos/' . $filename;
+                    if (!Storage::disk('private')->put($newPath, $content)) {
+                        continue;
+                    }
+                    @unlink($absolutePath);
+                    $mimeType = mime_content_type(storage_path('app/' . $newPath)) ?: 'application/octet-stream';
+                    $size = @filesize(storage_path('app/' . $newPath)) ?: 0;
+                    $file = File::create([
+                        'name' => $filename,
+                        'path' => $newPath,
+                        'size' => $size,
+                        'mime_type' => $mimeType,
+                        'type' => 'video',
+                        'extension' => $ext,
+                        'order' => $order,
+                    ]);
+                    $product->videos()->attach($file->id, [
+                        'file_type' => 'video',
+                        'sort_order' => $order,
+                        'is_primary' => $order === 1,
+                    ]);
+                    $order++;
+                }
+            }
+
             // Criar permissões
             if ($request->has('permissions')) {
                 foreach ($request->permissions as $permission) {
@@ -392,6 +432,57 @@ class ProductController extends Controller
      */
     public function uploadFiles(Request $request, Product $product)
     {
+        // Suporte a caminhos já resolvidos (upload em chunks)
+        if ($request->filled('resolved_paths')) {
+            $paths = (array) $request->input('resolved_paths');
+            $uploadedFiles = [];
+
+            foreach ($paths as $path) {
+                $absolutePath = storage_path('app/' . $path);
+                if (!file_exists($absolutePath)) {
+                    continue;
+                }
+
+                $mimeType = mime_content_type($absolutePath) ?: 'application/octet-stream';
+                $size = @filesize($absolutePath) ?: 0;
+                $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+                $name = basename($absolutePath);
+
+                $type = str_starts_with($mimeType, 'video/') ? 'video' : 'image';
+
+                $file = File::create([
+                    'name'      => $name,
+                    'path'      => $path,
+                    'size'      => $size,
+                    'mime_type' => $mimeType,
+                    'type'      => $type,
+                    'extension' => $extension,
+                    'order'     => 0,
+                ]);
+
+                if ($type === 'image') {
+                    $product->images()->attach($file->id, [
+                        'file_type'  => 'image',
+                        'sort_order' => $product->images()->count() + 1,
+                        'is_primary' => false,
+                    ]);
+                } else {
+                    $product->videos()->attach($file->id, [
+                        'file_type'  => 'video',
+                        'sort_order' => $product->videos()->count() + 1,
+                        'is_primary' => false,
+                    ]);
+                }
+
+                $uploadedFiles[] = $file;
+            }
+
+            return response()->json([
+                'success' => true,
+                'files'   => $uploadedFiles,
+            ]);
+        }
+
         // Reaproveita as mesmas regras de validação de arquivos dos formulários principais
         $request->validate(
             FileValidationRequest::getProductValidationRules(),

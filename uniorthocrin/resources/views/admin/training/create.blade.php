@@ -135,6 +135,15 @@
                                 </div>
                             </div>
                             <div id="videos_preview" class="mt-4"></div>
+                            @include('admin.partials.uppy-chunk-upload', [
+                                'containerId' => 'uppy-training-videos',
+                                'module' => 'training',
+                                'title' => 'Vídeos grandes (até 500 MB)',
+                                'accept' => '.mp4,.avi,.mov',
+                                'uploadUrl' => null,
+                                'inputName' => 'resolved_paths[]',
+                                'pathsContainerId' => 'resolved_paths_training_container',
+                            ])
                             @error('videos')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror

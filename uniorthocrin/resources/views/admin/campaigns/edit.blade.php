@@ -427,6 +427,14 @@
                                     </label>
                                 </div>
                             </div>
+                            @include('admin.partials.uppy-chunk-upload', [
+                                'containerId' => 'uppy-campaign-reels-edit',
+                                'module' => 'campaign',
+                                'title' => 'Reels (arquivos grandes até 500 MB)',
+                                'accept' => '.mp4,.avi,.mov',
+                                'uploadUrl' => route('admin.campaigns.files.upload', $campaign),
+                                'uploadPayloadKey' => 'resolved_paths_reels',
+                            ])
                             @php $reelsErrorKey = collect($errors->keys())->first(fn($k) => str_starts_with((string)$k, 'videos_reels.')); @endphp
                             @if($reelsErrorKey)
                                 <p class="form-error-modern mt-2">{{ $errors->first($reelsErrorKey) }}</p>
@@ -476,6 +484,14 @@
                                     </label>
                                 </div>
                             </div>
+                            @include('admin.partials.uppy-chunk-upload', [
+                                'containerId' => 'uppy-campaign-campaigns-edit',
+                                'module' => 'campaign',
+                                'title' => 'Campanhas (arquivos grandes até 500 MB)',
+                                'accept' => '.mp4,.avi,.mov',
+                                'uploadUrl' => route('admin.campaigns.files.upload', $campaign),
+                                'uploadPayloadKey' => 'resolved_paths_campaigns',
+                            ])
                             @php $campaignsErrorKey = collect($errors->keys())->first(fn($k) => str_starts_with((string)$k, 'videos_campaigns.')); @endphp
                             @if($campaignsErrorKey)
                                 <p class="form-error-modern mt-2">{{ $errors->first($campaignsErrorKey) }}</p>

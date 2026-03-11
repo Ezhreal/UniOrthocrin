@@ -112,6 +112,45 @@ class LibraryController extends Controller
             }
         }
 
+        // Arquivos enviados via chunk (create): mover de uploads/library/ e anexar
+        if ($request->filled('resolved_paths')) {
+            $paths = (array) $request->input('resolved_paths');
+            foreach ($paths as $path) {
+                if (!is_string($path) || $path === '') {
+                    continue;
+                }
+                $absolutePath = storage_path('app/' . $path);
+                if (!file_exists($absolutePath)) {
+                    continue;
+                }
+                $content = file_get_contents($absolutePath);
+                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                $filename = Str::uuid() . '.' . $ext;
+                $newPath = 'private/library/' . $library->id . '/' . $filename;
+                if (!Storage::disk('private')->put($newPath, $content)) {
+                    continue;
+                }
+                @unlink($absolutePath);
+                $mimeType = mime_content_type(storage_path('app/' . $newPath)) ?: 'application/octet-stream';
+                $size = @filesize(storage_path('app/' . $newPath)) ?: 0;
+                $fileType = $this->getFileType($mimeType);
+                $fileRecord = File::create([
+                    'name' => $filename,
+                    'path' => $newPath,
+                    'type' => $fileType,
+                    'extension' => $ext,
+                    'mime_type' => $mimeType,
+                    'size' => $size,
+                    'order' => 0,
+                ]);
+                $library->files()->attach($fileRecord->id, [
+                    'file_type' => $fileType,
+                    'sort_order' => 0,
+                    'is_primary' => true,
+                ]);
+            }
+        }
+
         // Handle permissions
         if ($request->has('permissions')) {
             foreach ($request->permissions as $permission) {
@@ -287,6 +326,57 @@ class LibraryController extends Controller
 
     public function uploadFiles(Request $request, Library $library)
     {
+        // Suporte a caminhos já resolvidos (upload em chunks)
+        if ($request->filled('resolved_paths')) {
+            $paths = (array) $request->input('resolved_paths');
+            $uploadedFiles = [];
+            $publishOneDrive = $request->boolean('publish_onedrive');
+
+            foreach ($paths as $path) {
+                $absolutePath = storage_path('app/' . $path);
+                if (!file_exists($absolutePath)) {
+                    continue;
+                }
+
+                $mimeType = mime_content_type($absolutePath) ?: 'application/octet-stream';
+                $size = @filesize($absolutePath) ?: 0;
+                $extension = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
+                $name = basename($absolutePath);
+
+                $fileType = $this->getFileType($mimeType);
+
+                $fileRecord = File::create([
+                    'name'      => $name,
+                    'path'      => $path,
+                    'type'      => $fileType,
+                    'extension' => $extension,
+                    'mime_type' => $mimeType,
+                    'size'      => $size,
+                    'order'     => 0,
+                ]);
+
+                $library->files()->attach($fileRecord->id, [
+                    'file_type'  => $fileType,
+                    'sort_order' => 0,
+                    'is_primary' => true,
+                ]);
+
+                if ($publishOneDrive && $path) {
+                    $localPath  = storage_path('app/' . $path);
+                    $remotePath = 'Library/' . $library->id . '/' . $fileRecord->id . '-' . $fileType . '.' . $extension;
+                    $sync       = $this->createOneDriveSync($library, $path, $remotePath);
+                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
+                }
+
+                $uploadedFiles[] = $fileRecord;
+            }
+
+            return response()->json([
+                'success' => true,
+                'files'   => $uploadedFiles,
+            ]);
+        }
+
         $request->validate([
             'files' => 'required|array',
             'files.*' => 'file|max:512000', // 500MB
