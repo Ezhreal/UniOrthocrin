@@ -111,6 +111,7 @@ class ProductRepository implements RepositoryInterface
             return [
                 'id' => $file->id,
                 'title' => $product->name . ' - ' . $file->name,
+                'file_name' => $file->name,
                 'video_url' => $file->url,
                 'type' => 'video',
                 'thumbnail' => $product->thumbnail_path ? url('/' . $product->thumbnail_path) : 'https://placehold.co/600x600?text=Vídeo'

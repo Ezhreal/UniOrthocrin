@@ -35,7 +35,7 @@ class TrainingController extends Controller
             $query->where('status', $status);
         }
 
-        $trainings = $query->orderBy('name')->paginate(10);
+        $trainings = $query->orderBy('name')->paginate(10)->appends($request->query());
         $categories = TrainingCategory::orderBy('name')->get();
 
         return view('admin.training.index', compact('trainings', 'categories'));

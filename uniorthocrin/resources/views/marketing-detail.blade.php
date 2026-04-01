@@ -368,6 +368,9 @@
                                     <source src="{{ url('/' . $mainVideoFile->path) }}" type="video/mp4">
                                     Seu navegador não suporta o elemento de vídeo.
                                 </video>
+                                @if($mainVideoFile->name)
+                                <p class="text-gray-400 text-xs mt-2 px-2 pb-2 truncate" title="{{ $mainVideoFile->name }}">Ficheiro: {{ $mainVideoFile->name }}</p>
+                                @endif
                                 @else
                                 <div class="w-full h-96 bg-gray-800 flex items-center justify-center">
                                     <p class="text-white">Nenhum vídeo disponível</p>
@@ -407,6 +410,9 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h4 class="text-[#910039] font-semibold text-sm mb-1">{{ $video->name }}</h4>
+                                    @if($videoFile->name)
+                                    <p class="text-gray-500 text-xs truncate mb-1" title="{{ $videoFile->name }}">{{ $videoFile->name }}</p>
+                                    @endif
                                     <div class="flex items-center justify-between">
                                         <span class="text-gray-600 text-xs">{{ ucfirst($video->type) }}</span>
                                         <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">

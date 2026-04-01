@@ -138,6 +138,10 @@
                                     <source src="{{ $videos->first()['video_url'] ?? '' }}" type="video/mp4">
                                     Seu navegador não suporta o elemento de vídeo.
                                 </video>
+                                @php $mainV = $videos->first(); @endphp
+                                @if(!empty($mainV['file_name']))
+                                <p class="text-gray-400 text-xs mt-2 px-1 truncate" title="{{ $mainV['file_name'] }}">{{ $mainV['file_name'] }}</p>
+                                @endif
                             </div>
                             
                             <!-- Controles do vídeo -->
@@ -184,6 +188,9 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h4 class="text-[#910039] font-semibold text-sm mb-1">{{ $video['title'] }}</h4>
+                                    @if(!empty($video['file_name']))
+                                    <p class="text-gray-500 text-xs truncate" title="{{ $video['file_name'] }}">{{ $video['file_name'] }}</p>
+                                    @endif
                                     <div class="flex items-center justify-between">
                                         <span class="text-gray-600 text-xs">Assistir</span>
                                         @if($product->canBeDownloadedBy(auth()->user()))

@@ -209,6 +209,7 @@
                         <!-- Galeria de Vídeos -->
                         <div>
                             <label for="gallery_videos" class="form-label-modern">Galeria de Vídeos</label>
+                            <p class="text-xs text-gray-500 mb-2">Novos envios substituem a lista abaixo conforme configurado; o nome do ficheiro é o nome original do vídeo.</p>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-video text-4xl text-gray-400 mb-4"></i>
@@ -243,7 +244,7 @@
                                                     <i class="fas fa-video text-gray-400 text-lg"></i>
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $video->original_name }}</p>
+                                                    <p class="text-sm font-medium text-gray-900 truncate" title="{{ $video->name }}">{{ $video->name }}</p>
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"

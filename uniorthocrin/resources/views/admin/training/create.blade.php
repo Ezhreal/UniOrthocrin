@@ -121,6 +121,7 @@
                         <!-- Galeria de Vídeos -->
                         <div>
                             <label for="videos" class="form-label-modern">Galeria de Vídeos</label>
+                            <p class="text-xs text-gray-500 mb-2">O nome original de cada ficheiro é guardado e mostrado na listagem e no detalhe do treinamento.</p>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-video text-4xl text-gray-400 mb-4"></i>

@@ -64,6 +64,11 @@
                 </button>
             </div>
         </form>
+        <div class="px-6 pb-4">
+            <a href="{{ route('admin.training.index') }}" class="text-sm text-primary-600 hover:underline">
+                <i class="fas fa-times-circle mr-1"></i>Limpar filtros
+            </a>
+        </div>
     </div>
 
     <!-- Modern Training Table -->
@@ -76,6 +81,7 @@
                         <th>Categoria</th>
                         <th>Status</th>
                         <th>Conteúdo</th>
+                        <th>Vídeo</th>
                         <th>Criado em</th>
                         <th>Ações</th>
                     </tr>
@@ -124,6 +130,18 @@
                             </div>
                         </td>
                         <td>
+                            @php
+                                $tv = $training->videos->first() ?? $training->files->where('type', 'video')->first();
+                            @endphp
+                            @if($tv)
+                                <span class="text-modern-caption truncate max-w-[200px] inline-block align-middle" title="{{ $tv->name }}">
+                                    <i class="fas fa-file-video text-gray-400 mr-1"></i>{{ Str::limit($tv->name, 36) }}
+                                </span>
+                            @else
+                                <span class="text-modern-caption text-gray-400">—</span>
+                            @endif
+                        </td>
+                        <td>
                             <span class="text-modern-body">{{ $training->created_at->format('d/m/Y') }}</span>
                         </td>
                         <td>
@@ -146,7 +164,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center py-8">
+                        <td colspan="7" class="text-center py-8">
                             <i class="fas fa-graduation-cap text-gray-300 text-4xl mb-4"></i>
                             <p class="text-modern-caption">Nenhum treinamento encontrado</p>
                         </td>

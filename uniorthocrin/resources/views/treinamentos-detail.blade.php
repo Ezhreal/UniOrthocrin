@@ -63,6 +63,7 @@
 
         <!-- Box 1: Galeria de Vídeos -->
         @if($training->files()->where('type', 'video')->count() > 0)
+        @php $trainingMainVideo = $training->files()->where('type', 'video')->first(); @endphp
         <div class="mb-12 bg-white p-8">
             <h2 class="text-[#910039] text-2xl font-bold mb-8">Galeria de Vídeos</h2>
             
@@ -75,9 +76,12 @@
                             <!-- Thumbnail do vídeo -->
                             <div class="bg-gray-800">
                                 <video id="mainVideo" class="w-full h-96" controls>
-                                    <source src="{{ $training->files()->where('type', 'video')->first()->url ?? '' }}" type="video/mp4">
+                                    <source src="{{ $trainingMainVideo->url ?? '' }}" type="video/mp4">
                                     Seu navegador não suporta o elemento de vídeo.
                                 </video>
+                                @if($trainingMainVideo && $trainingMainVideo->name)
+                                <p class="text-gray-400 text-xs mt-2 px-2 pb-2 truncate" title="{{ $trainingMainVideo->name }}">Ficheiro: {{ $trainingMainVideo->name }}</p>
+                                @endif
                             </div>
                             
                             <!-- Controles do vídeo -->
