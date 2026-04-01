@@ -100,8 +100,8 @@
                 </div>
             </div>
 
-            <!-- Banner Card -->
-            @if($campaign->is_featured && $campaign->banner_path)
+            <!-- Banners em destaque -->
+            @if($campaign->is_featured && ($campaign->banner_path || $campaign->banner_mobile_path))
             <div class="modern-card hover-modern-lift">
                 <div class="modern-card-header">
                     <div class="flex items-center space-x-3">
@@ -109,18 +109,25 @@
                             <i class="fas fa-star text-warning-500"></i>
                         </div>
                         <div>
-                            <h3 class="modern-card-title">Banner da Campanha Destaque</h3>
-                            <p class="modern-card-subtitle">Imagem que aparece no dashboard</p>
+                            <h3 class="modern-card-title">Banners (destaque no dashboard)</h3>
+                            <p class="modern-card-subtitle">Desktop e mobile</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="space-modern-sm">
-                    <div class="w-full">
-                        <img src="{{ url('/private/' . str_replace('private/', '', $campaign->banner_path)) }}" 
-                             alt="Banner da campanha {{ $campaign->name }}" 
-                             class="w-full h-auto rounded-lg shadow-lg object-cover">
+                <div class="space-modern-sm grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @if($campaign->banner_path)
+                    <div>
+                        <p class="text-xs text-gray-500 mb-2">Desktop</p>
+                        <img src="{{ $campaign->banner_desktop_url }}" alt="Banner desktop" class="w-full h-auto rounded-lg shadow object-cover">
                     </div>
+                    @endif
+                    @if($campaign->banner_mobile_path)
+                    <div>
+                        <p class="text-xs text-gray-500 mb-2">Mobile (1080×1080)</p>
+                        <img src="{{ $campaign->banner_mobile_url }}" alt="Banner mobile" class="w-full max-w-sm mx-auto rounded-lg shadow object-cover aspect-square">
+                    </div>
+                    @endif
                 </div>
             </div>
             @endif

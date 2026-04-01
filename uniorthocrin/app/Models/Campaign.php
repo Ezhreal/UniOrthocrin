@@ -27,7 +27,8 @@ class Campaign extends Model
         'status',
         'thumbnail_path',
         'is_featured',
-        'banner_path'
+        'banner_path',
+        'banner_mobile_path',
     ];
 
     protected $casts = [
@@ -169,6 +170,34 @@ class Campaign extends Model
     public function isArchiveOnly(): bool
     {
         return false; // Campo não existe na tabela atual
+    }
+
+    /**
+     * URL pública do banner desktop (banner_path no banco).
+     */
+    public function getBannerDesktopUrlAttribute(): ?string
+    {
+        return $this->publicStorageUrl($this->banner_path);
+    }
+
+    /**
+     * URL pública do banner mobile (quadrado 1080×1080 recomendado).
+     */
+    public function getBannerMobileUrlAttribute(): ?string
+    {
+        return $this->publicStorageUrl($this->banner_mobile_path);
+    }
+
+    protected function publicStorageUrl(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+
+        $relative = preg_replace('#^private/#', '', $path);
+        $relative = ltrim($relative, '/');
+
+        return url('/private/' . $relative);
     }
 
     /**

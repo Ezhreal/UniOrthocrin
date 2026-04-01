@@ -17,12 +17,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Dimensions;
 
 class CampaignController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Campaign::with(['posts', 'folders', 'videos', 'miscellaneous']);
+        $query = Campaign::with(['posts', 'folders', 'videos.files', 'miscellaneous']);
 
         if ($search = $request->get('search')) {
             $query->where('name', 'like', '%' . $search . '%')
@@ -37,7 +38,7 @@ class CampaignController extends Controller
             $query->where('visible_franchise_only', $franchise_only === 'yes');
         }
 
-        $campaigns = $query->orderBy('created_at', 'desc')->paginate(10);
+        $campaigns = $query->orderBy('created_at', 'desc')->paginate(10)->appends($request->query());
 
         return view('admin.campaigns.index', compact('campaigns'));
     }
@@ -58,7 +59,9 @@ class CampaignController extends Controller
             'status' => 'required|in:active,inactive',
             'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
             'is_featured' => 'nullable|boolean',
+            'banner_desktop' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:20480',
             'banner' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:20480',
+            'banner_mobile' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:20480',
             'folder_mg_sp' => 'nullable|array',
             'folder_df_es' => 'nullable|array',
             'posts_feed' => 'nullable|array',
@@ -77,6 +80,7 @@ class CampaignController extends Controller
             'misc_faixa' => 'nullable|array',
         ], FileValidationRequest::getProductValidationRules());
 
+        $this->applyFeaturedBannerValidation($request, $validationRules, null);
         $request->validate($validationRules, (new FileValidationRequest())->messages());
 
         $campaign = Campaign::create([
@@ -96,12 +100,7 @@ class CampaignController extends Controller
             $campaign->thumbnail_path = $thumbPath;
         }
 
-        // Upload banner se marcado como destaque
-        if ($request->boolean('is_featured') && $request->hasFile('banner')) {
-            $banner = $request->file('banner');
-            $bannerPath = $banner->store("private/campaigns/{$campaign->id}/banner", 'private');
-            $campaign->banner_path = $bannerPath;
-        }
+        $this->syncFeaturedBanners($request, $campaign);
 
         $campaign->save();
 
@@ -147,7 +146,9 @@ class CampaignController extends Controller
             'status' => 'required|in:active,inactive',
             'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
             'is_featured' => 'nullable|boolean',
+            'banner_desktop' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:20480',
             'banner' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:20480',
+            'banner_mobile' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:20480',
             'folder_mg_sp' => 'nullable|array',
             'folder_df_es' => 'nullable|array',
             'posts_feed' => 'nullable|array',
@@ -166,6 +167,7 @@ class CampaignController extends Controller
             'misc_faixa' => 'nullable|array',
         ], FileValidationRequest::getProductValidationRules());
 
+        $this->applyFeaturedBannerValidation($request, $validationRules, $campaign);
         $request->validate($validationRules, (new FileValidationRequest())->messages());
 
         $campaign->update(array_merge(
@@ -181,14 +183,7 @@ class CampaignController extends Controller
             $campaign->thumbnail_path = $thumbPath;
         }
 
-        if ($request->boolean('is_featured') && $request->hasFile('banner')) {
-            $banner = $request->file('banner');
-            $bannerPath = $banner->store("private/campaigns/{$campaign->id}/banner", 'private');
-            $campaign->banner_path = $bannerPath;
-        } else if (!$request->boolean('is_featured')) {
-            // Se desmarcar destaque, zera o banner
-            $campaign->banner_path = null;
-        }
+        $this->syncFeaturedBanners($request, $campaign);
 
         $campaign->save();
 
@@ -200,6 +195,9 @@ class CampaignController extends Controller
 
     public function destroy(Campaign $campaign)
     {
+        $this->deleteStoredPath($campaign->banner_path);
+        $this->deleteStoredPath($campaign->banner_mobile_path);
+
         // Delete all associated content
         if ($campaign->posts) {
             foreach ($campaign->posts as $post) {
@@ -496,6 +494,67 @@ class CampaignController extends Controller
         }
 
         return redirect()->route('admin.campaigns.show', $campaign)->with('success', 'Item criado com sucesso!');
+    }
+
+    private function applyFeaturedBannerValidation(Request $request, array &$rules, ?Campaign $existing): void
+    {
+        if (!$request->boolean('is_featured')) {
+            return;
+        }
+
+        $desktopRule = ['image', 'mimes:jpeg,jpg,png,webp', 'max:20480'];
+        // TODO: reforçar proporção 1:1 se o time quiser rejeitar imagens não quadradas (ratio pode falhar em JPEGs com EXIF).
+        $mobileRule = [
+            'image',
+            'mimes:jpeg,jpg,png,webp',
+            'max:20480',
+            Dimensions::make()->minWidth(1080)->minHeight(1080),
+        ];
+
+        if ($existing === null) {
+            $rules['banner_desktop'] = array_merge(['required'], $desktopRule);
+            $rules['banner_mobile'] = array_merge(['required'], $mobileRule);
+        } else {
+            $rules['banner_desktop'] = array_merge(
+                [$existing->banner_path ? 'nullable' : 'required'],
+                $desktopRule
+            );
+            $rules['banner_mobile'] = array_merge(
+                [$existing->banner_mobile_path ? 'nullable' : 'required'],
+                $mobileRule
+            );
+        }
+    }
+
+    private function syncFeaturedBanners(Request $request, Campaign $campaign): void
+    {
+        if (!$request->boolean('is_featured')) {
+            $this->deleteStoredPath($campaign->banner_path);
+            $this->deleteStoredPath($campaign->banner_mobile_path);
+            $campaign->banner_path = null;
+            $campaign->banner_mobile_path = null;
+
+            return;
+        }
+
+        $desktop = $request->file('banner_desktop') ?? $request->file('banner');
+        if ($desktop) {
+            $this->deleteStoredPath($campaign->banner_path);
+            $campaign->banner_path = $desktop->store("private/campaigns/{$campaign->id}/banner_desktop", 'private');
+        }
+
+        if ($request->hasFile('banner_mobile')) {
+            $this->deleteStoredPath($campaign->banner_mobile_path);
+            $campaign->banner_mobile_path = $request->file('banner_mobile')
+                ->store("private/campaigns/{$campaign->id}/banner_mobile", 'private');
+        }
+    }
+
+    private function deleteStoredPath(?string $path): void
+    {
+        if ($path && Storage::disk('private')->exists($path)) {
+            Storage::disk('private')->delete($path);
+        }
     }
 
     private function getFileType($mimeType)

@@ -8,9 +8,24 @@
     @endphp
     @if($showMarketingForUser && isset($featuredCampaigns) && $featuredCampaigns->count() > 0)
         @php $camp = $featuredCampaigns->first(); @endphp
-        <div class="w-full flex items-center justify-center mb-8" style="height:600px;">
+        @php
+            $desk = $camp->banner_desktop_url;
+            $mob = $camp->banner_mobile_url ?: $desk;
+            $desk = $desk ?: $mob;
+        @endphp
+        <div class="w-full flex items-center justify-center mb-8 min-h-[280px] md:min-h-[400px] lg:h-[600px]">
             <a href="{{ route('marketing.detail', $camp->id) }}" class="block w-full h-full">
-                <img src="/{{ $camp->banner_path }}" alt="{{ $camp->name }}" class="w-full h-full object-cover" />
+                @if($desk || $mob)
+                    <img src="{{ $desk }}" alt="{{ $camp->name }}" class="hidden md:block w-full h-full max-h-[600px] object-cover" />
+                    <img src="{{ $mob }}" alt="{{ $camp->name }}" class="md:hidden w-full aspect-square max-h-[100vw] object-cover" />
+                @else
+                    <div class="w-full flex items-center justify-center bg-[#910039] py-16 md:py-24 text-white">
+                        <div class="text-center px-4">
+                            <i class="fas fa-image text-5xl mb-3 opacity-60"></i>
+                            <p class="text-sm opacity-90">Campanha em destaque — banners em configuração</p>
+                        </div>
+                    </div>
+                @endif
             </a>
         </div>
     @elseif($showMarketingForUser)

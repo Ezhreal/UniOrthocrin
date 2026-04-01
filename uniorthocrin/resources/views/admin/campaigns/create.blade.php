@@ -79,15 +79,33 @@
                             <label for="is_featured" class="form-label-modern">Destacar campanha (aparece no banner do dashboard)</label>
                         </div>
 
-                        <!-- Banner (condicional) -->
-                        <div id="banner-wrapper" @if(old('is_featured')) style="display: block;" @else style="display: none;" @endif>
-                            <label for="banner" class="form-label-modern">Banner (imagem larga)</label>
-                            <input type="file" id="banner" name="banner" accept=".jpg,.jpeg,.png,.webp"
-                                   class="form-input-modern @error('banner') border-error-500 @enderror">
-                            <p class="text-xs text-gray-500 mt-1">Resolução recomendada para banner em destaque: 1920 x 600px.</p>
-                            @error('banner')
-                                <p class="form-error-modern">{{ $message }}</p>
-                            @enderror
+                        <!-- Banners em destaque (condicional) -->
+                        <div id="banner-wrapper" class="space-y-4" @if(old('is_featured')) style="display: block;" @else style="display: none;" @endif>
+                            <p class="text-sm text-gray-600">Com destaque ativo, envie os dois banners. Mobile: imagem quadrada <strong>1080×1080 px</strong> (proporção 1:1).</p>
+                            <div>
+                                <label for="banner_desktop" class="form-label-modern">Banner desktop *</label>
+                                <input type="file" id="banner_desktop" name="banner_desktop" accept=".jpg,.jpeg,.png,.webp"
+                                       class="form-input-modern @error('banner_desktop') border-error-500 @enderror">
+                                <p class="text-xs text-gray-500 mt-1">Recomendado: 1920 × 600px (formato livre).</p>
+                                <div id="preview_banner_desktop" class="mt-2 max-w-xl hidden">
+                                    <img src="" alt="Preview desktop" class="rounded-lg border border-gray-200 max-h-40 object-contain">
+                                </div>
+                                @error('banner_desktop')
+                                    <p class="form-error-modern">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="banner_mobile" class="form-label-modern">Banner mobile *</label>
+                                <input type="file" id="banner_mobile" name="banner_mobile" accept=".jpg,.jpeg,.png,.webp"
+                                       class="form-input-modern @error('banner_mobile') border-error-500 @enderror">
+                                <p class="text-xs text-gray-500 mt-1">Obrigatório 1080×1080 px (quadrado).</p>
+                                <div id="preview_banner_mobile" class="mt-2 max-w-xs hidden">
+                                    <img src="" alt="Preview mobile" class="rounded-lg border border-gray-200 w-40 h-40 object-cover">
+                                </div>
+                                @error('banner_mobile')
+                                    <p class="form-error-modern">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         <!-- Period -->
@@ -526,17 +544,36 @@
 </div>
 
 <script>
-// Mostrar/ocultar banner conforme is_featured
+// Mostrar/ocultar banners conforme is_featured + preview
 document.addEventListener('DOMContentLoaded', function() {
     const featured = document.getElementById('is_featured');
     const wrapper = document.getElementById('banner-wrapper');
     const toggle = () => {
-        wrapper.style.display = featured && featured.checked ? 'block' : 'none';
+        if (wrapper) {
+            wrapper.style.display = featured && featured.checked ? 'block' : 'none';
+        }
     };
     if (featured && wrapper) {
         toggle();
         featured.addEventListener('change', toggle);
     }
+    function bindPreview(inputId, containerId) {
+        const input = document.getElementById(inputId);
+        const box = document.getElementById(containerId);
+        if (!input || !box) return;
+        const img = box.querySelector('img');
+        input.addEventListener('change', function() {
+            if (!this.files || !this.files[0]) {
+                box.classList.add('hidden');
+                return;
+            }
+            const url = URL.createObjectURL(this.files[0]);
+            img.src = url;
+            box.classList.remove('hidden');
+        });
+    }
+    bindPreview('banner_desktop', 'preview_banner_desktop');
+    bindPreview('banner_mobile', 'preview_banner_mobile');
 });
 // Armazenar arquivos selecionados globalmente
 window.selectedFiles = {

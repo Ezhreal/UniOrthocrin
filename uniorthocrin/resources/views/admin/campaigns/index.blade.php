@@ -61,6 +61,11 @@
                 </button>
             </div>
         </form>
+        <div class="px-6 pb-4">
+            <a href="{{ route('admin.campaigns.index') }}" class="text-sm text-primary-600 hover:underline">
+                <i class="fas fa-times-circle mr-1"></i>Limpar filtros
+            </a>
+        </div>
     </div>
 
     <!-- Modern Campaigns Table -->
@@ -74,6 +79,7 @@
                         <th>Franqueados</th>
                         <th>Período</th>
                         <th>Conteúdo</th>
+                        <th>Vídeo</th>
                         <th>Criado em</th>
                         <th>Ações</th>
                     </tr>
@@ -87,7 +93,14 @@
                                     <i class="fas fa-bullhorn text-warning-500"></i>
                                 </div>
                                 <div>
-                                    <div class="text-modern-body font-medium">{{ $campaign->name }}</div>
+                                    <div class="text-modern-body font-medium flex flex-wrap items-center gap-2">
+                                        {{ $campaign->name }}
+                                        @if($campaign->is_featured)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-900" title="Campanha em destaque no dashboard">
+                                                <i class="fas fa-star mr-1"></i>Destaque
+                                            </span>
+                                        @endif
+                                    </div>
                                     <div class="text-modern-caption">{{ Str::limit($campaign->description, 50) }}</div>
                                 </div>
                             </div>
@@ -98,8 +111,8 @@
                             </span>
                         </td>
                         <td>
-                            <span class="badge-modern {{ $campaign->franchise_only ? 'badge-modern-warning' : 'badge-modern-gray' }}">
-                                {{ $campaign->franchise_only ? 'Apenas Franqueados' : 'Todos' }}
+                            <span class="badge-modern {{ $campaign->visible_franchise_only ? 'badge-modern-warning' : 'badge-modern-gray' }}">
+                                {{ $campaign->visible_franchise_only ? 'Apenas Franqueados' : 'Todos' }}
                             </span>
                         </td>
                         <td>
@@ -120,6 +133,19 @@
                                     <i class="fas fa-video mr-1"></i>{{ $campaign->videos ? $campaign->videos->count() : 0 }}
                                 </span>
                             </div>
+                        </td>
+                        <td>
+                            @php
+                                $cv = $campaign->videos->first();
+                                $cvf = $cv && $cv->files ? $cv->files->where('type', 'video')->first() : null;
+                            @endphp
+                            @if($cvf)
+                                <span class="text-modern-caption truncate max-w-[200px] inline-block align-middle" title="{{ $cvf->name }}">
+                                    <i class="fas fa-file-video text-gray-400 mr-1"></i>{{ Str::limit($cvf->name, 36) }}
+                                </span>
+                            @else
+                                <span class="text-modern-caption text-gray-400">—</span>
+                            @endif
                         </td>
                         <td>
                             <span class="text-modern-body">{{ $campaign->created_at->format('d/m/Y') }}</span>
@@ -144,7 +170,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-8">
+                        <td colspan="8" class="text-center py-8">
                             <i class="fas fa-bullhorn text-gray-300 text-4xl mb-4"></i>
                             <p class="text-modern-caption">Nenhuma campanha encontrada</p>
                         </td>
