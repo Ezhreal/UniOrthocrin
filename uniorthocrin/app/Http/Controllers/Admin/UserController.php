@@ -53,47 +53,41 @@ class UserController extends Controller
             'status' => 'required|in:active,inactive',
         ];
 
-        $messages = [
-            'cpf_cnpj.required' => 'O campo CPF/CNPJ é obrigatório.',
-            'razao_social.required' => 'O campo Razão Social é obrigatório.',
-            'nome_fantasia.required' => 'O campo Nome Fantasia é obrigatório.',
-            'representante_nome.required' => 'O campo Nome do Representante é obrigatório.',
-        ];
+        $userTypeId = (int) $request->user_type_id;
 
-        // Validações condicionais baseadas no tipo de usuário
-        $userTypeId = $request->user_type_id;
-        
-        if ($userTypeId == 2 || $userTypeId == 3) { // Franqueado ou Lojista
-            $validationRules['razao_social'] = 'required|string|max:255';
-            $validationRules['nome_fantasia'] = 'required|string|max:255';
-            $validationRules['cpf_cnpj'] = 'required|string|max:20';
-        } elseif ($userTypeId == 4) { // Representante
-            $validationRules['representante_nome'] = 'required|string|max:255';
-            $validationRules['cpf_cnpj'] = 'required|string|max:20';
+        if (in_array($userTypeId, [2, 3, 4], true)) {
+            $validationRules['razao_social'] = 'nullable|string|max:255';
+            $validationRules['nome_fantasia'] = 'nullable|string|max:255';
+            $validationRules['cnpj'] = 'nullable|string|max:20';
         }
-        
-        $request->validate($validationRules, $messages);
+
+        if ($userTypeId === 4) {
+            $validationRules['representante_nome'] = 'nullable|string|max:255';
+            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
+        }
+
+        $request->validate($validationRules);
 
         $userData = [
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'user_type_id' => $request->user_type_id,
+            'user_type_id' => $userTypeId,
             'status' => $request->status,
         ];
 
-        // Adicionar campos condicionais baseados no tipo de usuário
-        if ($userTypeId == 2 || $userTypeId == 3) { // Franqueado ou Lojista
-            $userData['razao_social'] = $request->razao_social;
-            $userData['nome_fantasia'] = $request->nome_fantasia;
-            $userData['cpf_cnpj'] = $request->cpf_cnpj;
-        } elseif ($userTypeId == 4) { // Representante
-            $userData['representante_nome'] = $request->representante_nome;
-            $userData['cpf_cnpj'] = $request->cpf_cnpj;
+        if (in_array($userTypeId, [2, 3, 4], true)) {
+            $userData['razao_social'] = $request->input('razao_social');
+            $userData['nome_fantasia'] = $request->input('nome_fantasia');
+            $userData['cnpj'] = $request->input('cnpj');
         }
 
-        $user = User::create($userData);
+        if ($userTypeId === 4) {
+            $userData['representante_nome'] = $request->input('representante_nome');
+            $userData['cpf_cnpj'] = $request->input('cpf_cnpj');
+        }
 
+        User::create($userData);
 
         return redirect()->route('admin.users.index')->with('success', 'Usuário criado com sucesso!');
     }
@@ -120,16 +114,17 @@ class UserController extends Controller
             'status' => 'required|in:active,inactive',
         ];
 
-        // Validações condicionais baseadas no tipo de usuário
-        $userTypeId = $request->user_type_id;
-        
-        if ($userTypeId == 2 || $userTypeId == 3) { // Franqueado ou Lojista
-            $validationRules['razao_social'] = 'required|string|max:255';
-            $validationRules['nome_fantasia'] = 'required|string|max:255';
-            $validationRules['cpf_cnpj'] = 'required|string|max:20';
-        } elseif ($userTypeId == 4) { // Representante
-            $validationRules['representante_nome'] = 'required|string|max:255';
-            $validationRules['cpf_cnpj'] = 'required|string|max:20';
+        $userTypeId = (int) $request->user_type_id;
+
+        if (in_array($userTypeId, [2, 3, 4], true)) {
+            $validationRules['razao_social'] = 'nullable|string|max:255';
+            $validationRules['nome_fantasia'] = 'nullable|string|max:255';
+            $validationRules['cnpj'] = 'nullable|string|max:20';
+        }
+
+        if ($userTypeId === 4) {
+            $validationRules['representante_nome'] = 'nullable|string|max:255';
+            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
         }
 
         $request->validate($validationRules);
@@ -137,18 +132,25 @@ class UserController extends Controller
         $data = [
             'name' => $request->name,
             'email' => $request->email,
-            'user_type_id' => $request->user_type_id,
+            'user_type_id' => $userTypeId,
             'status' => $request->status,
         ];
 
-        // Adicionar campos condicionais baseados no tipo de usuário
-        if ($userTypeId == 2 || $userTypeId == 3) { // Franqueado ou Lojista
-            $data['razao_social'] = $request->razao_social;
-            $data['nome_fantasia'] = $request->nome_fantasia;
-            $data['cpf_cnpj'] = $request->cpf_cnpj;
-        } elseif ($userTypeId == 4) { // Representante
-            $data['representante_nome'] = $request->representante_nome;
-            $data['cpf_cnpj'] = $request->cpf_cnpj;
+        if (in_array($userTypeId, [2, 3, 4], true)) {
+            $data['razao_social'] = $request->input('razao_social');
+            $data['nome_fantasia'] = $request->input('nome_fantasia');
+            $data['cnpj'] = $request->input('cnpj');
+        } else {
+            $data['razao_social'] = null;
+            $data['nome_fantasia'] = null;
+            $data['cnpj'] = null;
+        }
+
+        if ($userTypeId === 4) {
+            $data['representante_nome'] = $request->input('representante_nome');
+            $data['cpf_cnpj'] = $request->input('cpf_cnpj');
+        } else {
+            $data['representante_nome'] = null;
         }
 
         if ($request->filled('password')) {
@@ -175,19 +177,20 @@ class UserController extends Controller
     public function updateProfile(Request $request)
     {
         $user = $request->user();
-        
+
         $validationRules = [
             'name' => 'required|string|max:255',
         ];
 
-        // Validações condicionais baseadas no tipo de usuário
-        if ($user->user_type_id == 2 || $user->user_type_id == 3) { // Franqueado ou Lojista
-            $validationRules['razao_social'] = 'required|string|max:255';
-            $validationRules['nome_fantasia'] = 'required|string|max:255';
-            $validationRules['cpf_cnpj'] = 'required|string|max:20';
-        } elseif ($user->user_type_id == 4) { // Representante
-            $validationRules['representante_nome'] = 'required|string|max:255';
-            $validationRules['cpf_cnpj'] = 'required|string|max:20';
+        if (in_array($user->user_type_id, [2, 3, 4], true)) {
+            $validationRules['razao_social'] = 'nullable|string|max:255';
+            $validationRules['nome_fantasia'] = 'nullable|string|max:255';
+            $validationRules['cnpj'] = 'nullable|string|max:20';
+        }
+
+        if ($user->user_type_id === 4) {
+            $validationRules['representante_nome'] = 'nullable|string|max:255';
+            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
         }
 
         $validated = $request->validate($validationRules);
@@ -196,14 +199,15 @@ class UserController extends Controller
             'name' => $validated['name'],
         ];
 
-        // Adicionar campos condicionais baseados no tipo de usuário
-        if ($user->user_type_id == 2 || $user->user_type_id == 3) { // Franqueado ou Lojista
-            $data['razao_social'] = $validated['razao_social'];
-            $data['nome_fantasia'] = $validated['nome_fantasia'];
-            $data['cpf_cnpj'] = $validated['cpf_cnpj'];
-        } elseif ($user->user_type_id == 4) { // Representante
-            $data['representante_nome'] = $validated['representante_nome'];
-            $data['cpf_cnpj'] = $validated['cpf_cnpj'];
+        if (in_array($user->user_type_id, [2, 3, 4], true)) {
+            $data['razao_social'] = $request->input('razao_social');
+            $data['nome_fantasia'] = $request->input('nome_fantasia');
+            $data['cnpj'] = $request->input('cnpj');
+        }
+
+        if ($user->user_type_id === 4) {
+            $data['representante_nome'] = $request->input('representante_nome');
+            $data['cpf_cnpj'] = $request->input('cpf_cnpj');
         }
 
         $user->update($data);
@@ -214,7 +218,7 @@ class UserController extends Controller
     public function updatePassword(Request $request)
     {
         $user = $request->user();
-        
+
         $request->validate([
             'current_password' => 'required',
             'password' => 'required|string|min:8|confirmed',

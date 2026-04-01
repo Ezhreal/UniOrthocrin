@@ -30,7 +30,8 @@ class User extends Authenticatable
         'representante_nome',
         'nome_fantasia',
         'razao_social',
-        'cpf_cnpj'
+        'cpf_cnpj',
+        'cnpj',
     ];
 
     /**

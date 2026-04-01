@@ -52,8 +52,7 @@
             </div>
         </div>
 
-        <!-- Additional Information Card - Franqueado/Lojista -->
-        @if($user->user_type_id == 2 || $user->user_type_id == 3)
+        @if(in_array($user->user_type_id, [2, 3, 4], true))
         <div class="modern-card hover-modern-lift">
             <div class="modern-card-header">
                 <div class="flex items-center space-x-3">
@@ -61,28 +60,28 @@
                         <i class="fas fa-building text-success-500"></i>
                     </div>
                     <div>
-                        <h3 class="modern-card-title">Informações da Empresa</h3>
-                        <p class="modern-card-subtitle">Dados da franquia/loja</p>
+                        <h3 class="modern-card-title">Dados da empresa</h3>
+                        <p class="modern-card-subtitle">Opcional. Vários usuários podem usar o mesmo CNPJ.</p>
                     </div>
                 </div>
             </div>
             <div class="space-modern-sm">
                 <div class="grid-modern grid-modern-2">
                     <div>
-                        <label for="razao_social" class="form-label-modern">Razão Social *</label>
+                        <label for="razao_social" class="form-label-modern">Razão social (opcional)</label>
                         <input type="text" id="razao_social" name="razao_social" value="{{ old('razao_social', $user->razao_social) }}"
                                class="form-input-modern @error('razao_social') border-error-500 @enderror"
-                               placeholder="Digite a razão social" required>
+                               placeholder="Razão social">
                         @error('razao_social')
                             <p class="form-error-modern">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label for="nome_fantasia" class="form-label-modern">Nome Fantasia *</label>
+                        <label for="nome_fantasia" class="form-label-modern">Nome fantasia (opcional)</label>
                         <input type="text" id="nome_fantasia" name="nome_fantasia" value="{{ old('nome_fantasia', $user->nome_fantasia) }}"
                                class="form-input-modern @error('nome_fantasia') border-error-500 @enderror"
-                               placeholder="Digite o nome fantasia" required>
+                               placeholder="Nome fantasia">
                         @error('nome_fantasia')
                             <p class="form-error-modern">{{ $message }}</p>
                         @enderror
@@ -90,11 +89,11 @@
                 </div>
 
                 <div>
-                    <label for="cpf_cnpj" class="form-label-modern">CNPJ *</label>
-                    <input type="text" id="cpf_cnpj" name="cpf_cnpj" value="{{ old('cpf_cnpj', $user->cpf_cnpj) }}"
-                           class="form-input-modern @error('cpf_cnpj') border-error-500 @enderror"
-                           placeholder="Digite o CNPJ" required>
-                    @error('cpf_cnpj')
+                    <label for="cnpj" class="form-label-modern">CNPJ da empresa (opcional)</label>
+                    <input type="text" id="cnpj" name="cnpj" value="{{ old('cnpj', $user->cnpj ?? $user->cpf_cnpj) }}"
+                           class="form-input-modern @error('cnpj') border-error-500 @enderror"
+                           placeholder="CNPJ">
+                    @error('cnpj')
                         <p class="form-error-modern">{{ $message }}</p>
                     @enderror
                 </div>
@@ -102,7 +101,6 @@
         </div>
         @endif
 
-        <!-- Additional Information Card - Representante -->
         @if($user->user_type_id == 4)
         <div class="modern-card hover-modern-lift">
             <div class="modern-card-header">
@@ -111,28 +109,28 @@
                         <i class="fas fa-user-tie text-warning-500"></i>
                     </div>
                     <div>
-                        <h3 class="modern-card-title">Informações do Representante</h3>
-                        <p class="modern-card-subtitle">Dados do representante</p>
+                        <h3 class="modern-card-title">Representante</h3>
+                        <p class="modern-card-subtitle">Nome e CPF opcionais</p>
                     </div>
                 </div>
             </div>
             <div class="space-modern-sm">
                 <div class="grid-modern grid-modern-2">
                     <div>
-                        <label for="representante_nome" class="form-label-modern">Nome do Representante *</label>
+                        <label for="representante_nome" class="form-label-modern">Nome do representante (opcional)</label>
                         <input type="text" id="representante_nome" name="representante_nome" value="{{ old('representante_nome', $user->representante_nome) }}"
                                class="form-input-modern @error('representante_nome') border-error-500 @enderror"
-                               placeholder="Digite o nome do representante" required>
+                               placeholder="Nome do representante">
                         @error('representante_nome')
                             <p class="form-error-modern">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label for="cpf_cnpj" class="form-label-modern">CPF *</label>
+                        <label for="cpf_cnpj" class="form-label-modern">CPF (opcional)</label>
                         <input type="text" id="cpf_cnpj" name="cpf_cnpj" value="{{ old('cpf_cnpj', $user->cpf_cnpj) }}"
                                class="form-input-modern @error('cpf_cnpj') border-error-500 @enderror"
-                               placeholder="Digite o CPF" required>
+                               placeholder="CPF">
                         @error('cpf_cnpj')
                             <p class="form-error-modern">{{ $message }}</p>
                         @enderror

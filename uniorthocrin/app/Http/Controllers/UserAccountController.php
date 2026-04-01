@@ -30,20 +30,31 @@ class UserAccountController extends Controller
             'name' => 'required|string|max:255',
         ];
 
-        // Validações condicionais baseadas no tipo de usuário
-        if ($user->user_type_id == 2 || $user->user_type_id == 3) { // Franqueado ou Lojista
-            $validationRules['razao_social'] = 'required|string|max:255';
-            $validationRules['nome_fantasia'] = 'required|string|max:255';
-            $validationRules['cpf_cnpj'] = 'required|string|max:20';
-        } elseif ($user->user_type_id == 4) { // Representante
-            $validationRules['representante_nome'] = 'required|string|max:255';
-            $validationRules['cpf_cnpj'] = 'required|string|max:20';
+        if (in_array($user->user_type_id, [2, 3, 4], true)) {
+            $validationRules['razao_social'] = 'nullable|string|max:255';
+            $validationRules['nome_fantasia'] = 'nullable|string|max:255';
+            $validationRules['cnpj'] = 'nullable|string|max:20';
+        }
+        if ($user->user_type_id === 4) {
+            $validationRules['representante_nome'] = 'nullable|string|max:255';
+            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
         }
 
         $validated = $request->validate($validationRules);
 
+        $payload = ['name' => $validated['name']];
+        if (in_array($user->user_type_id, [2, 3, 4], true)) {
+            $payload['razao_social'] = $request->input('razao_social');
+            $payload['nome_fantasia'] = $request->input('nome_fantasia');
+            $payload['cnpj'] = $request->input('cnpj');
+        }
+        if ($user->user_type_id === 4) {
+            $payload['representante_nome'] = $request->input('representante_nome');
+            $payload['cpf_cnpj'] = $request->input('cpf_cnpj');
+        }
+
         try {
-            $this->userAccountService->updateProfile($user, $validated);
+            $this->userAccountService->updateProfile($user, $payload);
             
             return response()->json([
                 'success' => true,
