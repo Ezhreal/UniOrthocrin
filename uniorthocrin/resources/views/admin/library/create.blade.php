@@ -129,7 +129,7 @@
                                     <p class="text-modern-body font-medium mb-2">Arraste e solte os arquivos aqui</p>
                                     <p class="text-modern-caption mb-4">ou clique para selecionar</p>
                                     <input type="file" id="files" name="files[]" multiple
-                                           class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov">
+                                           class="hidden">
                                     <label for="files" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
                                         Selecionar Arquivos
@@ -354,16 +354,9 @@ function createFileItem(file, index) {
     const div = document.createElement('div');
     div.className = 'flex items-center justify-between p-3 hover:bg-gray-50';
     
-    const icon = getFileIcon(file.type);
-    
     div.innerHTML = `
-        <div class="flex items-center space-x-3">
-            <div class="flex-shrink-0">
-                <i class="${icon} text-gray-400 text-lg"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 truncate">${file.name}</p>
-            </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">${file.name}</p>
         </div>
         <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200" onclick="removeFilePreview(this, ${index})">
             <i class="fas fa-trash text-sm"></i>
@@ -371,17 +364,6 @@ function createFileItem(file, index) {
     `;
     
     return div;
-}
-
-function getFileIcon(mimeType) {
-    if (mimeType.startsWith('image/')) return 'fas fa-image';
-    if (mimeType.startsWith('video/')) return 'fas fa-video';
-    if (mimeType.includes('pdf')) return 'fas fa-file-pdf';
-    if (mimeType.includes('audio/')) return 'fas fa-music';
-    if (mimeType.includes('word')) return 'fas fa-file-word';
-    if (mimeType.includes('excel')) return 'fas fa-file-excel';
-    if (mimeType.includes('powerpoint')) return 'fas fa-file-powerpoint';
-    return 'fas fa-file';
 }
 
 function removeFilePreview(button, index) {

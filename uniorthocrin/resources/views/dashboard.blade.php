@@ -168,16 +168,20 @@
         <div class="bg-[#FAFAFA] border border-gray-200 rounded-lg p-6 w-full md:w-auto">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-[#910039] text-xl font-bold">Radar</h2>
-                <div class="text-sm text-gray-500">
-                    <span id="total-news" class="font-semibold">{{ isset($news) ? $news->count() : 0 }}</span> notícias
+                @if(isset($news) && $news->count() > 0)
+                <div class="text-sm text-gray-500 text-right">
+                    <span id="total-news" class="font-semibold">{{ $news->count() }}</span> notícias
                 </div>
+                @endif
             </div>
-            <div class="space-y-6 mb-6">
+            <div class="space-y-6 mb-4">
                 @if(isset($news))
                 @forelse($news as $noticia)
                 <div class="pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
                     <div class="text-[#910039] font-semibold text-sm mb-1">{{ $noticia->title }}</div>
-                    <div class="text-gray-500 text-xs mb-1">{{ $noticia->published_at ? $noticia->published_at->format('d/m/Y') : 'Data não informada' }}</div>
+                    @if($noticia->published_at)
+                    <div class="text-gray-500 text-xs mb-1">{{ $noticia->published_at->format('d/m/Y') }}</div>
+                    @endif
                 </div>
                 @empty
                 <div class="text-center text-gray-500 py-4">
@@ -189,6 +193,12 @@
                     Nenhuma notícia disponível.
                 </div>
                 @endif
+            </div>
+            <div class="flex justify-end">
+                <a href="{{ route('news.list') }}" class="inline-flex items-center text-xs text-[#910039] hover:underline mt-2">
+                    Ir para o Radar
+                    <i class="fas fa-arrow-right ml-1 text-[10px]"></i>
+                </a>
             </div>
         </div>
     </div>

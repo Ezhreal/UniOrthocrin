@@ -81,32 +81,14 @@
                     @if($library->files && $library->files->count() > 0)
                     <div>
                         <h4 class="text-modern-body font-medium mb-4">Galeria de Arquivos ({{ $library->files->count() }})</h4>
-                        <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                            @foreach($library->files as $file)
-                            <div class="relative group">
-                                @if($file->isImage())
-                                    <img src="{{ $file->thumbnail_url ?? $file->url }}" alt="{{ $file->name }}" 
-                                         class="w-full h-20 object-cover rounded-lg hover:scale-105 transition-transform duration-200 cursor-pointer"
-                                         onclick="openFileModal('{{ $file->url }}', '{{ $file->name }}')">
-                                @elseif($file->isVideo())
-                                    <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center relative overflow-hidden">
-                                        @if($file->thumbnail_url)
-                                            <img src="{{ $file->thumbnail_url }}" alt="Thumbnail do vídeo" class="w-full h-full object-cover">
-                                        @else
-                                            <i class="fas fa-video text-gray-400 text-xl"></i>
-                                        @endif
-                                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                                            <i class="fas fa-play opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-white text-lg"></i>
-                                        </div>
-                                    </div>
-                                @else
-                                    <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-file text-gray-400 text-xl"></i>
-                                    </div>
-                                @endif
-                                <p class="text-xs text-gray-600 mt-1 truncate">{{ $file->name }}</p>
+                        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                            <div class="divide-y divide-gray-200">
+                                @foreach($library->files as $file)
+                                <div class="px-3 py-2">
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $file->name }}</p>
+                                </div>
+                                @endforeach
                             </div>
-                            @endforeach
                         </div>
                     </div>
                     @else

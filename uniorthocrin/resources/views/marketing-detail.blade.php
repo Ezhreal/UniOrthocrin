@@ -117,6 +117,7 @@
                     </div>
                 </div>
                 
+                @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
                 <!-- Download da Campanha -->
                 <div class="mt-6 pt-4 border-t border-gray-200">
                     <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
@@ -130,6 +131,7 @@
                         </button>
                     </form>
                 </div>
+                @endif
             </div>
 
             <!-- Box 2: Folhetos -->
@@ -147,6 +149,7 @@
                                 <p class="text-sm text-gray-600">Arquivo .pdf ({{ round($folder->files->sum('size') / 1024 / 1024, 1) }}mb)</p>
                             </div>
                         </div>
+                        @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
                         <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
                             @csrf
                             <input type="hidden" name="content_type" value="marketing">
@@ -157,6 +160,7 @@
                                 Download .zip
                             </button>
                         </form>
+                        @endif
                     </div>
                     @endforeach
                 </div>
@@ -168,6 +172,7 @@
                     });
                     $totalFolderSizeMB = round($totalFolderSize / 1024 / 1024, 1);
                 @endphp
+                @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
                 <div class="pt-4">
                     <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
                         @csrf
@@ -179,8 +184,8 @@
                             Baixar todos folhetos .zip {{ $totalFolderSizeMB }} MB
                         </button>
                     </form>
-                  
                 </div>
+                @endif
                 @else
                 <p class="text-gray-500 text-center py-8">Nenhum folheto disponível</p>
                 @endif
@@ -291,6 +296,7 @@
                 </div>
             </div>
             
+            @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
             <!-- Download da galeria -->
             <div class="mt-6 border-t border-gray-200 pt-6">
                 <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline">
@@ -305,6 +311,7 @@
                         </button>
                 </form>
             </div>
+            @endif
         </div>
         @endif
 
@@ -329,7 +336,7 @@
                                     Reels
                                     @break
                                 @case('marketing_campaigns')
-                                    Campanhas
+                                    Vídeos TV - Campanha
                                     @break
                                 @default
                                     {{ ucfirst($type) }}

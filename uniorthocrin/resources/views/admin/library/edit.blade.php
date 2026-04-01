@@ -133,7 +133,7 @@
                                     <p class="text-modern-body font-medium mb-2">Arraste e solte os arquivos aqui</p>
                                     <p class="text-modern-caption mb-4">ou clique para selecionar</p>
                                     <input type="file" id="files" name="files[]" multiple
-                                           class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov">
+                                           class="hidden">
                                     <label for="files" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
                                         Selecionar Arquivos
@@ -156,21 +156,8 @@
                                     <div class="divide-y divide-gray-200">
                                         @foreach($library->files as $file)
                                         <div class="flex items-center justify-between p-3 hover:bg-gray-50">
-                                            <div class="flex items-center space-x-3">
-                                                <div class="flex-shrink-0">
-                                                    @if($file->isImage())
-                                                        <div class="bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                                            <img src="{{ $file->thumbnail_url ?? $file->url }}" alt="{{ $file->name }}" class="w-full h-full object-cover">
-                                                        </div>
-                                                    @else
-                                                        <div class="bg-gray-100 rounded-lg flex items-center justify-center">
-                                                            <i class="fas fa-file text-gray-400 text-lg"></i>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                                <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $file->name }}</p>
-                                                </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">{{ $file->name }}</p>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
                                                     onclick="deleteFile({{ $library->id }}, {{ $file->id }})">

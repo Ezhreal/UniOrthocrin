@@ -331,12 +331,12 @@
                                 @php
                                     $pdfCountStats = ($training->pdfs && $training->pdfs->count() > 0)
                                         ? $training->pdfs->count()
-                                        : $training->files
+                                        : ($training->files
                                             ? $training->files->filter(function ($file) {
                                                 $pivotType = $file->pivot->file_type ?? null;
                                                 return $pivotType === 'pdf' || ($pivotType === null && $file->type === 'pdf');
                                             })->count()
-                                            : 0;
+                                            : 0);
                                 @endphp
                                 <div class="text-2xl font-bold text-secondary-500">{{ $pdfCountStats }}</div>
                                 <div class="text-modern-caption">PDFs</div>

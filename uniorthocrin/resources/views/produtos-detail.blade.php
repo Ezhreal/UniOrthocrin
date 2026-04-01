@@ -44,6 +44,7 @@
                 </div>
             </div>
             
+            @if($product->canBeDownloadedBy(auth()->user()))
             <!-- Botão Download -->
             <div class="pt-4 border-t border-gray-200">
                 <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
@@ -57,6 +58,7 @@
                     </button>
                 </form>
             </div>
+            @endif
         </div>
 
         <!-- Galeria de Imagens -->
@@ -157,9 +159,11 @@
                                         <button class="text-white hover:text-gray-300 cursor-pointer">
                                             <i class="fas fa-expand"></i>
                                         </button>
+                                        @if($product->canBeDownloadedBy(auth()->user()))
                                         <button class="text-white hover:text-gray-300 cursor-pointer">
                                             <i class="fas fa-download"></i>
                                         </button>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -182,9 +186,11 @@
                                     <h4 class="text-[#910039] font-semibold text-sm mb-1">{{ $video['title'] }}</h4>
                                     <div class="flex items-center justify-between">
                                         <span class="text-gray-600 text-xs">Assistir</span>
+                                        @if($product->canBeDownloadedBy(auth()->user()))
                                         <a href="javascript:void(0)" class="text-[#910039] text-xs hover:underline">
                                             <i class="fas fa-download mr-1"></i>Download
                                         </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -196,7 +202,7 @@
                         @endforelse
 
                         <!-- Download dos vídeos -->
-                        @if($videos->count() > 0)
+                        @if($videos->count() > 0 && $product->canBeDownloadedBy(auth()->user()))
                         <div class="mt-6">
                             <a href="javascript:void(0)" 
                                data-download="videos" 

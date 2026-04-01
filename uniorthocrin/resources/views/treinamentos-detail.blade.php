@@ -44,6 +44,7 @@
                 </div>
             </div>
             
+            @if($training->canBeDownloadedBy(auth()->user()))
             <!-- Botão Download -->
             <div class="pt-4 border-t border-gray-200">
                 <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
@@ -57,6 +58,7 @@
                     </button>
                 </form>
             </div>
+            @endif
         </div>
 
         <!-- Box 1: Galeria de Vídeos -->
@@ -197,11 +199,13 @@
                            class="text-[#910039] hover:text-[#7A0030] text-sm">
                             <i class="fas fa-eye mr-1"></i>Visualizar
                         </a>
+                        @if($training->canBeDownloadedBy(auth()->user()))
                         <a href="{{ $pdf->url }}" 
                            download="{{ $pdf->name }}"
                            class="text-[#910039] hover:text-[#7A0030] text-sm">
                             <i class="fas fa-download mr-1"></i>Download
                         </a>
+                        @endif
                     </div>
                 </div>
                 @endforeach

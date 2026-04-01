@@ -314,7 +314,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
                                             {{ $video->type === 'reels' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
-                                            {{ $video->type === 'reels' ? 'Reels' : 'Campanhas' }}
+                                            {{ $video->type === 'reels' ? 'Reels' : 'Vídeos TV - Campanha' }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">

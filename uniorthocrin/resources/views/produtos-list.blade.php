@@ -56,7 +56,7 @@
                         </div>
                         
                         <!-- Botão de download de todos os produtos -->
-                        @if($products->count() > 0)
+                        @if($products->count() > 0 && auth()->check() && $products->contains(fn($p) => $p->canBeDownloadedBy(auth()->user())))
                         <a href="#" 
                            data-download="all_products" 
                            data-content-type="product"

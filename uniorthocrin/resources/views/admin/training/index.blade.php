@@ -111,12 +111,12 @@
                                     // Compatível com dados antigos (sem file_type no pivot)
                                     $pdfCount = ($training->pdfs && $training->pdfs->count() > 0)
                                         ? $training->pdfs->count()
-                                        : $training->files
+                                        : ($training->files
                                             ? $training->files->filter(function ($file) {
                                                 $pivotType = $file->pivot->file_type ?? null;
                                                 return $pivotType === 'pdf' || ($pivotType === null && $file->type === 'pdf');
                                             })->count()
-                                            : 0;
+                                            : 0);
                                 @endphp
                                 <span class="text-modern-caption">
                                     <i class="fas fa-file mr-1"></i>{{ $pdfCount }}

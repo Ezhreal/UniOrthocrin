@@ -460,9 +460,9 @@
                             @endif
                         </div>
                         
-                        <!-- Campanhas -->
+                        <!-- Vídeos TV - Campanha -->
                         <div>
-                            <h4 class="text-modern-body font-medium mb-4">Campanhas</h4>
+                            <h4 class="text-modern-body font-medium mb-4">Vídeos TV - Campanha</h4>
                             <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
@@ -472,7 +472,7 @@
                                            class="hidden" accept=".mp4,.avi,.mov">
                                     <label for="videos_campaigns" class="btn-modern-secondary cursor-pointer">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Campanhas
+                                        Selecionar Vídeos TV - Campanha
                                     </label>
                                 </div>
                             </div>
@@ -481,10 +481,10 @@
                                 <p class="form-error-modern mt-2">{{ $errors->first($campaignsErrorKey) }}</p>
                             @endif
                             
-                            <!-- Lista das Campanhas Existentes -->
+                            <!-- Lista dos Vídeos TV - Campanha Existentes -->
                             @if($campaign->videos && $campaign->videos->where('type', 'marketing_campaigns')->count() > 0)
                             <div class="mt-4">
-                                <h5 class="text-modern-body font-medium mb-3">Campanhas Existentes ({{ $campaign->videos->where('type', 'marketing_campaigns')->count() }})</h5>
+                                <h5 class="text-modern-body font-medium mb-3">Vídeos TV - Campanha Existentes ({{ $campaign->videos->where('type', 'marketing_campaigns')->count() }})</h5>
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->videos->where('type', 'marketing_campaigns') as $video)

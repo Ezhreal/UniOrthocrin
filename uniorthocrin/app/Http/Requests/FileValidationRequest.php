@@ -29,7 +29,8 @@ class FileValidationRequest extends FormRequest
     {
         return [
             'gallery_images' => 'nullable|array',
-            'gallery_images.*' => 'image|mimes:jpeg,jpg,png,webp|max:10240', // 10MB
+            // Imagens da galeria de produtos: até 500MB (mesmo limite dos vídeos)
+            'gallery_images.*' => 'image|mimes:jpeg,jpg,png,webp|max:' . config('upload.max_video_size'),
             'gallery_videos' => 'nullable|array', 
             'gallery_videos.*' => 'file|mimes:mp4,mov,ogg|max:' . config('upload.max_video_size'), // 500MB
         ];
@@ -42,7 +43,8 @@ class FileValidationRequest extends FormRequest
     {
         return [
             'files' => 'nullable|array',
-            'files.*' => 'file|mimes:jpeg,jpg,png,webp,pdf,doc,docx,xls,xlsx|max:512000', // 500MB
+            // Permitir qualquer tipo de arquivo (inclusive vídeos), limitando apenas o tamanho
+            'files.*' => 'file|max:512000', // 500MB
         ];
     }
 
