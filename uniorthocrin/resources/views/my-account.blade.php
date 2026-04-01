@@ -44,71 +44,34 @@
                     </div>
                 </div>
 
-                <!-- Campos condicionais para Franqueado/Lojista -->
-                @if($user->user_type_id == 2 || $user->user_type_id == 3)
+                @if(in_array($user->user_type_id, [2, 3, 4], true))
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Razão Social -->
                     <div>
-                        <label for="razao_social" class="block text-sm font-medium text-gray-700 mb-2">Razão Social *</label>
-                        <input type="text" 
-                               id="razao_social" 
-                               name="razao_social" 
-                               value="{{ $user->razao_social }}" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#910039] focus:border-transparent transition"
-                               required>
+                        <label for="razao_social" class="block text-sm font-medium text-gray-700 mb-2">Razão social</label>
+                        <input type="text"
+                               id="razao_social"
+                               name="razao_social"
+                               value="{{ old('razao_social', $user->razao_social) }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#910039] focus:border-transparent transition">
                     </div>
-
-                    <!-- Nome Fantasia -->
                     <div>
-                        <label for="nome_fantasia" class="block text-sm font-medium text-gray-700 mb-2">Nome Fantasia *</label>
-                        <input type="text" 
-                               id="nome_fantasia" 
-                               name="nome_fantasia" 
-                               value="{{ $user->nome_fantasia }}" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#910039] focus:border-transparent transition"
-                               required>
+                        <label for="nome_fantasia" class="block text-sm font-medium text-gray-700 mb-2">Nome fantasia</label>
+                        <input type="text"
+                               id="nome_fantasia"
+                               name="nome_fantasia"
+                               value="{{ old('nome_fantasia', $user->nome_fantasia) }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#910039] focus:border-transparent transition">
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- CNPJ -->
                     <div>
-                        <label for="cpf_cnpj" class="block text-sm font-medium text-gray-700 mb-2">CNPJ *</label>
-                        <input type="text" 
-                               id="cpf_cnpj" 
-                               name="cpf_cnpj" 
-                               value="{{ $user->cpf_cnpj }}" 
+                        <label for="cnpj" class="block text-sm font-medium text-gray-700 mb-2">CNPJ</label>
+                        <input type="text"
+                               id="cnpj"
+                               name="cnpj"
+                               value="{{ old('cnpj', $user->cnpj ?? $user->cpf_cnpj) }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#910039] focus:border-transparent transition"
-                               placeholder="00.000.000/0000-00"
-                               required>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Campos condicionais para Representante -->
-                @if($user->user_type_id == 4)
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Nome do Representante -->
-                    <div>
-                        <label for="representante_nome" class="block text-sm font-medium text-gray-700 mb-2">Nome do Representante *</label>
-                        <input type="text" 
-                               id="representante_nome" 
-                               name="representante_nome" 
-                               value="{{ $user->representante_nome }}" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#910039] focus:border-transparent transition"
-                               required>
-                    </div>
-
-                    <!-- CPF -->
-                    <div>
-                        <label for="cpf_cnpj" class="block text-sm font-medium text-gray-700 mb-2">CPF *</label>
-                        <input type="text" 
-                               id="cpf_cnpj" 
-                               name="cpf_cnpj" 
-                               value="{{ $user->cpf_cnpj }}" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#910039] focus:border-transparent transition"
-                               placeholder="000.000.000-00"
-                               required>
+                               placeholder="00.000.000/0000-00">
                     </div>
                 </div>
                 @endif

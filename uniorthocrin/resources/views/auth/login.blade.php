@@ -82,8 +82,8 @@
         </div>
     </div>
 
-    <!-- Modal aviso de novo endereço da plataforma -->
-    <div id="address-change-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+    <!-- Modal aviso de novo endereço (mantido no DOM; oculto — remova style e a classe "hidden" para reativar) -->
+    <div id="address-change-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60" style="display: none !important;" aria-hidden="true">
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6">
             <div class="mb-4">
                 <h2 class="text-lg font-semibold text-primary mb-2">A plataforma mudou de endereço</h2>

@@ -209,8 +209,8 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">{{ $user->nome_fantasia ?? $user->razao_social ?? '-' }}</div>
-                            @if($user->representante_nome)
-                                <div class="text-sm text-gray-500">{{ $user->representante_nome }}</div>
+                            @if($user->cnpj)
+                                <div class="text-sm text-gray-500">{{ $user->cnpj }}</div>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">

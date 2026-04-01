@@ -35,10 +35,6 @@ class UserAccountController extends Controller
             $validationRules['nome_fantasia'] = 'nullable|string|max:255';
             $validationRules['cnpj'] = 'nullable|string|max:20';
         }
-        if ($user->user_type_id === 4) {
-            $validationRules['representante_nome'] = 'nullable|string|max:255';
-            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
-        }
 
         $validated = $request->validate($validationRules);
 
@@ -47,10 +43,8 @@ class UserAccountController extends Controller
             $payload['razao_social'] = $request->input('razao_social');
             $payload['nome_fantasia'] = $request->input('nome_fantasia');
             $payload['cnpj'] = $request->input('cnpj');
-        }
-        if ($user->user_type_id === 4) {
-            $payload['representante_nome'] = $request->input('representante_nome');
-            $payload['cpf_cnpj'] = $request->input('cpf_cnpj');
+            $payload['representante_nome'] = null;
+            $payload['cpf_cnpj'] = null;
         }
 
         try {

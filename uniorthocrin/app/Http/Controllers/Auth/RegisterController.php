@@ -17,9 +17,9 @@ class RegisterController extends Controller
         'representante' => 4,
     ];
 
-    public function showForm(Request $request)
+    public function showForm(Request $request, ?string $profile = null)
     {
-        $profile = $request->old('profile', 'franquia');
+        $profile = $request->old('profile', $profile ?? 'franquia');
         if (! $this->isValidProfile($profile)) {
             $profile = 'franquia';
         }
@@ -37,6 +37,9 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'razao_social' => ['nullable', 'string', 'max:255'],
+            'nome_fantasia' => ['nullable', 'string', 'max:255'],
+            'cnpj' => ['nullable', 'string', 'max:20'],
         ];
 
         $validated = $request->validate($rules);
@@ -51,6 +54,12 @@ class RegisterController extends Controller
             'user_type_id' => $userTypeId,
             'status' => 'active',
         ];
+
+        if (in_array($profile, ['franquia', 'lojista', 'representante'], true)) {
+            $payload['razao_social'] = $request->input('razao_social');
+            $payload['nome_fantasia'] = $request->input('nome_fantasia');
+            $payload['cnpj'] = $request->input('cnpj');
+        }
 
         User::create($payload);
 

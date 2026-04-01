@@ -24,7 +24,7 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login')->m
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/esqueci-senha', [PasswordResetController::class, 'showRequestForm'])->name('password.request')->middleware('guest');
 Route::post('/esqueci-senha', [PasswordResetController::class, 'sendRandomPassword'])->name('password.email')->middleware('guest');
-Route::get('/cadastro', [RegisterController::class, 'showForm'])->name('register.profile')->middleware('guest');
+Route::get('/cadastro/{profile?}', [RegisterController::class, 'showForm'])->name('register.profile')->middleware('guest');
 Route::post('/cadastro', [RegisterController::class, 'store'])->name('register.profile.store')->middleware('guest');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

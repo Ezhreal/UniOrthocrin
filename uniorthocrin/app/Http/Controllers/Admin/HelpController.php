@@ -31,9 +31,9 @@ class HelpController extends Controller
                     [
                         'title' => 'Tipo e campos por perfil',
                         'icon' => 'fa-user-tag',
-                        'fields' => ['Tipo de usuário (obrigatório): Admin, Franqueado, Lojista ou Representante', 'Para Franqueado: Razão Social, Nome Fantasia, CPF/CNPJ', 'Para Lojista/Representante: campos específicos (ex.: representante_nome, CPF/CNPJ)'],
+                        'fields' => ['Tipo de usuário (obrigatório): Admin, Franqueado, Lojista ou Representante', 'Para Franqueado, Lojista e Representante (opcional): Razão social, Nome fantasia, CNPJ da empresa'],
                         'uploads' => [],
-                        'steps' => [['Campos por tipo', 'Se for **Franqueado**, preencha Razão Social, Nome Fantasia e CPF/CNPJ. Se for **Lojista** ou **Representante**, preencha os campos exibidos para esse tipo.']],
+                        'steps' => [['Campos por tipo', 'Se for **Franqueado**, **Lojista** ou **Representante**, o bloco **Dados da empresa** pode ser preenchido (todos os campos são opcionais).']],
                     ],
                 ],
             ],

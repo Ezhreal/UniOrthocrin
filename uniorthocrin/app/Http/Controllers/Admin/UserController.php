@@ -61,11 +61,6 @@ class UserController extends Controller
             $validationRules['cnpj'] = 'nullable|string|max:20';
         }
 
-        if ($userTypeId === 4) {
-            $validationRules['representante_nome'] = 'nullable|string|max:255';
-            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
-        }
-
         $request->validate($validationRules);
 
         $userData = [
@@ -80,11 +75,8 @@ class UserController extends Controller
             $userData['razao_social'] = $request->input('razao_social');
             $userData['nome_fantasia'] = $request->input('nome_fantasia');
             $userData['cnpj'] = $request->input('cnpj');
-        }
-
-        if ($userTypeId === 4) {
-            $userData['representante_nome'] = $request->input('representante_nome');
-            $userData['cpf_cnpj'] = $request->input('cpf_cnpj');
+            $userData['representante_nome'] = null;
+            $userData['cpf_cnpj'] = null;
         }
 
         User::create($userData);
@@ -122,11 +114,6 @@ class UserController extends Controller
             $validationRules['cnpj'] = 'nullable|string|max:20';
         }
 
-        if ($userTypeId === 4) {
-            $validationRules['representante_nome'] = 'nullable|string|max:255';
-            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
-        }
-
         $request->validate($validationRules);
 
         $data = [
@@ -140,17 +127,14 @@ class UserController extends Controller
             $data['razao_social'] = $request->input('razao_social');
             $data['nome_fantasia'] = $request->input('nome_fantasia');
             $data['cnpj'] = $request->input('cnpj');
+            $data['representante_nome'] = null;
+            $data['cpf_cnpj'] = null;
         } else {
             $data['razao_social'] = null;
             $data['nome_fantasia'] = null;
             $data['cnpj'] = null;
-        }
-
-        if ($userTypeId === 4) {
-            $data['representante_nome'] = $request->input('representante_nome');
-            $data['cpf_cnpj'] = $request->input('cpf_cnpj');
-        } else {
             $data['representante_nome'] = null;
+            $data['cpf_cnpj'] = null;
         }
 
         if ($request->filled('password')) {
@@ -188,11 +172,6 @@ class UserController extends Controller
             $validationRules['cnpj'] = 'nullable|string|max:20';
         }
 
-        if ($user->user_type_id === 4) {
-            $validationRules['representante_nome'] = 'nullable|string|max:255';
-            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
-        }
-
         $validated = $request->validate($validationRules);
 
         $data = [
@@ -203,11 +182,8 @@ class UserController extends Controller
             $data['razao_social'] = $request->input('razao_social');
             $data['nome_fantasia'] = $request->input('nome_fantasia');
             $data['cnpj'] = $request->input('cnpj');
-        }
-
-        if ($user->user_type_id === 4) {
-            $data['representante_nome'] = $request->input('representante_nome');
-            $data['cpf_cnpj'] = $request->input('cpf_cnpj');
+            $data['representante_nome'] = null;
+            $data['cpf_cnpj'] = null;
         }
 
         $user->update($data);

@@ -101,45 +101,6 @@
         </div>
         @endif
 
-        @if($user->user_type_id == 4)
-        <div class="modern-card hover-modern-lift">
-            <div class="modern-card-header">
-                <div class="flex items-center space-x-3">
-                    <div class="h-10 w-10 bg-warning-50 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-user-tie text-warning-500"></i>
-                    </div>
-                    <div>
-                        <h3 class="modern-card-title">Representante</h3>
-                        <p class="modern-card-subtitle">Nome e CPF opcionais</p>
-                    </div>
-                </div>
-            </div>
-            <div class="space-modern-sm">
-                <div class="grid-modern grid-modern-2">
-                    <div>
-                        <label for="representante_nome" class="form-label-modern">Nome do representante (opcional)</label>
-                        <input type="text" id="representante_nome" name="representante_nome" value="{{ old('representante_nome', $user->representante_nome) }}"
-                               class="form-input-modern @error('representante_nome') border-error-500 @enderror"
-                               placeholder="Nome do representante">
-                        @error('representante_nome')
-                            <p class="form-error-modern">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="cpf_cnpj" class="form-label-modern">CPF (opcional)</label>
-                        <input type="text" id="cpf_cnpj" name="cpf_cnpj" value="{{ old('cpf_cnpj', $user->cpf_cnpj) }}"
-                               class="form-input-modern @error('cpf_cnpj') border-error-500 @enderror"
-                               placeholder="CPF">
-                        @error('cpf_cnpj')
-                            <p class="form-error-modern">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
-
         <!-- Modern Actions -->
         <div class="flex items-center justify-end space-x-3 p-6 bg-gray-50 rounded-xl">
             <button type="submit" 

@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro - {{ $profileLabel }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/std-icon.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -18,93 +21,159 @@
                         'background': '#F9F9F9',
                     },
                     fontFamily: {
-                        'sans': ['Inter', 'sans-serif'],
-                    }
+                        'sans': ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgb(0 0 0 / 0.06), 0 12px 24px -4px rgb(145 0 57 / 0.08)',
+                    },
                 }
             }
         };
     </script>
 </head>
-<body class="font-sans min-h-screen min-w-screen">
-    <div class="flex flex-col lg:flex-row w-screen h-screen">
-        <!-- Coluna Esquerda: Splash -->
-        <div class="hidden lg:flex lg:w-1/2 h-full items-center justify-center p-6">
-            <img src="{{ asset('images/login-page.jpg') }}" alt="UniOrthocrin" class="object-cover w-full h-full rounded-lg" />
+<body class="font-sans h-[100dvh] overflow-hidden bg-background text-text antialiased">
+    <div class="flex h-[100dvh] min-h-0 flex-col lg:flex-row">
+        <!-- Coluna esquerda: imagem (desktop) -->
+        <div class="relative hidden min-h-0 lg:block lg:w-[42%] xl:w-[44%]">
+            <div class="flex h-full min-h-0 items-stretch p-4 xl:p-6">
+                <img src="{{ asset('images/login-page.jpg') }}" alt="UniOrthocrin" class="h-full min-h-0 w-full rounded-2xl object-cover shadow-card" />
+            </div>
         </div>
-        <!-- Coluna Direita: Formulário -->
-        <div class="w-full lg:w-1/2 h-full flex items-center justify-center p-4">
-            <div class="w-full max-w-md px-4 sm:px-8">
-                <div class="mb-8 flex flex-col items-center">
-                    <img src="{{ asset('images/std-ver.png') }}" alt="UniOrthocrin Logo" class="mb-2 w-32 h-16 object-contain">
-                </div>
-                <h1 class="text-2xl font-bold text-primary mb-2 text-center">Crie sua conta</h1>
-                <p class="text-text text-sm text-center mb-6 max-w-xs mx-auto">
-                    Primeiro, nos conte quem é você para personalizarmos o seu acesso.
-                </p>
+
+        <!-- Coluna formulário: cabeçalho fixo + scroll só no bloco do formulário -->
+        <div class="flex min-h-0 flex-1 flex-col lg:w-[58%] xl:w-[56%]">
+            <div class="mx-auto flex h-full min-h-0 w-full max-w-xl flex-col px-4 pt-6 sm:px-6 lg:px-10 lg:pt-8">
+                <header class="mb-4 shrink-0 text-center sm:mb-5">
+                    <img src="{{ asset('images/std-ver.png') }}" alt="UniOrthocrin" class="mx-auto mb-3 h-16 w-auto object-contain sm:h-[4.5rem]">
+                    <p class="mx-auto max-w-md text-sm leading-relaxed text-text">
+                        Escolha seu perfil e complete os dados para acessar a plataforma.
+                    </p>
+                </header>
 
                 @if ($errors->any())
-                    <div class="mb-4 text-red-500 text-xs">
-                        @foreach ($errors->all() as $error)
-                            <p>{{ $error }}</p>
-                        @endforeach
+                    <div class="mb-4 shrink-0 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+                        <p class="font-semibold text-red-900">Corrija os itens abaixo:</p>
+                        <ul class="mt-2 list-inside list-disc space-y-1 text-red-800">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
                     </div>
                 @endif
 
-                <form action="{{ route('register.profile.store') }}" method="POST" class="space-y-4" id="register-form" novalidate>
-                    @csrf
-                    <div class="mb-4 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3">
-                        <p class="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Passo 1</p>
-                        <label for="profile" class="block text-sm font-semibold text-primary mb-1">Você é?</label>
-                        <p class="text-[11px] text-text mb-2">
-                            Escolha abaixo o tipo de parceiro que melhor representa você.
-                        </p>
-                        <select id="profile" name="profile" required class="w-full px-3 py-2 border border-primary rounded-md bg-white text-text focus:outline-none focus:ring-2 focus:ring-primary text-sm">
-                            <option value="">Selecione uma opção</option>
-                            <option value="franquia" {{ old('profile', $profile) === 'franquia' ? 'selected' : '' }}>Sou Franquia</option>
-                            <option value="representante" {{ old('profile', $profile) === 'representante' ? 'selected' : '' }}>Sou Representante</option>
-                            <option value="lojista" {{ old('profile', $profile) === 'lojista' ? 'selected' : '' }}>Sou Lojista</option>
-                        </select>
-                    </div>
+                <div class="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-6 [-webkit-overflow-scrolling:touch]">
+                <div class="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-card sm:p-7 lg:p-8">
+                    <form action="{{ route('register.profile.store') }}" method="POST" class="space-y-8" id="register-form" novalidate>
+                        @csrf
 
-                    <div id="registration-fields" class="{{ old('profile', $profile) ? '' : 'hidden' }} space-y-4">
-                    <div>
-                        <label for="name" class="block text-xs font-semibold text-text mb-1">Nome completo *</label>
-                        <input id="name" name="name" type="text" value="{{ old('name') }}" required class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
-                    </div>
+                        <!-- Perfil -->
+                        <section class="space-y-3" aria-labelledby="profile-heading">
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">1</span>
+                                <h2 id="profile-heading" class="text-sm font-semibold text-gray-900">Tipo de parceiro</h2>
+                            </div>
+                            <div class="rounded-xl border border-primary/20 bg-primary/[0.04] p-4 sm:p-5">
+                                <label for="profile" class="mb-1 block text-sm font-medium text-primary">Você é? *</label>
+                                <p class="mb-3 text-xs text-text">Selecione para liberar o restante do formulário.</p>
+                                <select id="profile" name="profile" required
+                                    class="w-full rounded-lg border border-primary/30 bg-white px-3 py-3 text-sm text-gray-800 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25">
+                                    <option value="">Selecione uma opção</option>
+                                    <option value="franquia" {{ old('profile', $profile) === 'franquia' ? 'selected' : '' }}>Sou Franquia</option>
+                                    <option value="representante" {{ old('profile', $profile) === 'representante' ? 'selected' : '' }}>Sou Representante</option>
+                                    <option value="lojista" {{ old('profile', $profile) === 'lojista' ? 'selected' : '' }}>Sou Lojista</option>
+                                </select>
+                            </div>
+                        </section>
 
-                    <div>
-                        <label for="email" class="block text-xs font-semibold text-text mb-1">E-mail *</label>
-                        <input id="email" name="email" type="email" value="{{ old('email') }}" required class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
-                    </div>
+                        <div id="registration-fields" class="{{ old('profile', $profile) ? '' : 'hidden' }} space-y-8">
 
-                    <div id="lojista-fields" class="{{ old('profile', $profile) === 'lojista' ? '' : 'hidden' }}">
-                        <div>
-                            <label for="razao_social" class="block text-xs font-semibold text-text mb-1">Razão Social *</label>
-                            <input id="razao_social" name="razao_social" type="text" value="{{ old('razao_social') }}" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                            <!-- Conta -->
+                            <section class="space-y-4" aria-labelledby="account-heading">
+                                <div class="flex items-center gap-2">
+                                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">2</span>
+                                    <h2 id="account-heading" class="text-sm font-semibold text-gray-900">Dados da conta</h2>
+                                </div>
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label for="name" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Nome completo *</label>
+                                        <input id="name" name="name" type="text" value="{{ old('name') }}" required autocomplete="name"
+                                            class="w-full rounded-lg border border-border bg-gray-50/50 px-3 py-3 text-sm transition placeholder:text-gray-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                    </div>
+                                    <div>
+                                        <label for="email" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">E-mail *</label>
+                                        <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="email"
+                                            class="w-full rounded-lg border border-border bg-gray-50/50 px-3 py-3 text-sm transition focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                    </div>
+                                </div>
+                            </section>
+
+                            @php
+                                $p = old('profile', $profile);
+                                $showCompany = in_array($p, ['franquia', 'lojista', 'representante'], true) && $p !== '';
+                            @endphp
+                            <section id="company-fields" class="{{ $showCompany ? '' : 'hidden' }} space-y-4" aria-labelledby="company-heading">
+                                <div class="flex items-center gap-2">
+                                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600/10 text-xs font-bold text-emerald-800">3</span>
+                                    <h2 id="company-heading" class="text-sm font-semibold text-gray-900">Dados da empresa</h2>
+                                </div>
+                                <div class="rounded-xl border border-gray-200 bg-gradient-to-b from-gray-50/80 to-white p-4 sm:p-5">
+                                    <div class="grid gap-4 sm:grid-cols-2">
+                                        <div class="sm:col-span-2">
+                                            <label for="razao_social" class="mb-1.5 block text-xs font-semibold text-gray-600">Razão social</label>
+                                            <input id="razao_social" name="razao_social" type="text" value="{{ old('razao_social') }}" autocomplete="organization"
+                                                class="w-full rounded-lg border border-border px-3 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                        </div>
+                                        <div>
+                                            <label for="nome_fantasia" class="mb-1.5 block text-xs font-semibold text-gray-600">Nome fantasia</label>
+                                            <input id="nome_fantasia" name="nome_fantasia" type="text" value="{{ old('nome_fantasia') }}"
+                                                class="w-full rounded-lg border border-border px-3 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                        </div>
+                                        <div>
+                                            <label for="cnpj" class="mb-1.5 block text-xs font-semibold text-gray-600">CNPJ</label>
+                                            <input id="cnpj" name="cnpj" type="text" value="{{ old('cnpj') }}" inputmode="numeric" autocomplete="off"
+                                                class="w-full rounded-lg border border-border px-3 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Senha -->
+                            <section class="space-y-4" aria-labelledby="security-heading">
+                                <div class="flex items-center gap-2">
+                                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">4</span>
+                                    <h2 id="security-heading" class="text-sm font-semibold text-gray-900">Segurança</h2>
+                                </div>
+                                <div class="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label for="password" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Senha *</label>
+                                        <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password"
+                                            class="w-full rounded-lg border border-border bg-gray-50/50 px-3 py-3 text-sm focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                        <p class="mt-1.5 text-[11px] text-text">Mínimo de 8 caracteres.</p>
+                                    </div>
+                                    <div>
+                                        <label for="password_confirmation" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">Confirmar senha *</label>
+                                        <input id="password_confirmation" name="password_confirmation" type="password" required minlength="8" autocomplete="new-password"
+                                            class="w-full rounded-lg border border-border bg-gray-50/50 px-3 py-3 text-sm focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div class="flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                                <a href="{{ route('login') }}" class="text-center text-sm font-semibold text-primary hover:underline sm:text-left">
+                                    ← Voltar para o login
+                                </a>
+                                <button type="submit" class="w-full rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-white shadow-md transition hover:bg-[#7a0030] hover:shadow-lg sm:w-auto">
+                                    Cadastrar
+                                </button>
+                            </div>
                         </div>
+                    </form>
+                </div>
 
-                        <div>
-                            <label for="nome_fantasia" class="block text-xs font-semibold text-text mb-1">Nome Fantasia *</label>
-                            <input id="nome_fantasia" name="nome_fantasia" type="text" value="{{ old('nome_fantasia') }}" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="password" class="block text-xs font-semibold text-text mb-1">Senha *</label>
-                        <input id="password" name="password" type="password" required minlength="8" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
-                    </div>
-
-                    <div>
-                        <label for="password_confirmation" class="block text-xs font-semibold text-text mb-1">Confirmar Senha *</label>
-                        <input id="password_confirmation" name="password_confirmation" type="password" required minlength="8" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
-                    </div>
-
-                    <div class="flex items-center justify-between pt-2">
-                        <a href="{{ route('login') }}" class="text-primary text-xs sm:text-sm font-semibold hover:underline">Voltar para login</a>
-                        <button type="submit" class="px-6 py-2 bg-primary text-white rounded-full font-semibold hover:bg-secondary transition">Cadastrar</button>
-                    </div>
-                    </div>
-                </form>
+                <p class="mt-4 text-center text-[11px] text-text/80">
+                    Ao cadastrar-se, você poderá acessar os materiais conforme o perfil Orthocrin associado à sua conta.
+                </p>
+                </div>
             </div>
         </div>
     </div>
@@ -115,9 +184,10 @@
             const password = document.getElementById('password');
             const confirmation = document.getElementById('password_confirmation');
             const profileSelect = document.getElementById('profile');
-            const lojistaFields = document.getElementById('lojista-fields');
-            const lojistaInputs = lojistaFields ? lojistaFields.querySelectorAll('input') : [];
+            const companyFields = document.getElementById('company-fields');
             const registrationFields = document.getElementById('registration-fields');
+
+            const profilesWithCompany = ['franquia', 'lojista', 'representante'];
 
             const validatePasswordMatch = () => {
                 if (confirmation.value && password.value !== confirmation.value) {
@@ -127,20 +197,14 @@
                 }
             };
 
-            const updateLojistaVisibility = () => {
-                if (!profileSelect || !lojistaFields) return;
+            const updateCompanyVisibility = () => {
+                if (!profileSelect || !companyFields) return;
 
-                if (profileSelect.value === 'lojista') {
-                    lojistaFields.classList.remove('hidden');
-                    lojistaInputs.forEach((input) => {
-                        input.required = true;
-                    });
+                const v = profileSelect.value;
+                if (profilesWithCompany.includes(v)) {
+                    companyFields.classList.remove('hidden');
                 } else {
-                    lojistaFields.classList.add('hidden');
-                    lojistaInputs.forEach((input) => {
-                        input.required = false;
-                        input.setCustomValidity('');
-                    });
+                    companyFields.classList.add('hidden');
                 }
             };
 
@@ -156,11 +220,10 @@
 
             if (profileSelect) {
                 profileSelect.addEventListener('change', () => {
-                    updateLojistaVisibility();
+                    updateCompanyVisibility();
                     updateRegistrationVisibility();
                 });
-                // Estado inicial baseado no valor atual
-                updateLojistaVisibility();
+                updateCompanyVisibility();
                 updateRegistrationVisibility();
             }
 

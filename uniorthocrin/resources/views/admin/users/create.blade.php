@@ -176,44 +176,6 @@
             </div>
         </div>
 
-        <!-- Additional Information Card - Representante -->
-        <div id="representative-info-card" class="modern-card hover-modern-lift" style="display: none;">
-            <div class="modern-card-header">
-                <div class="flex items-center space-x-3">
-                    <div class="h-10 w-10 bg-warning-50 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-user-tie text-warning-500"></i>
-                    </div>
-                    <div>
-                        <h3 class="modern-card-title">Representante</h3>
-                        <p class="modern-card-subtitle">Nome e CPF opcionais. CNPJ da empresa no bloco acima.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="space-modern-sm">
-                <div class="grid-modern grid-modern-2">
-                    <div>
-                        <label for="representante_nome" class="form-label-modern">Nome do representante (opcional)</label>
-                        <input type="text" id="representante_nome" name="representante_nome" value="{{ old('representante_nome') }}"
-                               class="form-input-modern @error('representante_nome') border-error-500 @enderror"
-                               placeholder="Nome do representante">
-                        @error('representante_nome')
-                            <p class="form-error-modern">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="cpf_cnpj_representative" class="form-label-modern">CPF (opcional)</label>
-                        <input type="text" id="cpf_cnpj_representative" name="cpf_cnpj" value="{{ old('cpf_cnpj') }}"
-                               class="form-input-modern @error('cpf_cnpj') border-error-500 @enderror"
-                               placeholder="CPF do representante">
-                        @error('cpf_cnpj')
-                            <p class="form-error-modern">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Modern Actions -->
         <div class="flex items-center justify-end space-x-3 p-6 bg-gray-50 rounded-xl">
             <a href="{{ route('admin.users.index') }}" 
@@ -233,37 +195,22 @@
 document.addEventListener('DOMContentLoaded', function() {
     const userTypeSelect = document.getElementById('user_type_id');
     const companyInfoCard = document.getElementById('company-info-card');
-    const representativeInfoCard = document.getElementById('representative-info-card');
     
     function toggleFields() {
         const userTypeId = userTypeSelect.value;
         
-        // Esconder todos os cards primeiro
         companyInfoCard.style.display = 'none';
-        representativeInfoCard.style.display = 'none';
         
-        // Desabilitar todos os campos condicionais
         const companyFields = companyInfoCard.querySelectorAll('input');
-        const representativeFields = representativeInfoCard.querySelectorAll('input');
         
         companyFields.forEach(field => {
             field.disabled = true;
             field.value = '';
         });
         
-        representativeFields.forEach(field => {
-            field.disabled = true;
-            field.value = '';
-        });
-        
-        if (userTypeId == 2 || userTypeId == 3) {
+        if (userTypeId == 2 || userTypeId == 3 || userTypeId == 4) {
             companyInfoCard.style.display = 'block';
             companyFields.forEach(field => { field.disabled = false; });
-        } else if (userTypeId == 4) {
-            companyInfoCard.style.display = 'block';
-            companyFields.forEach(field => { field.disabled = false; });
-            representativeInfoCard.style.display = 'block';
-            representativeFields.forEach(field => { field.disabled = false; });
         }
     }
     

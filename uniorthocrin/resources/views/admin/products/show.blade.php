@@ -115,7 +115,7 @@
                                             <i class="fas fa-video text-gray-400 text-lg"></i>
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-900 truncate">{{ $video->original_name }}</p>
+                                            <p class="text-sm font-medium text-gray-900 truncate">{{ $video->name ?: basename($video->path) }}</p>
                                         </div>
                                     </div>
                                 </div>
