@@ -18,11 +18,27 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['category', 'series', 'images', 'videos'])
-            ->latest()
-            ->paginate(15);
+        $query = Product::with(['category', 'series', 'images', 'videos']);
+
+        if ($request->filled('search')) {
+            $s = $request->get('search');
+            $query->where(function ($q) use ($s) {
+                $q->where('name', 'like', '%' . $s . '%')
+                    ->orWhere('description', 'like', '%' . $s . '%');
+            });
+        }
+
+        if ($request->filled('category')) {
+            $query->where('product_category_id', $request->integer('category'));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+
+        $products = $query->latest()->paginate(15)->appends($request->query());
 
         return view('admin.products.index', compact('products'));
     }

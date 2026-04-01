@@ -35,7 +35,7 @@
                 <select name="category" id="category" class="form-select-modern">
                     <option value="">Todas as categorias</option>
                     @foreach(\App\Models\ProductCategory::orderBy('name')->get() as $category)
-                        <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                        <option value="{{ $category->id }}" {{ (string) request('category') === (string) $category->id ? 'selected' : '' }}>
                             {{ $category->name }}
                         </option>
                     @endforeach
@@ -49,13 +49,18 @@
                     <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inativo</option>
                 </select>
             </div>
-            <div class="flex items-end">
-                <button type="submit" class="btn-modern-primary w-full">
+            <div class="flex items-end gap-2">
+                <button type="submit" class="btn-modern-primary flex-1">
                     <i class="fas fa-search mr-2"></i>
                     Filtrar
                 </button>
             </div>
         </form>
+        <div class="px-6 pb-4">
+            <a href="{{ route('admin.products.index') }}" class="text-sm text-primary-600 hover:underline">
+                <i class="fas fa-times-circle mr-1"></i>Limpar filtros
+            </a>
+        </div>
     </div>
 
     <!-- Modern Products Table -->
@@ -69,6 +74,7 @@
                         <th>Série</th>
                         <th>Status</th>
                         <th>Arquivos</th>
+                        <th>Vídeo</th>
                         <th>Criado em</th>
                         <th>Ações</th>
                     </tr>
@@ -109,6 +115,16 @@
                             </div>
                         </td>
                         <td>
+                            @php $v0 = $product->videos->first(); @endphp
+                            @if($v0)
+                                <span class="text-modern-caption truncate max-w-[200px] inline-block align-middle" title="{{ $v0->name }}">
+                                    <i class="fas fa-file-video text-gray-400 mr-1"></i>{{ Str::limit($v0->name, 36) }}
+                                </span>
+                            @else
+                                <span class="text-modern-caption text-gray-400">—</span>
+                            @endif
+                        </td>
+                        <td>
                             <span class="text-modern-body">{{ $product->created_at->format('d/m/Y') }}</span>
                         </td>
                         <td>
@@ -131,7 +147,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-8">
+                        <td colspan="8" class="text-center py-8">
                             <i class="fas fa-box text-gray-300 text-4xl mb-4"></i>
                             <p class="text-modern-caption">Nenhum produto encontrado</p>
                         </td>
