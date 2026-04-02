@@ -53,17 +53,11 @@ class CampaignService
     }
 
     /**
-     * Get campaigns with statistics for list view.
+     * Lista de marketing: destaque único (última atualizada entre is_featured) + todas as outras no prazo.
      */
     public function getCampaignsForList(User $user)
     {
-        $featured = $this->getFeaturedCampaign($user);
-        $others = $this->getOtherCampaigns($user, $featured ? $featured->id : null);
-        
-        return [
-            'featured' => $featured,
-            'others' => $others
-        ];
+        return $this->campaignRepository->getMarketingListForUser($user);
     }
 
     /**
@@ -71,7 +65,7 @@ class CampaignService
      */
     public function getActiveCampaigns(): Collection
     {
-        return Campaign::active()->current()->get();
+        return Campaign::current()->active()->get();
     }
 
     /**
@@ -79,7 +73,7 @@ class CampaignService
      */
     public function getFranchiseOnlyCampaigns(): Collection
     {
-        return Campaign::active()->current()->franchiseOnly()->get();
+        return Campaign::current()->active()->franchiseOnly()->get();
     }
 
     /**

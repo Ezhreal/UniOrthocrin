@@ -17,7 +17,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Dimensions;
 
 class CampaignController extends Controller
 {
@@ -503,12 +502,12 @@ class CampaignController extends Controller
         }
 
         $desktopRule = ['image', 'mimes:jpeg,jpg,png,webp', 'max:20480'];
-        // TODO: reforçar proporção 1:1 se o time quiser rejeitar imagens não quadradas (ratio pode falhar em JPEGs com EXIF).
+        // Mínimo 1080×1080 em string (compatível com o validador; evita objeto Dimensions removido/instável em algumas versões).
         $mobileRule = [
             'image',
             'mimes:jpeg,jpg,png,webp',
             'max:20480',
-            Dimensions::make()->minWidth(1080)->minHeight(1080),
+            'dimensions:min_width=1080,min_height=1080',
         ];
 
         if ($existing === null) {

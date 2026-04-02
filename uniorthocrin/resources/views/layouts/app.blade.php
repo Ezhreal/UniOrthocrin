@@ -55,30 +55,53 @@
         
         try {
             const resp = await fetch(form.action, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf }, body: formData });
-            const data = await resp.json();
-            
-            if (data && data.success && data.downloadUrl) {
-                // Atualizar feedback para sucesso
-                title.textContent = 'Download Iniciado';
-                message.textContent = 'Redirecionando para download...';
-                spinner.innerHTML = '<i class="fas fa-check text-xl text-green-300"></i>';
-                
-                // Esconder alerta após 2 segundos
-                setTimeout(() => {
-                    alert.classList.add('hidden');
-                }, 2000);
-                
-                window.location.href = data.downloadUrl;
+            const ct = (resp.headers.get('Content-Type') || '').toLowerCase();
+            if (ct.includes('application/json')) {
+                const data = await resp.json();
+                if (data && data.success && data.downloadUrl) {
+                    title.textContent = 'Download Iniciado';
+                    message.textContent = 'Redirecionando para download...';
+                    spinner.innerHTML = '<i class="fas fa-check text-xl text-green-300"></i>';
+                    setTimeout(() => { alert.classList.add('hidden'); }, 2000);
+                    window.location.href = data.downloadUrl;
+                } else {
+                    title.textContent = 'Erro no Download';
+                    message.textContent = data?.message || 'Erro desconhecido';
+                    spinner.innerHTML = '<i class="fas fa-exclamation-triangle text-xl text-red-300"></i>';
+                    setTimeout(() => { alert.classList.add('hidden'); }, 5000);
+                }
             } else {
-                // Mostrar erro
-                title.textContent = 'Erro no Download';
-                message.textContent = data?.message || 'Erro desconhecido';
-                spinner.innerHTML = '<i class="fas fa-exclamation-triangle text-xl text-red-300"></i>';
-                
-                // Esconder alerta após 5 segundos
-                setTimeout(() => {
-                    alert.classList.add('hidden');
-                }, 5000);
+                const blob = await resp.blob();
+                if (!resp.ok) {
+                    title.textContent = 'Erro no Download';
+                    message.textContent = 'Não foi possível baixar o arquivo';
+                    spinner.innerHTML = '<i class="fas fa-exclamation-triangle text-xl text-red-300"></i>';
+                    setTimeout(() => { alert.classList.add('hidden'); }, 5000);
+                    return false;
+                }
+                let filename = 'download';
+                const cd = resp.headers.get('Content-Disposition');
+                if (cd) {
+                    const utf8 = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(cd);
+                    const plain = /filename="([^"]+)"/i.exec(cd) || /filename=([^;\s]+)/i.exec(cd);
+                    if (utf8) {
+                        filename = decodeURIComponent(utf8[1].trim().replace(/^["']|["']$/g, ''));
+                    } else if (plain) {
+                        filename = plain[1].trim().replace(/^["']|["']$/g, '');
+                    }
+                }
+                title.textContent = 'Download Iniciado';
+                message.textContent = 'Salvando arquivo...';
+                spinner.innerHTML = '<i class="fas fa-check text-xl text-green-300"></i>';
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+                setTimeout(() => { alert.classList.add('hidden'); }, 2000);
             }
         } catch (err) {
             // Mostrar erro

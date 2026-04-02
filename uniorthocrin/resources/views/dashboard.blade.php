@@ -255,13 +255,42 @@
 async function handleDownloadSubmit(e, form) {
     e.preventDefault();
     const formData = new FormData(form);
+    const csrf = form.querySelector('input[name=_token]')?.value || '';
     try {
-        const resp = await fetch(form.action, { method: 'POST', headers: { 'X-CSRF-TOKEN': form.querySelector('input[name=_token]').value }, body: formData });
-        const data = await resp.json();
-        if (data && data.success && data.downloadUrl) {
-            window.location.href = data.downloadUrl;
+        const resp = await fetch(form.action, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf }, body: formData });
+        const ct = (resp.headers.get('Content-Type') || '').toLowerCase();
+        if (ct.includes('application/json')) {
+            const data = await resp.json();
+            if (data && data.success && data.downloadUrl) {
+                window.location.href = data.downloadUrl;
+            } else {
+                alert(data?.message || 'Falha ao preparar download.');
+            }
         } else {
-            alert(data.message || 'Falha ao preparar download.');
+            const blob = await resp.blob();
+            if (!resp.ok) {
+                alert('Não foi possível baixar o arquivo.');
+                return false;
+            }
+            let filename = 'download';
+            const cd = resp.headers.get('Content-Disposition');
+            if (cd) {
+                const utf8 = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(cd);
+                const plain = /filename="([^"]+)"/i.exec(cd) || /filename=([^;\s]+)/i.exec(cd);
+                if (utf8) {
+                    filename = decodeURIComponent(utf8[1].trim().replace(/^["']|["']$/g, ''));
+                } else if (plain) {
+                    filename = plain[1].trim().replace(/^["']|["']$/g, '');
+                }
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
         }
     } catch (err) {
         alert('Erro de rede ao iniciar download');

@@ -22,7 +22,8 @@ class CampaignRepository
             return collect(); // Retorna coleção vazia para Lojistas/Representantes
         }
         
-        return $this->model->active()
+        return $this->model->current()
+            ->active()
             ->when($user->isFranqueado(), function($q) {
                 // Franqueado vê campanhas exclusivas para franqueados
                 $q->where('visible_franchise_only', true);
@@ -40,7 +41,8 @@ class CampaignRepository
             abort(403, 'Acesso negado ao marketing');
         }
         
-        return $this->model->active()
+        return $this->model->current()
+            ->active()
             ->where('id', $id)
             ->when($user->isFranqueado(), function($q) {
                 // Franqueado vê campanhas exclusivas para franqueados
@@ -53,59 +55,69 @@ class CampaignRepository
     }
 
     /**
-     * Get the featured campaign (latest created with valid end date)
+     * Lista marketing (usuário): uma query; destaque único = entre is_featured, maior data fim (end_date desc;
+     * sem data fim conta como prazo “maior”). Lista ordenada pelo mesmo critério de fim.
+     *
+     * @return array{featured: ?Campaign, others: Collection<int, Campaign>}
      */
-    public function getFeaturedCampaign(User $user)
+    public function getMarketingListForUser(User $user): array
     {
-        // Marketing é exclusivo para Admin (ID 1) e Franqueado (ID 2)
-        if (!in_array($user->user_type_id, [1, 2])) {
-            return null; // Não retorna campanha em destaque para Lojistas/Representantes
+        if (! in_array($user->user_type_id, [1, 2], true)) {
+            return ['featured' => null, 'others' => collect()];
         }
-        
-        return $this->model->active()
-            ->where('is_featured', true)
-            ->where(function($query) {
-                $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now()->toDateString());
-            })
-            ->when($user->isFranqueado(), function($q) {
-                // Franqueado vê campanhas exclusivas para franqueados
+
+        $all = $this->model->query()
+            ->current()
+            ->active()
+            ->when($user->isFranqueado(), function ($q) {
                 $q->where('visible_franchise_only', true);
             })
-            ->when($user->isAdmin(), function($q) {
-                // Admin vê todas as campanhas
-            })
-            ->orderBy('created_at', 'desc')
             ->with(['posts', 'folders', 'videos', 'miscellaneous'])
+            ->orderByRaw('end_date IS NULL DESC')
+            ->orderByDesc('end_date')
+            ->orderByDesc('id')
+            ->get();
+
+        $featured = $all
+            ->filter(fn (Campaign $c) => $c->is_featured)
+            ->sort(function (Campaign $a, Campaign $b) {
+                $ta = $a->end_date ? $a->end_date->getTimestamp() : PHP_INT_MAX;
+                $tb = $b->end_date ? $b->end_date->getTimestamp() : PHP_INT_MAX;
+                $cmp = $tb <=> $ta;
+
+                return $cmp !== 0 ? $cmp : $b->id <=> $a->id;
+            })
             ->first();
+
+        $others = $featured === null
+            ? $all
+            : $all->filter(fn (Campaign $c) => (int) $c->id !== (int) $featured->id)->values();
+
+        return ['featured' => $featured, 'others' => $others];
     }
 
     /**
-     * Get other campaigns (excluding the featured one)
+     * Campanha em destaque (hero): ver getMarketingListForUser — só uma “vence” se várias tiverem is_featured.
+     */
+    public function getFeaturedCampaign(User $user)
+    {
+        return $this->getMarketingListForUser($user)['featured'];
+    }
+
+    /**
+     * Demais campanhas; por defeito já exclui só o destaque principal. $excludeId permite excluir outro id extra.
      */
     public function getOtherCampaigns(User $user, $excludeId = null)
     {
-        // Marketing é exclusivo para Admin (ID 1) e Franqueado (ID 2)
-        if (!in_array($user->user_type_id, [1, 2])) {
-            return collect(); // Retorna coleção vazia para Lojistas/Representantes
-        }
-        
-        $query = $this->model->active()
-            ->when($user->isFranqueado(), function($q) {
-                // Franqueado vê campanhas exclusivas para franqueados
-                $q->where('visible_franchise_only', true);
-            })
-            ->when($user->isAdmin(), function($q) {
-                // Admin vê todas as campanhas
-            });
+        $others = $this->getMarketingListForUser($user)['others'];
 
-        if ($excludeId) {
-            $query->where('id', '!=', $excludeId);
+        if ($excludeId !== null) {
+            $excludeId = (int) $excludeId;
+
+            return $others->filter(fn (Campaign $c) => (int) $c->id !== $excludeId)->values();
         }
 
-        return $query->with(['posts', 'folders', 'videos', 'miscellaneous'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        return $others;
     }
 
     /**
@@ -178,6 +190,7 @@ class CampaignRepository
             $q->where('name', 'like', "%{$query}%")
               ->orWhere('description', 'like', "%{$query}%");
         })
+        ->current()
         ->active()
         ->when($user->isFranqueado(), function($q) {
             // Franqueado vê campanhas exclusivas para franqueados

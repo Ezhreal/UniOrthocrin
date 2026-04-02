@@ -47,11 +47,14 @@ class MarketingController extends Controller
                 
                 return [
                     'id' => $video->id,
+                    'file_id' => $videoFile?->id,
+                    'name' => $video->name,
                     'title' => $video->name,
                     'type' => $video->type,
                     'video_url' => $videoFile ? url('/' . $videoFile->path) : '',
                     'thumbnail' => $videoThumb ? url('/' . $videoThumb->path) : '',
-                    'description' => $video->description
+                    'file_name' => $videoFile?->name,
+                    'description' => $video->description,
                 ];
             });
         });

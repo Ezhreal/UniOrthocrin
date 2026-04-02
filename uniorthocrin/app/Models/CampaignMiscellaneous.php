@@ -59,6 +59,23 @@ class CampaignMiscellaneous extends Model
     }
 
     /**
+     * Agrupamento para a página de marketing: uma seção com título, sem repetir o rótulo por arquivo.
+     *
+     * @return array{id: string, order: int, title: string}
+     */
+    public static function marketingSectionMeta(string $type): array
+    {
+        return match ($type) {
+            'spot' => ['id' => 'spots', 'order' => 10, 'title' => 'Spots'],
+            'tag' => ['id' => 'tags', 'order' => 20, 'title' => 'Tags'],
+            'adesivo', 'sticker' => ['id' => 'adesivos', 'order' => 30, 'title' => 'Adesivos'],
+            'banner', 'faixa' => ['id' => 'banners', 'order' => 40, 'title' => 'Banners e faixas'],
+            'script' => ['id' => 'script', 'order' => 50, 'title' => 'Materiais internos'],
+            default => ['id' => 'outros', 'order' => 60, 'title' => 'Outros materiais'],
+        };
+    }
+
+    /**
      * Get the miscellaneous type label.
      */
     public function getTypeLabelAttribute(): string

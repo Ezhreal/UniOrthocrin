@@ -40,12 +40,25 @@ class DownloadController extends Controller
         $context = $request->input('context');
         $productIds = $request->input('product_ids');
         
+        $restrictFileIds = null;
+        if ($request->has('file_ids')) {
+            $rawIds = $request->input('file_ids');
+            if (! is_array($rawIds)) {
+                $rawIds = $rawIds !== null && $rawIds !== '' ? [$rawIds] : [];
+            }
+            $restrictFileIds = array_values(array_filter(array_map('intval', $rawIds)));
+            if ($restrictFileIds === []) {
+                return response()->json(['success' => false, 'message' => 'Nenhum arquivo selecionado para download']);
+            }
+        }
+
         Log::info('Parâmetros extraídos', [
             'type' => $type,
             'contentId' => $contentId,
             'contentType' => $contentType,
             'context' => $context,
-            'productIds' => $productIds
+            'productIds' => $productIds,
+            'file_ids' => $restrictFileIds,
         ]);
         
         // Verificar se o usuário está autenticado
@@ -68,6 +81,10 @@ class DownloadController extends Controller
             'user_id' => auth()->id(),
             'user_email' => auth()->user()->email
         ]);
+
+        if ($restrictFileIds !== null && count($restrictFileIds) === 1) {
+            return $this->downloadSingleAuthorizedFile($contentId, $contentType, $restrictFileIds[0], (string) $type);
+        }
         
         try {
             Log::info('Entrando no switch', ['type' => $type]);
@@ -76,18 +93,18 @@ class DownloadController extends Controller
                 case 'images':
                 case 'image':
                     Log::info('Executando downloadImages');
-                    return $this->downloadImages($contentId, $contentType);
+                    return $this->downloadImages($contentId, $contentType, $restrictFileIds);
                 case 'videos':
                 case 'video':
                     Log::info('Executando downloadVideos');
-                    return $this->downloadVideos($contentId, $contentType);
+                    return $this->downloadVideos($contentId, $contentType, $restrictFileIds);
                 case 'pdfs':
                 case 'pdf':
                     Log::info('Executando downloadPdfs');
-                    return $this->downloadPdfs($contentId, $contentType);
+                    return $this->downloadPdfs($contentId, $contentType, $restrictFileIds);
                 case 'all':
                     Log::info('Executando downloadAll');
-                    return $this->downloadAll($contentId, $contentType);
+                    return $this->downloadAll($contentId, $contentType, $restrictFileIds);
                 case 'gallery_images':
                     Log::info('Executando downloadGalleryImages');
                     return $this->downloadGalleryImages($context);
@@ -113,7 +130,7 @@ class DownloadController extends Controller
         }
     }
     
-    private function downloadImages($contentId, $contentType)
+    private function downloadImages($contentId, $contentType, ?array $restrictFileIds = null)
     {
         Log::info('downloadImages iniciado', ['contentId' => $contentId, 'contentType' => $contentType]);
         
@@ -122,6 +139,9 @@ class DownloadController extends Controller
             Log::info('Content encontrado', ['content' => $content->name]);
             
             $files = $this->getFilesByType($contentId, $contentType, 'image');
+            if ($restrictFileIds !== null) {
+                $files = $files->whereIn('id', $restrictFileIds)->values();
+            }
             Log::info('Arquivos encontrados', ['count' => $files->count()]);
                 
             if ($files->isEmpty()) {
@@ -149,7 +169,7 @@ class DownloadController extends Controller
         }
     }
     
-    private function downloadVideos($contentId, $contentType)
+    private function downloadVideos($contentId, $contentType, ?array $restrictFileIds = null)
     {
         Log::info('downloadVideos iniciado', ['contentId' => $contentId, 'contentType' => $contentType]);
         
@@ -158,6 +178,9 @@ class DownloadController extends Controller
             Log::info('Content encontrado', ['content' => $content->name]);
             
             $files = $this->getFilesByType($contentId, $contentType, 'video');
+            if ($restrictFileIds !== null) {
+                $files = $files->whereIn('id', $restrictFileIds)->values();
+            }
             Log::info('Arquivos encontrados', ['count' => $files->count()]);
                 
             if ($files->isEmpty()) {
@@ -185,13 +208,16 @@ class DownloadController extends Controller
         }
     }
     
-    private function downloadPdfs($contentId, $contentType)
+    private function downloadPdfs($contentId, $contentType, ?array $restrictFileIds = null)
     {
         try {
             $content = $this->getContent($contentId, $contentType);
             Log::info('Content encontrado', ['content' => $content->name]);
             
             $files = $this->getFilesByType($contentId, $contentType, 'pdf');
+            if ($restrictFileIds !== null) {
+                $files = $files->whereIn('id', $restrictFileIds)->values();
+            }
             Log::info('Arquivos encontrados', ['count' => $files->count()]);
                 
             if ($files->isEmpty()) {
@@ -219,10 +245,13 @@ class DownloadController extends Controller
         }
     }
     
-    private function downloadAll($contentId, $contentType)
+    private function downloadAll($contentId, $contentType, ?array $restrictFileIds = null)
     {
         $content = $this->getContent($contentId, $contentType);
         $files = $this->getFilesByType($contentId, $contentType, 'all');
+        if ($restrictFileIds !== null) {
+            $files = $files->whereIn('id', $restrictFileIds)->values();
+        }
         
         if ($files->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'Nenhum arquivo encontrado']);
@@ -695,6 +724,36 @@ class DownloadController extends Controller
         }
     }
     
+    /**
+     * Download direto de um único arquivo (sem ZIP), após validar pertença ao conteúdo.
+     */
+    private function downloadSingleAuthorizedFile($contentId, $contentType, int $fileId, string $requestType)
+    {
+        $allFiles = $this->getFilesByType($contentId, $contentType, 'all');
+        $file = $allFiles->firstWhere('id', $fileId);
+        if (!$file) {
+            return response()->json(['success' => false, 'message' => 'Arquivo não encontrado ou sem permissão']);
+        }
+
+        $allowedTypes = match ($requestType) {
+            'pdf', 'pdfs' => ['pdf'],
+            'image', 'images' => ['image'],
+            'video', 'videos' => ['video'],
+            'all' => null,
+            default => null,
+        };
+        if ($allowedTypes !== null && !in_array($file->type, $allowedTypes, true)) {
+            return response()->json(['success' => false, 'message' => 'Tipo de download não corresponde ao arquivo']);
+        }
+
+        $path = storage_path('app/' . $file->path);
+        if (!is_file($path)) {
+            return response()->json(['success' => false, 'message' => 'Arquivo não encontrado no servidor']);
+        }
+
+        return response()->download($path, $file->name);
+    }
+
     private function checkDownloadPermissions($contentId, $contentType)
     {
         $user = auth()->user();

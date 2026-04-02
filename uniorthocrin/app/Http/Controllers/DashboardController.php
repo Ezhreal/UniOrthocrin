@@ -52,11 +52,16 @@ class DashboardController extends Controller
         try {
             if (in_array($user->user_type_id, [1, 2])) {
                 $featuredCampaigns = Campaign::query()
+                    ->current()
                     ->where('status', 'active')
                     ->where('is_featured', true)
                     ->whereNotNull('banner_path')
-                    ->where('visible_franchise_only', true) // Apenas campanhas exclusivas para franqueados
-                    ->orderByDesc('created_at')
+                    ->when($user->user_type_id === 2, function ($q) {
+                        $q->where('visible_franchise_only', true);
+                    })
+                    ->orderByRaw('end_date IS NULL DESC')
+                    ->orderByDesc('end_date')
+                    ->orderByDesc('id')
                     ->take(10)
                     ->get();
             } else {

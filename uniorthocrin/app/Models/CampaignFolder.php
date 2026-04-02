@@ -79,6 +79,18 @@ class CampaignFolder extends Model
     }
 
     /**
+     * Título da seção de folhetos na área de marketing (MG/SP → SP).
+     */
+    public static function getFolhetosMarketingSectionTitle(?string $state): string
+    {
+        return match ($state ?? '') {
+            'MG/SP' => 'Folhetos SP',
+            'DF/ES' => 'Folhetos Outros Estados',
+            default => 'Folhetos',
+        };
+    }
+
+    /**
      * Get available states for folders.
      */
     public static function getAvailableStates(): array

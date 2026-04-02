@@ -127,65 +127,77 @@
                         <input type="hidden" name="type" value="all">
                         <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
                             <i class="fa-solid fa-download"></i>
-                            Download da Campanha .zip
+                            Download da Campanha
                         </button>
                     </form>
                 </div>
                 @endif
             </div>
 
-            <!-- Box 2: Folhetos -->
+            <!-- Box 2: Folhetos (SP / Outros Estados — um download por arquivo) -->
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <h2 class="text-[#910039] text-xl font-bold mb-4">Folhetos</h2>
                 
-                @if(method_exists($campaign, 'folders') && $campaign->folders()->active()->count() > 0)
-                <div class="space-y-3 mb-4">
-                    @foreach($campaign->folders()->active()->with('files')->get() as $folder)
-                    <div class="flex items-center justify-between p-3 border-t border-gray-200 {{ $loop->last ? 'border-b' : '' }}">
-                        <div class="flex items-center gap-3">
-                            <i class="fas fa-file-pdf text-[#910039] text-lg"></i>
-                            <div>
-                                <p class="font-medium text-gray-800">{{ $folder->state_label }}</p>
-                                <p class="text-sm text-gray-600">Arquivo .pdf ({{ round($folder->files->sum('size') / 1024 / 1024, 1) }}mb)</p>
+                @php
+                    $folhetosFoldersAll = method_exists($campaign, 'folders')
+                        ? $campaign->folders()->active()->with('files')->get()
+                        : collect();
+                    $folhetosSp = $folhetosFoldersAll->where('state', 'MG/SP')->values();
+                    $folhetosOutros = $folhetosFoldersAll->where('state', 'DF/ES')->values();
+                    $folhetosDemais = $folhetosFoldersAll->whereNotIn('state', ['MG/SP', 'DF/ES'])->values();
+                    $folhetosSections = [
+                        ['folders' => $folhetosSp, 'title' => \App\Models\CampaignFolder::getFolhetosMarketingSectionTitle('MG/SP')],
+                        ['folders' => $folhetosOutros, 'title' => \App\Models\CampaignFolder::getFolhetosMarketingSectionTitle('DF/ES')],
+                    ];
+                    if ($folhetosDemais->isNotEmpty()) {
+                        $folhetosSections[] = ['folders' => $folhetosDemais, 'title' => 'Folhetos (outras regiões)'];
+                    }
+                    $folhetosFileCount = $folhetosFoldersAll->sum(fn ($fo) => $fo->files->count());
+                @endphp
+
+                @if($folhetosFileCount > 0)
+                    @foreach($folhetosSections as $section)
+                        @php $sectionFileCount = $section['folders']->sum(fn ($fo) => $fo->files->count()); @endphp
+                        @if($sectionFileCount > 0)
+                        <div class="mb-6 last:mb-0">
+                            <h3 class="text-gray-800 font-semibold text-sm mb-3">{{ $section['title'] }}</h3>
+                            <div class="space-y-0 border-t border-gray-200">
+                                @foreach($section['folders'] as $folder)
+                                    @foreach($folder->files as $file)
+                                    <div class="flex items-center justify-between gap-3 p-3 border-b border-gray-200">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            @if($file->type === 'pdf')
+                                                <i class="fas fa-file-pdf text-[#910039] text-lg flex-shrink-0"></i>
+                                            @elseif($file->type === 'image')
+                                                <i class="fas fa-file-image text-[#910039] text-lg flex-shrink-0"></i>
+                                            @else
+                                                <i class="fas fa-file text-[#910039] text-lg flex-shrink-0"></i>
+                                            @endif
+                                            <div class="min-w-0">
+                                                <p class="text-sm text-gray-800 truncate" title="{{ $file->name }}">{{ $file->name }}</p>
+                                                <p class="text-xs text-gray-500">({{ round(($file->size ?? 0) / 1024 / 1024, 1) }} MB)</p>
+                                            </div>
+                                        </div>
+                                        @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
+                                        <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex shrink-0">
+                                            @csrf
+                                            <input type="hidden" name="content_type" value="marketing">
+                                            <input type="hidden" name="content_id" value="{{ $campaign->id }}">
+                                            <input type="hidden" name="type" value="all">
+                                            <input type="hidden" name="file_ids[]" value="{{ $file->id }}">
+                                            <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                                                <i class="fa-solid fa-download"></i>
+                                                Download
+                                            </button>
+                                        </form>
+                                        @endif
+                                    </div>
+                                    @endforeach
+                                @endforeach
                             </div>
                         </div>
-                        @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
-                        <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
-                            @csrf
-                            <input type="hidden" name="content_type" value="marketing">
-                            <input type="hidden" name="content_id" value="{{ $campaign->id }}">
-                            <input type="hidden" name="type" value="image">
-                            <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
-                                <i class="fa-solid fa-download"></i>
-                                Download .zip
-                            </button>
-                        </form>
                         @endif
-                    </div>
                     @endforeach
-                </div>
-                
-                <!-- Download todos os folhetos -->
-                @php
-                    $totalFolderSize = $campaign->folders()->active()->with('files')->get()->sum(function($folder) {
-                        return $folder->files->sum('size');
-                    });
-                    $totalFolderSizeMB = round($totalFolderSize / 1024 / 1024, 1);
-                @endphp
-                @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
-                <div class="pt-4">
-                    <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
-                        @csrf
-                        <input type="hidden" name="content_type" value="marketing">
-                        <input type="hidden" name="content_id" value="{{ $campaign->id }}">
-                        <input type="hidden" name="type" value="pdf">
-                        <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
-                            <i class="fa-solid fa-download"></i>
-                            Baixar todos folhetos .zip {{ $totalFolderSizeMB }} MB
-                        </button>
-                    </form>
-                </div>
-                @endif
                 @else
                 <p class="text-gray-500 text-center py-8">Nenhum folheto disponível</p>
                 @endif
@@ -297,18 +309,29 @@
             </div>
             
             @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
-            <!-- Download da galeria -->
+            <!-- Download da galeria (file_ids do tab ativo são atualizados via JS) -->
             <div class="mt-6 border-t border-gray-200 pt-6">
-                <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline">
+                <form id="marketing-post-gallery-form" method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline">
                     @csrf
                     <input type="hidden" name="content_type" value="marketing">
                     <input type="hidden" name="content_id" value="{{ $campaign->id }}">
                     <input type="hidden" name="type" value="image">
-                        <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
-                            <i class="fa-solid fa-download"></i>
-                            Baixar Galeria de Posts.zip
-                            <span class="text-gray-500 text-sm">({{ $campaign->posts()->active()->count() }} posts)</span>
-                        </button>
+                    <span id="marketing-post-gallery-file-ids">
+                        @php
+                            $galleryFirstType = $campaign->posts()->active()->value('type');
+                            $galleryFirstImages = $galleryFirstType
+                                ? $campaign->posts()->active()->where('type', $galleryFirstType)->with('files')->get()->flatMap(fn ($p) => $p->files->where('type', 'image'))
+                                : collect();
+                        @endphp
+                        @foreach($galleryFirstImages as $gf)
+                            <input type="hidden" name="file_ids[]" value="{{ $gf->id }}">
+                        @endforeach
+                    </span>
+                    <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                        <i class="fa-solid fa-download"></i>
+                        Baixar galeria
+                        <span class="text-gray-500">(<span id="marketing-post-gallery-count">{{ $galleryFirstImages->count() }}</span> imagens neste grupo)</span>
+                    </button>
                 </form>
             </div>
             @endif
@@ -384,7 +407,7 @@
                 <!-- Lista de vídeos -->
                 <div class="flex-shrink-0 max-w-[30%]">
                     <h3 class="text-[#910039] font-bold text-lg mb-4">Lista de Vídeos</h3>
-                    <div class="space-y-0" id="videoListContainer">
+                    <div class="space-y-0" id="videoListContainer" data-campaign-id="{{ $campaign->id }}">
                         @php
                             $firstVideoType = $campaign->videos()->active()->pluck('type')->first();
                             $videosToShow = $campaign->videos()->active()->where('type', $firstVideoType)->with('files')->get();
@@ -413,14 +436,15 @@
                                     @if($videoFile->name)
                                     <p class="text-gray-500 text-xs truncate mb-1" title="{{ $videoFile->name }}">{{ $videoFile->name }}</p>
                                     @endif
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-gray-600 text-xs">{{ ucfirst($video->type) }}</span>
-                                        <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="text-gray-600 text-xs">{{ ucfirst(str_replace('_', ' ', $video->type)) }}</span>
+                                        <form method="POST" action="{{ route('download.files') }}" onsubmit="event.stopPropagation(); return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1 shrink-0">
                                             @csrf
                                             <input type="hidden" name="content_type" value="marketing">
                                             <input type="hidden" name="content_id" value="{{ $campaign->id }}">
                                             <input type="hidden" name="type" value="video">
-                                            <button type="submit" class="inline-flex items-center gap-1">
+                                            <input type="hidden" name="file_ids[]" value="{{ $videoFile->id }}">
+                                            <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
                                                 <i class="fa-solid fa-download"></i>
                                                 Download
                                             </button>
@@ -432,7 +456,7 @@
                         @endif
                         @endforeach
 
-                        <!-- Download dos vídeos -->
+                        <!-- Download dos vídeos (só deste grupo / tab) -->
                         @if($videosToShow->count() > 0)
                         <div class="mt-6">
                             <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline">
@@ -440,9 +464,15 @@
                                 <input type="hidden" name="content_type" value="marketing">
                                 <input type="hidden" name="content_id" value="{{ $campaign->id }}">
                                 <input type="hidden" name="type" value="video">
-                                <button type="submit" class="inline-flex items-center gap-1">
+                                @foreach($videosToShow as $vBatch)
+                                    @php $vf = $vBatch->files->where('type', 'video')->first(); @endphp
+                                    @if($vf)
+                                        <input type="hidden" name="file_ids[]" value="{{ $vf->id }}">
+                                    @endif
+                                @endforeach
+                                <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
                                     <i class="fa-solid fa-download"></i>
-                                    {{ $videosToShow->count() }} Vídeo{{ $videosToShow->count() > 1 ? 's' : '' }} disponíve{{ $videosToShow->count() > 1 ? 'is' : 'l' }}
+                                    Baixar {{ $videosToShow->count() }} vídeo{{ $videosToShow->count() > 1 ? 's' : '' }}
                                 </button>
                             </form>
                         </div>
@@ -454,69 +484,101 @@
         @endif
 
         @php
-            $miscItems = method_exists($campaign, 'miscellaneous') ? $campaign->miscellaneous()->active()->with('files')->get()->where('type', '!=', 'sticker') : collect();
+            $miscItems = method_exists($campaign, 'miscellaneous')
+                ? $campaign->miscellaneous()->active()->with('files')->get()
+                : collect();
+            $allMiscFileIds = $miscItems->flatMap(fn ($item) => $item->files->pluck('id'))->unique()->values();
+            $miscSectionsMap = [];
+            foreach ($miscItems as $miscItem) {
+                $meta = \App\Models\CampaignMiscellaneous::marketingSectionMeta($miscItem->type);
+                $sid = $meta['id'];
+                if (! isset($miscSectionsMap[$sid])) {
+                    $miscSectionsMap[$sid] = [
+                        'title' => $meta['title'],
+                        'order' => $meta['order'],
+                        'items' => collect(),
+                    ];
+                }
+                $miscSectionsMap[$sid]['items']->push($miscItem);
+            }
+            $miscSectionsOrdered = collect($miscSectionsMap)->sortBy('order')->values();
+            $miscTotalFiles = $miscItems->sum(fn ($item) => $item->files->count());
         @endphp
-        @if($miscItems->count() > 0)
+        @if($miscTotalFiles > 0)
         <div class="mb-12 bg-white p-8 rounded-lg shadow-sm">
-        <div class="space-y-3 mb-4">
-                    @foreach($miscItems as $item)
-                    <div class="flex items-center justify-between p-3 border-t border-gray-200 {{ $loop->last ? 'border-b' : '' }}">
-                        <div class="flex items-center gap-3">
-                            @if($item->type === 'audio')
-                                <i class="fas fa-play text-[#910039] text-lg"></i>
-                            @elseif($item->type === 'pdf')
-                                <i class="fas fa-file-pdf text-[#910039] text-lg"></i>
-                            @elseif($item->type === 'video')
-                                <i class="fas fa-video text-[#910039] text-lg"></i>
-                            @else
-                                <i class="fas fa-file text-[#910039] text-lg"></i>
-                            @endif
-                            <div>
-                                <p class="font-medium text-gray-800">{{ $item->type_label }}</p>
-                                <p class="text-sm text-gray-600">Arquivo.{{ $item->files->first() ? $item->files->first()->extension : 'pdf' }} ({{ round($item->files->sum('size') / 1024 / 1024, 1) }}mb)</p>
-                            </div>
-                        </div>
-                        <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
-                            @csrf
-                            <input type="hidden" name="content_type" value="marketing">
-                            <input type="hidden" name="content_id" value="{{ $campaign->id }}">
-                            <input type="hidden" name="type" value="all">
-                            <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
-                                <i class="fa-solid fa-download"></i>
-                                Download .zip
-                            </button>
-                        </form>
-                    </div>
-                    @endforeach
-                </div>
-                
-                <!-- Download todos os diversos -->
+            <h2 class="text-[#910039] text-2xl font-bold mb-8">Spots, adesivos e banners</h2>
+
+            @foreach($miscSectionsOrdered as $section)
                 @php
-                    $totalMiscSize = $miscItems->sum(function($item) {
-                        return $item->files->sum('size');
-                    });
-                    $totalMiscSizeMB = round($totalMiscSize / 1024 / 1024, 1);
-                    $totalMiscFiles = $miscItems->sum(function($item) {
-                        return $item->files->count();
-                    });
+                    $sectionFileCount = $section['items']->sum(fn ($it) => $it->files->count());
                 @endphp
-                <div class="pt-4">
-                    <p class="text-[#910039] text-sm font-medium text-center mb-2"></p>
-                    <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
-                        @csrf
-                        <input type="hidden" name="content_type" value="marketing">
-                        <input type="hidden" name="content_id" value="{{ $campaign->id }}">
-                        <input type="hidden" name="type" value="all">
-                        <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
-                            <i class="fa-solid fa-download"></i>
-                            Download .zip {{ $totalMiscSizeMB }} MB
-                        </button>
-                    </form>
-                   
+                @if($sectionFileCount > 0)
+                <div class="mb-8 last:mb-0">
+                    <h3 class="text-gray-800 font-semibold text-sm mb-3">{{ $section['title'] }}</h3>
+                    <div class="space-y-0 border-t border-gray-200">
+                        @foreach($section['items'] as $item)
+                            @foreach($item->files as $file)
+                            <div class="flex items-center justify-between gap-3 p-3 border-b border-gray-200">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    @if($file->type === 'pdf')
+                                        <i class="fas fa-file-pdf text-[#910039] text-lg flex-shrink-0"></i>
+                                    @elseif($file->type === 'image')
+                                        <i class="fas fa-file-image text-[#910039] text-lg flex-shrink-0"></i>
+                                    @elseif($file->type === 'video')
+                                        <i class="fas fa-video text-[#910039] text-lg flex-shrink-0"></i>
+                                    @elseif($file->type === 'audio')
+                                        <i class="fas fa-volume-high text-[#910039] text-lg flex-shrink-0"></i>
+                                    @else
+                                        <i class="fas fa-file text-[#910039] text-lg flex-shrink-0"></i>
+                                    @endif
+                                    <div class="min-w-0">
+                                        <p class="text-sm text-gray-800 truncate" title="{{ $file->name }}">{{ $file->name }}</p>
+                                        <p class="text-xs text-gray-500">({{ round(($file->size ?? 0) / 1024 / 1024, 1) }} MB)</p>
+                                    </div>
+                                </div>
+                                @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
+                                <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex shrink-0">
+                                    @csrf
+                                    <input type="hidden" name="content_type" value="marketing">
+                                    <input type="hidden" name="content_id" value="{{ $campaign->id }}">
+                                    <input type="hidden" name="type" value="all">
+                                    <input type="hidden" name="file_ids[]" value="{{ $file->id }}">
+                                    <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                                        <i class="fa-solid fa-download"></i>
+                                        Download
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
+                            @endforeach
+                        @endforeach
+                    </div>
                 </div>
+                @endif
+            @endforeach
+
+            @php
+                $totalMiscSize = $miscItems->sum(fn ($item) => $item->files->sum('size'));
+                $totalMiscSizeMB = round($totalMiscSize / 1024 / 1024, 1);
+            @endphp
+            @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
+            <div class="pt-4 border-t border-gray-200 mt-6">
+                <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
+                    @csrf
+                    <input type="hidden" name="content_type" value="marketing">
+                    <input type="hidden" name="content_id" value="{{ $campaign->id }}">
+                    <input type="hidden" name="type" value="all">
+                    @foreach($allMiscFileIds as $mid)
+                        <input type="hidden" name="file_ids[]" value="{{ $mid }}">
+                    @endforeach
+                    <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                        <i class="fa-solid fa-download"></i>
+                        Baixar todos — {{ $totalMiscSizeMB }} MB
+                    </button>
+                </form>
+            </div>
+            @endif
         </div>
-
-
         @endif  
     </div>
     
@@ -526,6 +588,9 @@
 <script>
 // Preparar dados para o componente MarketingDetail
 var campaignData = {
+    campaignId: {{ (int) $campaign->id }},
+    downloadUrl: @json(route('download.files')),
+    csrfToken: @json(csrf_token()),
     postsByType: {!! json_encode(isset($postsByType) ? $postsByType : []) !!},
     videosByType: {!! json_encode(isset($videosByType) ? $videosByType : []) !!}
 };

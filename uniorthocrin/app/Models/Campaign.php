@@ -246,7 +246,10 @@ class Campaign extends Model
             return false;
         }
 
-        // Verificar se a campanha está ativa
-        return $this->status === 'active';
+        if ($this->status !== 'active') {
+            return false;
+        }
+
+        return $this->isCurrent();
     }
 } 
