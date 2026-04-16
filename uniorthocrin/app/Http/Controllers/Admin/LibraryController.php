@@ -372,25 +372,12 @@ class LibraryController extends Controller
             return 'video';
         } elseif (str_starts_with($mimeType, 'audio/')) {
             return 'audio';
-        } elseif (in_array($mimeType, ['application/pdf'])) {
+        } elseif ($mimeType === 'application/pdf') {
             return 'pdf';
-        } elseif (in_array($mimeType, [
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        ])) {
-            return 'document';
-        } elseif (in_array($mimeType, [
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ])) {
-            return 'spreadsheet';
-        } elseif (in_array($mimeType, [
-            'application/vnd.ms-powerpoint',
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-        ])) {
-            return 'presentation';
         } else {
-            return 'pdf'; // Default para outros tipos de arquivo
+            // A coluna files.type aceita apenas: image, video, pdf, audio.
+            // Demais formatos (doc/xls/ppt/zip/etc) são persistidos como pdf para evitar truncamento.
+            return 'pdf';
         }
     }
     
