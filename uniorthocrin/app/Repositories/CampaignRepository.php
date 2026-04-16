@@ -51,6 +51,12 @@ class CampaignRepository
             ->when($user->isAdmin(), function($q) {
                 // Admin vê todas as campanhas
             })
+            ->with([
+                'posts.files',
+                'folders.files',
+                'videos.files',
+                'miscellaneous.files',
+            ])
             ->firstOrFail();
     }
 

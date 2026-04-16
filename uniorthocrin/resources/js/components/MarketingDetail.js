@@ -2,6 +2,26 @@
  * Marketing Detail Component
  * Gerencia a tela de detalhes de marketing com tabs e componentes
  */
+function marketingDetailEscapeHtml(text) {
+    if (text === null || text === undefined) {
+        return '';
+    }
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
+function marketingDetailEscapeAttr(text) {
+    if (text === null || text === undefined) {
+        return '';
+    }
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;');
+}
+
 class MarketingDetail {
     constructor(campaignData) {
         this.campaignData = campaignData;
@@ -226,50 +246,90 @@ class MarketingDetail {
     
     updateVideoList(videos) {
         const videoListContainer = document.getElementById('videoListContainer');
-        if (videoListContainer) {
-            // Limpar lista atual
-            videoListContainer.innerHTML = '';
-            
-            // Adicionar novos vídeos
-            videos.forEach((video, index) => {
-                const videoItem = document.createElement('div');
-                videoItem.className = `video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t ${index === videos.length - 1 ? 'border-b' : ''} border-gray-200`;
-                videoItem.setAttribute('data-video', video.id);
-                videoItem.setAttribute('data-title', video.name);
-                videoItem.setAttribute('data-type', video.type);
-                
-                videoItem.innerHTML = `
-                    <div class="flex gap-3">
-                        <div class="w-20 h-12 bg-gray-300 rounded overflow-hidden flex-shrink-0">
-                            ${video.thumbnail ? 
-                                `<img src="${video.thumbnail}" alt="Thumbnail" class="w-full h-full object-cover">` :
-                                `<div class="w-full h-12 bg-gray-400 flex items-center justify-center"><i class="fas fa-video text-gray-600"></i></div>`
-                            }
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-[#910039] font-semibold text-sm mb-1">${video.name}</h4>
-                            <div class="flex items-center justify-between">
-                                <span class="text-gray-600 text-xs">${video.type.charAt(0).toUpperCase() + video.type.slice(1)}</span>
-                                <button class="text-[#910039] text-xs hover:underline">
-                                    <i class="fas fa-download mr-1"></i>Download
-                                </button>
-                            </div>
+        if (!videoListContainer) {
+            return;
+        }
+
+        const downloadUrl = this.campaignData.downloadUrl || '';
+        const csrfToken = this.campaignData.csrfToken || '';
+        const campaignId = this.campaignData.campaignId;
+
+        videoListContainer.innerHTML = '';
+
+        videos.forEach((video, index) => {
+            const videoItem = document.createElement('div');
+            videoItem.className = `video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t ${index === videos.length - 1 ? 'border-b' : ''} border-gray-200`;
+            videoItem.setAttribute('data-video', video.file_id || video.id);
+            videoItem.setAttribute('data-title', video.name || '');
+            videoItem.setAttribute('data-type', video.type || '');
+
+            const typeLabel = (video.type || '')
+                .split('_')
+                .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ''))
+                .join(' ');
+
+            const thumbBlock = video.thumbnail
+                ? `<img src="${marketingDetailEscapeAttr(video.thumbnail)}" alt="" class="w-full h-full object-cover">`
+                : '<div class="w-full h-12 bg-gray-400 flex items-center justify-center"><i class="fas fa-video text-gray-600"></i></div>';
+
+            const fileNameHtml = video.file_name
+                ? `<p class="text-gray-500 text-xs truncate mb-1" title="${marketingDetailEscapeAttr(video.file_name)}">${marketingDetailEscapeHtml(video.file_name)}</p>`
+                : '';
+
+            const downloadForm = video.file_id
+                ? `<form method="POST" action="${marketingDetailEscapeAttr(downloadUrl)}" onclick="event.stopPropagation()" onsubmit="event.stopPropagation(); return handleDownloadSubmit(event, this);" class="inline-flex shrink-0 relative z-10">
+                        <input type="hidden" name="_token" value="${marketingDetailEscapeAttr(csrfToken)}">
+                        <input type="hidden" name="content_type" value="marketing">
+                        <input type="hidden" name="content_id" value="${campaignId}">
+                        <input type="hidden" name="type" value="video">
+                        <input type="hidden" name="file_ids[]" value="${video.file_id}">
+                        <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                            <i class="fa-solid fa-download"></i>
+                            Download
+                        </button>
+                    </form>`
+                : '';
+
+            videoItem.innerHTML = `
+                <div class="flex gap-3">
+                    <div class="w-20 h-12 bg-gray-300 rounded overflow-hidden flex-shrink-0">
+                        ${thumbBlock}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-[#910039] font-semibold text-sm mb-1">${marketingDetailEscapeHtml(video.name || '')}</h4>
+                        ${fileNameHtml}
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-gray-600 text-xs">${marketingDetailEscapeHtml(typeLabel)}</span>
+                            ${downloadForm}
                         </div>
                     </div>
-                `;
-                
-                videoListContainer.appendChild(videoItem);
-            });
-            
-            // Adicionar contador de vídeos
-            const videoCount = document.createElement('div');
-            videoCount.className = 'mt-6';
-            videoCount.innerHTML = `
-                <p class="text-[#910039] text-sm font-medium text-center">
-                    ${videos.length} Vídeo${videos.length > 1 ? 's' : ''} disponíve${videos.length > 1 ? 'is' : 'l'}
-                </p>
+                </div>
             `;
-            videoListContainer.appendChild(videoCount);
+
+            videoListContainer.appendChild(videoItem);
+        });
+
+        const withFiles = videos.filter((v) => v.file_id);
+        if (withFiles.length > 0 && downloadUrl && csrfToken) {
+            const batch = document.createElement('div');
+            batch.className = 'mt-6';
+            const hiddenFiles = withFiles
+                .map((v) => `<input type="hidden" name="file_ids[]" value="${v.file_id}">`)
+                .join('');
+            batch.innerHTML = `
+                <form method="POST" action="${marketingDetailEscapeAttr(downloadUrl)}" onsubmit="return handleDownloadSubmit(event, this);" class="inline">
+                    <input type="hidden" name="_token" value="${marketingDetailEscapeAttr(csrfToken)}">
+                    <input type="hidden" name="content_type" value="marketing">
+                    <input type="hidden" name="content_id" value="${campaignId}">
+                    <input type="hidden" name="type" value="video">
+                    ${hiddenFiles}
+                    <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                        <i class="fa-solid fa-download"></i>
+                        Baixar ${withFiles.length} vídeo${withFiles.length > 1 ? 's' : ''}
+                    </button>
+                </form>
+            `;
+            videoListContainer.appendChild(batch);
         }
     }
     

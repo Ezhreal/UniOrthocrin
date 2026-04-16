@@ -191,14 +191,22 @@
                             @if($product->images && $product->images->count() > 0)
                             <div class="mt-4">
                                 <h5 class="text-modern-body font-medium mb-3">Imagens Existentes ({{ $product->images->count() }})</h5>
-                                <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                                <div class="flex flex-wrap gap-4 mb-8">
                                     @foreach($product->images as $image)
-                                    <div class="w-full h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                        @if($image->thumbnail_url || $image->url)
-                                            <img src="{{ $image->thumbnail_url ?? $image->url }}" alt="Imagem" class="w-full h-full object-cover">
-                                        @else
-                                            <i class="fas fa-image text-gray-400 text-lg"></i>
-                                        @endif
+                                    <div class="relative shrink-0">
+                                        <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
+                                            @if($image->thumbnail_url || $image->url)
+                                                <img src="{{ $image->thumbnail_url ?? $image->url }}" alt="Imagem" class="w-full h-full object-cover">
+                                            @else
+                                                <div class="flex items-center justify-center h-full">
+                                                    <i class="fas fa-image text-gray-400 text-lg"></i>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <button type="button" class="absolute h-8 w-8 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 text-xs"
+                                                onclick="deleteFile({{ $image->id }})" style="bottom: -15px; right: -13px;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                     @endforeach
                                 </div>
@@ -429,6 +437,14 @@ function deleteFile(fileId) {
 }
 </script>
 <script>
+/**
+ * Mesmo padrão da edição de campanha (feed): manter cópia dos ficheiros em memória,
+ * sincronizar o <input> com DataTransfer ao remover um item do preview.
+ */
+window.selectedFiles = window.selectedFiles || {};
+window.selectedFiles.gallery_images = window.selectedFiles.gallery_images || [];
+window.selectedFiles.gallery_videos = window.selectedFiles.gallery_videos || [];
+
 document.addEventListener('DOMContentLoaded', function() {
     const input = document.getElementById('thumbnail');
     const preview = document.getElementById('thumbnail-preview');
@@ -447,75 +463,103 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    initializeImageUpload('gallery_images', 'gallery_images_preview');
-    initializeFileUpload('gallery_videos', 'gallery_videos_preview');
+    initializeImageUpload('gallery_images', 'gallery_images_preview', 'Novos Arquivos Selecionados:');
+    initializeFileUpload('gallery_videos', 'gallery_videos_preview', 'Novos Arquivos Selecionados:');
 });
 
-function initializeImageUpload(inputId, previewId) {
+function findInputIdByPreview(previewContainer) {
+    if (!previewContainer || !previewContainer.id) return null;
+    const previewToInputMap = {
+        'gallery_images_preview': 'gallery_images',
+        'gallery_videos_preview': 'gallery_videos',
+    };
+    return previewToInputMap[previewContainer.id] || null;
+}
+
+function updateFileInput(input, files) {
+    const dt = new DataTransfer();
+    files.forEach(function(file) { dt.items.add(file); });
+    input.files = dt.files;
+}
+
+function renderProductImagePreview(inputId, previewId, titleLabel) {
+    const previewContainer = document.getElementById(previewId);
+    if (!previewContainer) return;
+    previewContainer.dataset.previewTitle = titleLabel;
+
+    const files = window.selectedFiles[inputId] || [];
+    previewContainer.innerHTML = '';
+    if (files.length === 0) return;
+
+    const title = document.createElement('h5');
+    title.className = 'text-modern-body font-medium mb-3';
+    title.textContent = titleLabel;
+    previewContainer.appendChild(title);
+
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'flex flex-wrap gap-4 mb-8 overflow-visible';
+    previewContainer.appendChild(imageContainer);
+
+    files.forEach(function(file, index) {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const thumbnail = createImageThumbnail(file, ev.target.result, index);
+            imageContainer.appendChild(thumbnail);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function renderProductVideoPreview(inputId, previewId, titleLabel) {
+    const previewContainer = document.getElementById(previewId);
+    if (!previewContainer) return;
+    previewContainer.dataset.previewTitle = titleLabel;
+
+    const files = window.selectedFiles[inputId] || [];
+    previewContainer.innerHTML = '';
+    if (files.length === 0) return;
+
+    const title = document.createElement('h5');
+    title.className = 'text-modern-body font-medium mb-3';
+    title.textContent = titleLabel;
+    previewContainer.appendChild(title);
+
+    const outerDiv = document.createElement('div');
+    outerDiv.className = 'bg-white border border-gray-200 rounded-lg overflow-hidden';
+    const innerDiv = document.createElement('div');
+    innerDiv.className = 'divide-y divide-gray-200';
+    outerDiv.appendChild(innerDiv);
+    previewContainer.appendChild(outerDiv);
+
+    files.forEach(function(file, index) {
+        innerDiv.appendChild(createFileItem(file, index));
+    });
+}
+
+function initializeImageUpload(inputId, previewId, titleLabel) {
     const input = document.getElementById(inputId);
     if (!input) return;
 
     input.addEventListener('change', function(e) {
         const files = Array.from(e.target.files);
-        const previewContainer = document.getElementById(previewId);
-        if (!previewContainer) return;
-
-        previewContainer.innerHTML = '';
-        if (files.length === 0) return;
-
-        const title = document.createElement('h5');
-        title.className = 'text-modern-body font-medium mb-3';
-        title.textContent = 'Novos Arquivos Selecionados:';
-        previewContainer.appendChild(title);
-
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'flex flex-wrap gap-4 mb-8';
-        previewContainer.appendChild(imageContainer);
-
-        files.forEach((file, index) => {
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    const thumbnail = createImageThumbnail(file, ev.target.result, index);
-                    imageContainer.appendChild(thumbnail);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        window.selectedFiles[inputId] = files;
+        renderProductImagePreview(inputId, previewId, titleLabel);
     });
 }
 
-function initializeFileUpload(inputId, previewId) {
+function initializeFileUpload(inputId, previewId, titleLabel) {
     const input = document.getElementById(inputId);
     if (!input) return;
 
     input.addEventListener('change', function(e) {
         const files = Array.from(e.target.files);
-        const previewContainer = document.getElementById(previewId);
-        if (!previewContainer) return;
-
-        previewContainer.innerHTML = '';
-        if (files.length === 0) return;
-
-        const title = document.createElement('h5');
-        title.className = 'text-modern-body font-medium mb-3';
-        title.textContent = 'Novos Arquivos Selecionados:';
-        previewContainer.appendChild(title);
-
-        const outerDiv = document.createElement('div');
-        outerDiv.className = 'bg-white border border-gray-200 rounded-lg overflow-hidden';
-        const innerDiv = document.createElement('div');
-        innerDiv.className = 'divide-y divide-gray-200';
-        outerDiv.appendChild(innerDiv);
-        previewContainer.appendChild(outerDiv);
-
-        files.forEach((file, index) => {
-            const fileItem = createFileItem(file, index);
-            innerDiv.appendChild(fileItem);
-        });
+        window.selectedFiles[inputId] = files;
+        renderProductVideoPreview(inputId, previewId, titleLabel);
     });
 }
 
+/** Igual a createImageThumbnail em campanhas/edit (posts feed) */
 function createImageThumbnail(file, dataUrl, index) {
     const div = document.createElement('div');
     div.className = 'relative shrink-0';
@@ -558,8 +602,26 @@ function getFileIcon(mimeType) {
 }
 
 function removeFilePreview(button, index) {
-    const el = button.closest('.relative') || button.closest('.flex.items-center.justify-between');
-    if (el) el.remove();
+    const item = button.closest('.relative, .flex');
+    if (!item) return;
+
+    const previewContainer = item.closest('.mt-4');
+    const inputId = findInputIdByPreview(previewContainer);
+
+    if (inputId && window.selectedFiles[inputId]) {
+        window.selectedFiles[inputId].splice(index, 1);
+        const input = document.getElementById(inputId);
+        if (input) {
+            updateFileInput(input, window.selectedFiles[inputId]);
+        }
+    }
+
+    const title = (previewContainer && previewContainer.dataset.previewTitle) ? previewContainer.dataset.previewTitle : 'Novos Arquivos Selecionados:';
+    if (inputId === 'gallery_images') {
+        renderProductImagePreview('gallery_images', 'gallery_images_preview', title);
+    } else if (inputId === 'gallery_videos') {
+        renderProductVideoPreview('gallery_videos', 'gallery_videos_preview', title);
+    }
 }
 </script>
 @endsection

@@ -438,7 +438,7 @@
                                     @endif
                                     <div class="flex items-center justify-between gap-2">
                                         <span class="text-gray-600 text-xs">{{ ucfirst(str_replace('_', ' ', $video->type)) }}</span>
-                                        <form method="POST" action="{{ route('download.files') }}" onsubmit="event.stopPropagation(); return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1 shrink-0">
+                                        <form method="POST" action="{{ route('download.files') }}" onclick="event.stopPropagation()" onsubmit="event.stopPropagation(); return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1 shrink-0 relative z-10">
                                             @csrf
                                             <input type="hidden" name="content_type" value="marketing">
                                             <input type="hidden" name="content_id" value="{{ $campaign->id }}">

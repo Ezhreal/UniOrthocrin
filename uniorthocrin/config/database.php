@@ -16,6 +16,8 @@ return [
     |
     */
 
+    // Produção: defina DB_CONNECTION=mysql no .env. Sem a chave, o fallback é sqlite → grava em database/database.sqlite
+    // (sintoma: “salva” na app mas phpMyAdmin não muda).
     'default' => env('DB_CONNECTION', 'sqlite'),
 
     /*

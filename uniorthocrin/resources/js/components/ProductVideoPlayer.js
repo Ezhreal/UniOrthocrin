@@ -35,6 +35,10 @@ class ProductVideoPlayer {
         this.videoItems.forEach((item, index) => {
             console.log(`ProductVideoPlayer: Adicionando listener para item ${index}`);
             item.addEventListener('click', (e) => {
+                // Não interceptar download (form) nem links — senão o submit/default é bloqueado
+                if (e.target.closest('form') || e.target.closest('a[href]')) {
+                    return;
+                }
                 e.preventDefault();
                 console.log(`ProductVideoPlayer: Clique no item ${index}`);
                 this.setActiveVideo(index);

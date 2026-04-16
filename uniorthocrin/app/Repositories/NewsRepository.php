@@ -23,7 +23,8 @@ class NewsRepository implements RepositoryInterface
                 $q->where('user_type_id', $user->user_type_id)
                   ->where('can_view', true);
             })
-            ->latest('published_at')
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
             ->take($limit)
             ->get();
     }
@@ -36,6 +37,8 @@ class NewsRepository implements RepositoryInterface
                 $q->where('user_type_id', $user->user_type_id)
                   ->where('can_view', true);
             })
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
             ->get();
     }
 
@@ -77,6 +80,9 @@ class NewsRepository implements RepositoryInterface
         // Paginação
         $perPage = $filters['per_page'] ?? 12;
         
-        return $query->latest('published_at')->paginate($perPage);
+        return $query
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->paginate($perPage);
     }
 } 

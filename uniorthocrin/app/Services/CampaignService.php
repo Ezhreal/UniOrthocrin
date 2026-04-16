@@ -3,10 +3,6 @@
 namespace App\Services;
 
 use App\Models\Campaign;
-use App\Models\CampaignPost;
-use App\Models\CampaignFolder;
-use App\Models\CampaignVideo;
-use App\Models\CampaignMiscellaneous;
 use App\Models\User;
 use App\Repositories\CampaignRepository;
 use Illuminate\Support\Collection;
@@ -53,7 +49,8 @@ class CampaignService
     }
 
     /**
-     * Lista de marketing: destaque único (última atualizada entre is_featured) + todas as outras no prazo.
+     * Lista de marketing: destaque único entre campanhas com is_featured (desempate: end_date mais tardia, depois id).
+     * Demais campanhas atuais no mesmo critério de ordenação (ver CampaignRepository::getMarketingListForUser).
      */
     public function getCampaignsForList(User $user)
     {
@@ -175,14 +172,11 @@ class CampaignService
     }
 
     /**
-     * Search campaigns by name or description.
+     * Busca campanhas (marketing) com as mesmas regras de visibilidade e vigência do repositório.
      */
-    public function searchCampaigns(string $query): Collection
+    public function searchCampaigns(User $user, string $query): Collection
     {
-        return Campaign::where('name', 'like', "%{$query}%")
-            ->orWhere('description', 'like', "%{$query}%")
-            ->active()
-            ->get();
+        return $this->campaignRepository->searchCampaigns($user, $query);
     }
 
     /**

@@ -26,7 +26,8 @@ class News extends Model
     ];
 
     protected $casts = [
-        'status' => 'string'
+        'status' => 'string',
+        'published_at' => 'datetime',
     ];
 
     /**
@@ -97,7 +98,10 @@ class News extends Model
      */
     public function scopePublished($query)
     {
-        return $query->where('status', 'published');
+        return $query
+            ->where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
     }
 
     /**

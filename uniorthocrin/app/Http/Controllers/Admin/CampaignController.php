@@ -14,6 +14,7 @@ use App\Models\UserType;
 use App\Models\OneDriveSync;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -49,12 +50,12 @@ class CampaignController extends Controller
 
     public function store(Request $request)
     {
-        // Validações básicas + validações específicas de arquivo
-        $validationRules = array_merge([
+        // Validações básicas (sem regras de galeria de produto — ver applyEndDateRule)
+        $validationRules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'end_date' => 'nullable|date',
             'status' => 'required|in:active,inactive',
             'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
             'is_featured' => 'nullable|boolean',
@@ -77,7 +78,10 @@ class CampaignController extends Controller
             'misc_adesivo' => 'nullable|array',
             'misc_banner' => 'nullable|array',
             'misc_faixa' => 'nullable|array',
-        ], FileValidationRequest::getProductValidationRules());
+        ];
+
+        // Não mesclar getProductValidationRules() (gallery_images/videos de produto): pode validar lixo no request e falhar sem @error na view de campanha.
+        $this->applyEndDateRule($request, $validationRules);
 
         $this->applyFeaturedBannerValidation($request, $validationRules, null);
         $request->validate($validationRules, (new FileValidationRequest())->messages());
@@ -89,7 +93,7 @@ class CampaignController extends Controller
             'end_date' => $request->input('end_date'),
             'visible_franchise_only' => true,
             'status' => $request->input('status'),
-            'is_featured' => (bool) $request->input('is_featured'),
+            'is_featured' => $request->boolean('is_featured'),
         ]);
 
         // Upload thumbnail
@@ -137,11 +141,11 @@ class CampaignController extends Controller
     public function update(Request $request, Campaign $campaign)
     {
 
-        $validationRules = array_merge([
+        $validationRules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'end_date' => 'nullable|date',
             'status' => 'required|in:active,inactive',
             'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
             'is_featured' => 'nullable|boolean',
@@ -164,17 +168,31 @@ class CampaignController extends Controller
             'misc_adesivo' => 'nullable|array',
             'misc_banner' => 'nullable|array',
             'misc_faixa' => 'nullable|array',
-        ], FileValidationRequest::getProductValidationRules());
+        ];
+
+        $this->applyEndDateRule($request, $validationRules);
 
         $this->applyFeaturedBannerValidation($request, $validationRules, $campaign);
         $request->validate($validationRules, (new FileValidationRequest())->messages());
 
-        $campaign->update(array_merge(
-            $request->only([
-                'name', 'description', 'start_date', 'end_date', 'status', 'is_featured'
-            ]),
-            ['visible_franchise_only' => true]
-        ));
+        // UPDATE explícito na tabela: evita edge cases do Eloquent e deixa claro que o banco ativo recebe os dados.
+        // Se o .env apontar para sqlite por engano, os dados vão para database/database.sqlite — confira DB_CONNECTION.
+        $payload = [
+            'name' => $request->input('name'),
+            'description' => $request->input('description'),
+            'start_date' => $request->filled('start_date') ? $request->input('start_date') : null,
+            'end_date' => $request->filled('end_date') ? $request->input('end_date') : null,
+            'status' => $request->input('status'),
+            'is_featured' => $request->boolean('is_featured'),
+            'visible_franchise_only' => true,
+            'updated_at' => now(),
+        ];
+
+        DB::table($campaign->getTable())
+            ->where($campaign->getKeyName(), $campaign->getKey())
+            ->update($payload);
+
+        $campaign->refresh();
 
         if ($request->hasFile('thumbnail')) {
             $thumb = $request->file('thumbnail');
@@ -493,6 +511,17 @@ class CampaignController extends Controller
         }
 
         return redirect()->route('admin.campaigns.show', $campaign)->with('success', 'Item criado com sucesso!');
+    }
+
+    /**
+     * after_or_equal:start_date falha de forma opaca quando start_date está vazio; aplica só se houver data de início.
+     */
+    private function applyEndDateRule(Request $request, array &$rules): void
+    {
+        $rules['end_date'] = ['nullable', 'date'];
+        if ($request->filled('start_date')) {
+            $rules['end_date'][] = 'after_or_equal:start_date';
+        }
     }
 
     private function applyFeaturedBannerValidation(Request $request, array &$rules, ?Campaign $existing): void

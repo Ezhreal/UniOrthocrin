@@ -4,6 +4,17 @@
 
 @section('content')
 <div class="space-modern">
+    @if ($errors->any())
+    <div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+        <p class="font-medium mb-2">Não foi possível salvar. Verifique:</p>
+        <ul class="list-disc pl-5 space-y-1">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
     <!-- Modern Page Header -->
     <div class="flex items-center justify-between">
         <div>
@@ -21,7 +32,7 @@
     </div>
 
     <!-- Modern Form -->
-    <form action="{{ route('admin.campaigns.update', $campaign) }}" method="POST" class="space-modern" enctype="multipart/form-data">
+    <form id="campaign-edit-form" action="{{ route('admin.campaigns.update', $campaign) }}" method="POST" class="space-modern" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -1212,7 +1223,7 @@ function restoreSelectedFiles() {
 
 // Interceptar submit do formulário para manter arquivos
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
+    const form = document.getElementById('campaign-edit-form');
     if (form) {
         form.addEventListener('submit', function(e) {
             // Validar campos obrigatórios antes de salvar arquivos
@@ -1276,7 +1287,7 @@ function showRestoreFilesMessage(filesData) {
             </div>
         `;
         
-        const form = document.querySelector('form');
+        const form = document.getElementById('campaign-edit-form');
         if (form) {
             form.insertBefore(message, form.firstChild);
         }
@@ -1328,7 +1339,7 @@ function showValidationError(message) {
         </div>
     `;
     
-    const form = document.querySelector('form');
+    const form = document.getElementById('campaign-edit-form');
     if (form) {
         form.insertBefore(errorDiv, form.firstChild);
         

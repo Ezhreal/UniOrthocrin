@@ -334,8 +334,14 @@
 </div>
 
 <script>
+/**
+ * Mesmo padrão da edição de campanha (feed): selectedFiles + DataTransfer ao remover do preview.
+ */
+window.selectedFiles = window.selectedFiles || {};
+window.selectedFiles.gallery_images = window.selectedFiles.gallery_images || [];
+window.selectedFiles.gallery_videos = window.selectedFiles.gallery_videos || [];
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Preview do thumbnail
     const input = document.getElementById('thumbnail');
     const preview = document.getElementById('thumbnail-preview');
     if (input && preview) {
@@ -353,94 +359,106 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Preview das imagens da galeria
-    initializeImageUpload('gallery_images', 'gallery_images_preview');
-    
-    // Preview dos vídeos da galeria
-    initializeFileUpload('gallery_videos', 'gallery_videos_preview');
+    initializeImageUpload('gallery_images', 'gallery_images_preview', 'Imagens Selecionadas:');
+    initializeFileUpload('gallery_videos', 'gallery_videos_preview', 'Vídeos Selecionados:');
 });
 
-function initializeImageUpload(inputId, previewId) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    
-    input.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        const previewContainer = document.getElementById(previewId);
-        
-        if (!previewContainer) return;
-        
-        // Limpar preview anterior
-        previewContainer.innerHTML = '';
-        
-        if (files.length === 0) return;
-        
-        // Título
-        const title = document.createElement('h5');
-        title.className = 'text-modern-body font-medium mb-3';
-        title.textContent = 'Imagens Selecionadas:';
-        previewContainer.appendChild(title);
-        
-        // Container de imagens
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'flex gap-4 flex-wrap';
-        previewContainer.appendChild(imageContainer);
-        
-        files.forEach((file, index) => {
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const thumbnail = createImageThumbnail(file, e.target.result, index);
-                    imageContainer.appendChild(thumbnail);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+function findInputIdByPreview(previewContainer) {
+    if (!previewContainer || !previewContainer.id) return null;
+    const previewToInputMap = {
+        'gallery_images_preview': 'gallery_images',
+        'gallery_videos_preview': 'gallery_videos',
+    };
+    return previewToInputMap[previewContainer.id] || null;
+}
+
+function updateFileInput(input, files) {
+    const dt = new DataTransfer();
+    files.forEach(function(file) { dt.items.add(file); });
+    input.files = dt.files;
+}
+
+function renderProductImagePreview(inputId, previewId, titleLabel) {
+    const previewContainer = document.getElementById(previewId);
+    if (!previewContainer) return;
+    previewContainer.dataset.previewTitle = titleLabel;
+
+    const files = window.selectedFiles[inputId] || [];
+    previewContainer.innerHTML = '';
+    if (files.length === 0) return;
+
+    const title = document.createElement('h5');
+    title.className = 'text-modern-body font-medium mb-3';
+    title.textContent = titleLabel;
+    previewContainer.appendChild(title);
+
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'flex flex-wrap gap-4 mb-8 overflow-visible';
+    previewContainer.appendChild(imageContainer);
+
+    files.forEach(function(file, index) {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const thumbnail = createImageThumbnail(file, ev.target.result, index);
+            imageContainer.appendChild(thumbnail);
+        };
+        reader.readAsDataURL(file);
     });
 }
 
-function initializeFileUpload(inputId, previewId) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    
-    input.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        const previewContainer = document.getElementById(previewId);
-        
-        if (!previewContainer) return;
-        
-        // Limpar preview anterior
-        previewContainer.innerHTML = '';
-        
-        if (files.length === 0) return;
-        
-        // Título
-        const title = document.createElement('h5');
-        title.className = 'text-modern-body font-medium mb-3';
-        title.textContent = 'Vídeos Selecionados:';
-        previewContainer.appendChild(title);
-        
-        // Container de arquivos
-        const outerDiv = document.createElement('div');
-        outerDiv.className = 'bg-white border border-gray-200 rounded-lg overflow-hidden';
-        
-        const innerDiv = document.createElement('div');
-        innerDiv.className = 'divide-y divide-gray-200';
-        
-        outerDiv.appendChild(innerDiv);
-        previewContainer.appendChild(outerDiv);
-        
-        files.forEach((file, index) => {
-            const fileItem = createFileItem(file, index);
-            innerDiv.appendChild(fileItem);
-        });
+function renderProductVideoPreview(inputId, previewId, titleLabel) {
+    const previewContainer = document.getElementById(previewId);
+    if (!previewContainer) return;
+    previewContainer.dataset.previewTitle = titleLabel;
+
+    const files = window.selectedFiles[inputId] || [];
+    previewContainer.innerHTML = '';
+    if (files.length === 0) return;
+
+    const title = document.createElement('h5');
+    title.className = 'text-modern-body font-medium mb-3';
+    title.textContent = titleLabel;
+    previewContainer.appendChild(title);
+
+    const outerDiv = document.createElement('div');
+    outerDiv.className = 'bg-white border border-gray-200 rounded-lg overflow-hidden';
+    const innerDiv = document.createElement('div');
+    innerDiv.className = 'divide-y divide-gray-200';
+    outerDiv.appendChild(innerDiv);
+    previewContainer.appendChild(outerDiv);
+
+    files.forEach(function(file, index) {
+        innerDiv.appendChild(createFileItem(file, index));
     });
 }
 
+function initializeImageUpload(inputId, previewId, titleLabel) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    input.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        window.selectedFiles[inputId] = files;
+        renderProductImagePreview(inputId, previewId, titleLabel);
+    });
+}
+
+function initializeFileUpload(inputId, previewId, titleLabel) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    input.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        window.selectedFiles[inputId] = files;
+        renderProductVideoPreview(inputId, previewId, titleLabel);
+    });
+}
+
+/** Igual a createImageThumbnail em campanhas/edit (posts feed) */
 function createImageThumbnail(file, dataUrl, index) {
     const div = document.createElement('div');
     div.className = 'relative shrink-0';
-    
     div.innerHTML = `
         <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
             <img src="${dataUrl}" alt="${file.name}" class="w-full h-full object-cover">
@@ -449,16 +467,15 @@ function createImageThumbnail(file, dataUrl, index) {
             <i class="fas fa-trash"></i>
         </button>
     `;
-    
     return div;
 }
 
 function createFileItem(file, index) {
     const div = document.createElement('div');
     div.className = 'flex items-center justify-between p-3 hover:bg-gray-50';
-    
+
     const icon = getFileIcon(file.type);
-    
+
     div.innerHTML = `
         <div class="flex items-center space-x-3">
             <div class="flex-shrink-0">
@@ -472,7 +489,7 @@ function createFileItem(file, index) {
             <i class="fas fa-trash text-sm"></i>
         </button>
     `;
-    
+
     return div;
 }
 
@@ -488,11 +505,29 @@ function getFileIcon(mimeType) {
 }
 
 function removeFilePreview(button, index) {
-    // Remover o elemento visual
-    button.closest('.relative, .flex').remove();
-    
-    // Aqui você pode implementar a lógica para remover o arquivo do input
-    // Por simplicidade, vamos apenas remover o elemento visual
+    const item = button.closest('.relative, .flex');
+    if (!item) return;
+
+    const previewContainer = item.closest('.mt-4');
+    const inputId = findInputIdByPreview(previewContainer);
+
+    if (inputId && window.selectedFiles[inputId]) {
+        window.selectedFiles[inputId].splice(index, 1);
+        const input = document.getElementById(inputId);
+        if (input) {
+            updateFileInput(input, window.selectedFiles[inputId]);
+        }
+    }
+
+    const title = (previewContainer && previewContainer.dataset.previewTitle)
+        ? previewContainer.dataset.previewTitle
+        : 'Imagens Selecionadas:';
+    if (inputId === 'gallery_images') {
+        renderProductImagePreview('gallery_images', 'gallery_images_preview', title);
+    } else if (inputId === 'gallery_videos') {
+        const videoTitle = (previewContainer && previewContainer.dataset.previewTitle) ? previewContainer.dataset.previewTitle : 'Vídeos Selecionados:';
+        renderProductVideoPreview('gallery_videos', 'gallery_videos_preview', videoTitle);
+    }
 }
 </script>
 @endsection
