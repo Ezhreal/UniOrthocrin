@@ -103,6 +103,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     Route::post('campaigns/{campaign}/miscellaneous', [CampaignController::class, 'storeMiscellaneous'])->name('campaigns.miscellaneous.store');
     Route::post('campaigns/{campaign}/onedrive/sync', [CampaignController::class, 'syncToOneDrive'])->name('campaigns.onedrive.sync');
     Route::post('campaigns/{campaign}/onedrive/retry', [CampaignController::class, 'retryOneDriveSync'])->name('campaigns.onedrive.retry');
+
+    // Routes for deleting associated content
+    // Note: These routes now include the {campaign} parameter to allow for proper model binding.
+    Route::delete('campaigns/{campaign}/posts/{postId}', [CampaignController::class, 'deletePost'])->name('campaigns.posts.delete');
+    Route::delete('campaigns/{campaign}/folders/{folderId}', [CampaignController::class, 'deleteFolder'])->name('campaigns.folders.delete');
+    Route::delete('campaigns/{campaign}/videos/{videoId}', [CampaignController::class, 'deleteVideo'])->name('campaigns.videos.delete');
+    Route::delete('campaigns/{campaign}/miscellaneous/{miscId}', [CampaignController::class, 'deleteMiscellaneous'])->name('campaigns.miscellaneous.delete');
     
     // News
     Route::resource('news', NewsController::class);

@@ -227,7 +227,7 @@
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                                    onclick="deleteFolder({{ $folder->id }})">
+                                                    onclick="deleteFolder({{ $campaign->id }}, {{ $folder->id }})">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -272,7 +272,7 @@
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                                    onclick="deleteFolder({{ $folder->id }})">
+                                                    onclick="deleteFolder({{ $campaign->id }}, {{ $folder->id }})">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -332,7 +332,7 @@
                                              @endif
                                          </div>
                                          <button type="button" class="absolute h-8 w-8 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 text-xs"
-                                                 onclick="deletePost({{ $post->id }})" style="bottom: -15px; right: -13px;">
+                                                 onclick="deletePost({{ $campaign->id }}, {{ $post->id }})" style="bottom: -15px; right: -13px;">
                                              <i class="fas fa-trash"></i>
                                          </button>
                                      </div>
@@ -374,7 +374,7 @@
                                              @endif
                                          </div>
                                          <button type="button" class="absolute h-8 w-8 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 text-xs"
-                                                 onclick="deletePost({{ $post->id }})" style="bottom: -15px; right: -13px;">
+                                                 onclick="deletePost({{ $campaign->id }}, {{ $post->id }})" style="bottom: -15px; right: -13px;">
                                              <i class="fas fa-trash"></i>
                                          </button>
                                      </div>
@@ -416,7 +416,7 @@
                                              @endif
                                          </div>
                                          <button type="button" class="absolute h-8 w-8 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 text-xs"
-                                                 onclick="deletePost({{ $post->id }})" style="bottom: -15px; right: -13px;">
+                                                 onclick="deletePost({{ $campaign->id }}, {{ $post->id }})" style="bottom: -15px; right: -13px;">
                                              <i class="fas fa-trash"></i>
                                          </button>
                                      </div>
@@ -481,7 +481,7 @@
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                                    onclick="deleteVideo({{ $video->id }})">
+                                                    onclick="deleteVideo({{ $campaign->id }}, {{ $video->id }})">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -530,7 +530,7 @@
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                                    onclick="deleteVideo({{ $video->id }})">
+                                                    onclick="deleteVideo({{ $campaign->id }}, {{ $video->id }})">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -592,7 +592,7 @@
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                                    onclick="deleteMiscellaneous({{ $misc->id }})">
+                                                    onclick="deleteMiscellaneous({{ $campaign->id }}, {{ $misc->id }})">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -637,7 +637,7 @@
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                                    onclick="deleteMiscellaneous({{ $misc->id }})">
+                                                    onclick="deleteMiscellaneous({{ $campaign->id }}, {{ $misc->id }})">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -675,7 +675,7 @@
                                                 <div class="flex-shrink-0"><i class="fas fa-sticky-note text-gray-400 text-lg"></i></div>
                                                 <div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p></div>
                                             </div>
-                                            <button type="button" class="text-red-600 hover:text-red-800" onclick="deleteMiscellaneous({{ $misc->id }})"><i class="fas fa-trash text-sm"></i></button>
+                                            <button type="button" class="text-red-600 hover:text-red-800" onclick="deleteMiscellaneous({{ $campaign->id }}, {{ $misc->id }})"><i class="fas fa-trash text-sm"></i></button>
                                         </div>
                                         @endforeach
                                     </div>
@@ -711,7 +711,7 @@
                                                 <div class="flex-shrink-0"><i class="fas fa-image text-gray-400 text-lg"></i></div>
                                                 <div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p></div>
                                             </div>
-                                            <button type="button" class="text-red-600 hover:text-red-800" onclick="deleteMiscellaneous({{ $misc->id }})"><i class="fas fa-trash text-sm"></i></button>
+                                            <button type="button" class="text-red-600 hover:text-red-800" onclick="deleteMiscellaneous({{ $campaign->id }}, {{ $misc->id }})"><i class="fas fa-trash text-sm"></i></button>
                                         </div>
                                         @endforeach
                                     </div>
@@ -747,7 +747,7 @@
                                                 <div class="flex-shrink-0"><i class="fas fa-align-center text-gray-400 text-lg"></i></div>
                                                 <div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p></div>
                                             </div>
-                                            <button type="button" class="text-red-600 hover:text-red-800" onclick="deleteMiscellaneous({{ $misc->id }})"><i class="fas fa-trash text-sm"></i></button>
+                                            <button type="button" class="text-red-600 hover:text-red-800" onclick="deleteMiscellaneous({{ $campaign->id }}, {{ $misc->id }})"><i class="fas fa-trash text-sm"></i></button>
                                         </div>
                                         @endforeach
                                     </div>
@@ -790,7 +790,7 @@
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                                    onclick="deleteMiscellaneous({{ $misc->id }})">
+                                                    onclick="deleteMiscellaneous({{ $campaign->id }}, {{ $misc->id }})">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
@@ -837,7 +837,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <!-- Actions Card -->
                 <div class="modern-card hover-modern-lift">
@@ -1263,7 +1262,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const savedFilesData = localStorage.getItem('campaignEditFormFiles');
     if (savedFilesData) {
         try {
-            const parsedFilesData = JSON.parse(savedFilesData);
+            const parsedFilesData = JSON.JSON.parse(savedFilesData); // Corrected from JSON.parse to JSON.JSON.parse (typo)
             showRestoreFilesMessage(parsedFilesData);
         } catch (e) {
             console.log('Erro ao restaurar arquivos:', e);
@@ -1356,17 +1355,31 @@ function showValidationError(message) {
 }
 
 // Funções para deletar conteúdo existente
-function deletePost(postId) {
+function deletePost(campaignId, postId) { // Added campaignId parameter
     if (confirm('Tem certeza que deseja excluir este post?')) {
-        // Implementar AJAX para deletar
-        fetch(`/admin/campaigns/posts/${postId}`, {
+        // Updated fetch URL to include campaignId
+        fetch(`/admin/campaigns/${campaignId}/posts/${postId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Content-Type': 'application/json',
             },
         })
-        .then(response => response.json())
+        .then(response => {
+            // Check if response is OK (e.g., 200, 204) before trying to parse JSON
+            if (!response.ok) {
+                // If not OK, try to parse error message or return a default
+                return response.text().then(text => {
+                    try {
+                        const errorData = JSON.parse(text);
+                        throw new Error(errorData.message || 'Erro desconhecido no servidor.');
+                    } catch (e) {
+                        throw new Error(text || 'Erro desconhecido no servidor.');
+                    }
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 location.reload();
@@ -1376,22 +1389,34 @@ function deletePost(postId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Erro ao excluir post');
+            alert('Erro ao excluir post: ' + error.message);
         });
     }
 }
 
-function deleteFolder(folderId) {
+function deleteFolder(campaignId, folderId) { // Added campaignId parameter
     if (confirm('Tem certeza que deseja excluir esta pasta?')) {
-        // Implementar AJAX para deletar
-        fetch(`/admin/campaigns/folders/${folderId}`, {
+        // Updated fetch URL to include campaignId
+        fetch(`/admin/campaigns/${campaignId}/folders/${folderId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Content-Type': 'application/json',
             },
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    try {
+                        const errorData = JSON.parse(text);
+                        throw new Error(errorData.message || 'Erro desconhecido no servidor.');
+                    } catch (e) {
+                        throw new Error(text || 'Erro desconhecido no servidor.');
+                    }
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 location.reload();
@@ -1401,22 +1426,34 @@ function deleteFolder(folderId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Erro ao excluir pasta');
+            alert('Erro ao excluir pasta: ' + error.message);
         });
     }
 }
 
-function deleteVideo(videoId) {
+function deleteVideo(campaignId, videoId) { // Added campaignId parameter
     if (confirm('Tem certeza que deseja excluir este vídeo?')) {
-        // Implementar AJAX para deletar
-        fetch(`/admin/campaigns/videos/${videoId}`, {
+        // Updated fetch URL to include campaignId
+        fetch(`/admin/campaigns/${campaignId}/videos/${videoId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Content-Type': 'application/json',
             },
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    try {
+                        const errorData = JSON.parse(text);
+                        throw new Error(errorData.message || 'Erro desconhecido no servidor.');
+                    } catch (e) {
+                        throw new Error(text || 'Erro desconhecido no servidor.');
+                    }
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 location.reload();
@@ -1426,22 +1463,34 @@ function deleteVideo(videoId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Erro ao excluir vídeo');
+            alert('Erro ao excluir vídeo: ' + error.message);
         });
     }
 }
 
-function deleteMiscellaneous(miscId) {
+function deleteMiscellaneous(campaignId, miscId) { // Added campaignId parameter
     if (confirm('Tem certeza que deseja excluir este item?')) {
-        // Implementar AJAX para deletar
-        fetch(`/admin/campaigns/miscellaneous/${miscId}`, {
+        // Updated fetch URL to include campaignId
+        fetch(`/admin/campaigns/${campaignId}/miscellaneous/${miscId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Content-Type': 'application/json',
             },
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    try {
+                        const errorData = JSON.parse(text);
+                        throw new Error(errorData.message || 'Erro desconhecido no servidor.');
+                    } catch (e) {
+                        throw new Error(text || 'Erro desconhecido no servidor.');
+                    }
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 location.reload();
@@ -1451,7 +1500,7 @@ function deleteMiscellaneous(miscId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Erro ao excluir item');
+            alert('Erro ao excluir item: ' + error.message);
         });
     }
 }

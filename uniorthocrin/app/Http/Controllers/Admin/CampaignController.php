@@ -709,7 +709,7 @@ class CampaignController extends Controller
 
                     if ($publishOneDrive && $path) {
                         $localPath = storage_path('app/' . $path);
-                        $remotePath = 'Campaigns/' . $campaign->id . '/folders/' . $state . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
+                        $remotePath = 'Campaigns/' . $campaign->id . '/folders/' . $folder->id . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
                         $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
                         \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                     }
@@ -977,6 +977,142 @@ class CampaignController extends Controller
                 'success' => false,
                 'message' => 'Erro ao tentar reenviar: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    // --- NEW METHODS FOR DELETING ASSOCIATED CONTENT ---
+
+    /**
+     * Deletes a specific post associated with a campaign.
+     *
+     * @param Campaign $campaign
+     * @param int $postId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deletePost(Campaign $campaign, int $postId)
+    {
+        try {
+            // Note: The route binding {postId} should ideally be {post} if using route model binding for CampaignPost.
+            // For now, assuming {postId} is an integer ID, find it within the campaign's posts.
+            $post = $campaign->posts()->findOrFail($postId);
+            
+            // Delete associated files first
+            if ($post->files) {
+                foreach ($post->files as $file) {
+                    if ($file->path && Storage::disk('private')->exists($file->path)) {
+                        Storage::disk('private')->delete($file->path);
+                    }
+                    $file->delete();
+                }
+            }
+            
+            $post->delete();
+            
+            return response()->json(['success' => true, 'message' => 'Post deletado com sucesso.']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Post não encontrado.'], 404);
+        } catch (\Exception $e) {
+            Log::error("Error deleting post {$postId} for campaign {$campaign->id}: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erro ao deletar post.'], 500);
+        }
+    }
+
+    /**
+     * Deletes a specific folder associated with a campaign.
+     *
+     * @param Campaign $campaign
+     * @param int $folderId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteFolder(Campaign $campaign, int $folderId)
+    {
+        try {
+            $folder = $campaign->folders()->findOrFail($folderId);
+            
+            // Delete associated files first
+            if ($folder->files) {
+                foreach ($folder->files as $file) {
+                    if ($file->path && Storage::disk('private')->exists($file->path)) {
+                        Storage::disk('private')->delete($file->path);
+                    }
+                    $file->delete();
+                }
+            }
+            
+            $folder->delete();
+            
+            return response()->json(['success' => true, 'message' => 'Pasta deletada com sucesso.']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Pasta não encontrada.'], 404);
+        } catch (\Exception $e) {
+            Log::error("Error deleting folder {$folderId} for campaign {$campaign->id}: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erro ao deletar pasta.'], 500);
+        }
+    }
+
+    /**
+     * Deletes a specific video associated with a campaign.
+     *
+     * @param Campaign $campaign
+     * @param int $videoId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteVideo(Campaign $campaign, int $videoId)
+    {
+        try {
+            $video = $campaign->videos()->findOrFail($videoId);
+            
+            // Delete associated files first
+            if ($video->files) {
+                foreach ($video->files as $file) {
+                    if ($file->path && Storage::disk('private')->exists($file->path)) {
+                        Storage::disk('private')->delete($file->path);
+                    }
+                    $file->delete();
+                }
+            }
+            
+            $video->delete();
+            
+            return response()->json(['success' => true, 'message' => 'Vídeo deletado com sucesso.']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Vídeo não encontrado.'], 404);
+        } catch (\Exception $e) {
+            Log::error("Error deleting video {$videoId} for campaign {$campaign->id}: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erro ao deletar vídeo.'], 500);
+        }
+    }
+
+    /**
+     * Deletes a specific miscellaneous item associated with a campaign.
+     *
+     * @param Campaign $campaign
+     * @param int $miscId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteMiscellaneous(Campaign $campaign, int $miscId)
+    {
+        try {
+            $misc = $campaign->miscellaneous()->findOrFail($miscId);
+            
+            // Delete associated files first
+            if ($misc->files) {
+                foreach ($misc->files as $file) {
+                    if ($file->path && Storage::disk('private')->exists($file->path)) {
+                        Storage::disk('private')->delete($file->path);
+                    }
+                    $file->delete();
+                }
+            }
+            
+            $misc->delete();
+            
+            return response()->json(['success' => true, 'message' => 'Item deletado com sucesso.']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['success' => false, 'message' => 'Item não encontrado.'], 404);
+        } catch (\Exception $e) {
+            Log::error("Error deleting miscellaneous item {$miscId} for campaign {$campaign->id}: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erro ao deletar item.'], 500);
         }
     }
 }

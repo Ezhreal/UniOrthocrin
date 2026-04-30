@@ -84,7 +84,7 @@ class CampaignFolder extends Model
     public static function getFolhetosMarketingSectionTitle(?string $state): string
     {
         return match ($state ?? '') {
-            'MG/SP' => 'Folhetos SP',
+            'MG/SP' => 'Folhetos MG',
             'DF/ES' => 'Folhetos Outros Estados',
             default => 'Folhetos',
         };
