@@ -82,7 +82,7 @@
                                        class="text-[#910039] hover:text-[#7a0030] p-1">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if(auth()->check() && $campaigns['featured']->canBeDownloadedBy(auth()->user()))
+                                    @if(auth()->check())
                                     <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
                                         @csrf
                                         <input type="hidden" name="content_type" value="marketing">
@@ -115,7 +115,7 @@
                                        class="text-[#910039] hover:text-[#7a0030] p-1">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if(auth()->check() && $campaigns['featured']->canBeDownloadedBy(auth()->user()))
+                                    @if(auth()->check())
                                     <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
                                         @csrf
                                         <input type="hidden" name="content_type" value="marketing">
@@ -154,7 +154,7 @@
                                        class="text-[#910039] hover:text-[#7a0030] p-1">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if(auth()->check() && $campaigns['featured']->canBeDownloadedBy(auth()->user()))
+                                    @if(auth()->check())
                                     <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
                                         @csrf
                                         <input type="hidden" name="content_type" value="marketing">
@@ -197,7 +197,7 @@
                                        class="text-[#910039] hover:text-[#7a0030] p-1">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if(auth()->check() && $campaigns['featured']->canBeDownloadedBy(auth()->user()))
+                                    @if(auth()->check())
                                     <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
                                         @csrf
                                         <input type="hidden" name="content_type" value="marketing">
@@ -237,7 +237,7 @@
                        });
                    @endphp
                    
-                   @if($totalFiles > 0 && auth()->check() && $campaigns['featured']->canBeDownloadedBy(auth()->user()))
+                   @if($totalFiles > 0 && auth()->check())
                    <div class="flex items-center gap-2 text-gray-600">
                        <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
                            @csrf
@@ -316,7 +316,7 @@
                                 });
                             @endphp
                             
-                            @if($totalFiles > 0 && auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
+                            @if($totalFiles > 0 && auth()->check())
                             <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline">
                                 @csrf
                                 <input type="hidden" name="content_type" value="marketing">

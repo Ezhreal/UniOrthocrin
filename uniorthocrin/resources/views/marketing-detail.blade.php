@@ -117,7 +117,7 @@
                     </div>
                 </div>
                 
-                @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
+                @if(auth()->check())
                 <!-- Download da Campanha -->
                 <div class="mt-6 pt-4 border-t border-gray-200">
                     <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
@@ -178,7 +178,6 @@
                                                 <p class="text-xs text-gray-500">({{ round(($file->size ?? 0) / 1024 / 1024, 1) }} MB)</p>
                                             </div>
                                         </div>
-                                        @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
                                         <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex shrink-0">
                                             @csrf
                                             <input type="hidden" name="content_type" value="marketing">
@@ -190,7 +189,6 @@
                                                 Download
                                             </button>
                                         </form>
-                                        @endif
                                     </div>
                                     @endforeach
                                 @endforeach
@@ -308,7 +306,7 @@
                 </div>
             </div>
             
-            @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
+            @if(auth()->check())
             <!-- Download da galeria (file_ids do tab ativo são atualizados via JS) -->
             <div class="mt-6 border-t border-gray-200 pt-6">
                 <form id="marketing-post-gallery-form" method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline">
@@ -536,7 +534,7 @@
                                         <p class="text-xs text-gray-500">({{ round(($file->size ?? 0) / 1024 / 1024, 1) }} MB)</p>
                                     </div>
                                 </div>
-                                @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
+                                @if(auth()->check())
                                 <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex shrink-0">
                                     @csrf
                                     <input type="hidden" name="content_type" value="marketing">
@@ -561,7 +559,7 @@
                 $totalMiscSize = $miscItems->sum(fn ($item) => $item->files->sum('size'));
                 $totalMiscSizeMB = round($totalMiscSize / 1024 / 1024, 1);
             @endphp
-            @if(auth()->check() && $campaign->canBeDownloadedBy(auth()->user()))
+            @if(auth()->check())
             <div class="pt-4 border-t border-gray-200 mt-6">
                 <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
                     @csrf
