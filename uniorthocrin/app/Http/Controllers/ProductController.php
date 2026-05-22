@@ -21,32 +21,58 @@ class ProductController extends Controller
     {
         $user = $request->user();
         
-        // Parâmetros de filtro
-        $categoryId = $request->get('category');
-        $search = $request->get('search');
-        $perPage = 12; // Produtos por página
+        $globalFilterCategoryId = $request->get('category');
+        $globalSearch = $request->get('search');
         
-        // Buscar categorias com contagem de produtos
+        $groupedProducts = [];
+
+        // 1. Obter todas as categorias de produtos visíveis para o usuário.
+        // Assumindo que getCategoriesWithProductCount retorna todas as categorias relevantes para o usuário.
+        $allCategories = $this->productCategoryService->getCategoriesWithProductCount($user);
+
+        $categoriesToProcess = collect();
+        if ($globalFilterCategoryId) {
+            $singleCategory = $allCategories->firstWhere('id', $globalFilterCategoryId);
+            if ($singleCategory) {
+                $categoriesToProcess->push($singleCategory);
+            }
+        } else {
+            // Nenhum filtro de categoria global, processa todas as categorias
+            $categoriesToProcess = $allCategories;
+        }
+
+        foreach ($categoriesToProcess as $category) {
+            // Para cada categoria, obter seus produtos, aplicando a busca global, se houver
+            $productsInThisCategory = $this->productService->getFilteredProducts($user, [
+                'product_category_id' => $category->id, // Filtra pelos produtos da categoria atual no loop
+                'search' => $globalSearch,
+                'per_page' => null, // Não paginar, buscar todos os produtos para esta categoria
+                'eager_load' => ['category', 'series', 'images']
+            ]);
+
+            // Adicionar a categoria aos produtos agrupados apenas se ela realmente tiver produtos após o filtro de busca
+            if ($productsInThisCategory->isNotEmpty()) {
+                $seriesInThisCategory = $productsInThisCategory
+                    ->pluck('series')
+                    ->filter()
+                    ->unique('id');
+
+                $groupedProducts[] = [
+                    'category' => $category,
+                    'products' => $productsInThisCategory,
+                    'series' => $seriesInThisCategory,
+                ];
+            }
+        }
+        
+        // $categories é mantido para compatibilidade, caso seja usado em outras partes do layout ou em lógicas futuras.
         $categories = $this->productCategoryService->getCategoriesWithProductCount($user);
-        
-        // Buscar produtos filtrados
-        $products = $this->productService->getFilteredProducts($user, [
-            'product_category_id' => $categoryId,
-            'search' => $search,
-            'per_page' => $perPage
-        ]);
-        
-        // Estatísticas
-        $totalProducts = $this->productService->getTotalProducts($user);
-        $filteredCount = $products->count();
-        
+
         return view('produtos-list', compact(
-            'products',
+            'groupedProducts',
             'categories',
-            'totalProducts',
-            'filteredCount',
-            'categoryId',
-            'search'
+            'globalFilterCategoryId',
+            'globalSearch'
         ));
     }
 
