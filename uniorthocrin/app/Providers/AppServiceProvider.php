@@ -10,10 +10,12 @@ use App\Models\Product;
 use App\Models\News;
 use App\Models\Library;
 use App\Models\Training;
+use App\Models\Media;
 use App\Observers\ProductObserver;
 use App\Observers\NewsObserver;
 use App\Observers\LibraryObserver;
 use App\Observers\TrainingObserver;
+use App\Observers\MediaObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -44,5 +46,6 @@ class AppServiceProvider extends ServiceProvider
         News::observe(NewsObserver::class);
         Library::observe(LibraryObserver::class);
         Training::observe(TrainingObserver::class);
+        Media::observe(MediaObserver::class);
     }
 }

@@ -16,6 +16,8 @@ use App\Http\Controllers\Admin\ProductSeriesController;
 use App\Http\Controllers\Admin\TrainingCategoryController;
 use App\Http\Controllers\Admin\NewsCategoryController;
 use App\Http\Controllers\Admin\LibraryCategoryController;
+use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MediaCategoryController;
 use App\Http\Controllers\Admin\HelpController;
 
 // Login admin dedicado
@@ -81,6 +83,17 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     
     // Library Categories
     Route::resource('library-categories', LibraryCategoryController::class)->only(['index', 'store', 'destroy']);
+
+    // Media (Na Mídia)
+    Route::resource('media', MediaController::class);
+    Route::post('media/{media}/files', [MediaController::class, 'uploadFiles'])->name('media.files.upload');
+    Route::delete('media/{media}/files/{file}', [MediaController::class, 'deleteFile'])->name('media.files.delete');
+    Route::post('media/{media}/permissions', [MediaController::class, 'updatePermissions'])->name('media.permissions.update');
+    Route::post('media/{media}/onedrive/sync', [MediaController::class, 'syncToOneDrive'])->name('media.onedrive.sync');
+    Route::post('media/{media}/onedrive/retry', [MediaController::class, 'retryOneDriveSync'])->name('media.onedrive.retry');
+
+    // Media Categories
+    Route::resource('media-categories', MediaCategoryController::class)->only(['index', 'store', 'destroy']);
     
     // Training
     Route::resource('training', TrainingController::class);

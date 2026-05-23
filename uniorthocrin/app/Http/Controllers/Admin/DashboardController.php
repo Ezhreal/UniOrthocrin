@@ -8,6 +8,7 @@ use App\Models\Library;
 use App\Models\Training;
 use App\Models\Campaign;
 use App\Models\News;
+use App\Models\Media;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -21,6 +22,7 @@ class DashboardController extends Controller
             'training' => Training::count(),
             'campaigns' => Campaign::count(),
             'news' => News::count(),
+            'media' => Media::count(),
             'users' => User::count(),
         ];
 

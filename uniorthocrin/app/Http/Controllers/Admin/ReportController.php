@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Library;
 use App\Models\Training;
 use App\Models\News;
+use App\Models\Media;
 use App\Models\Campaign;
 use App\Models\File;
 use App\Models\UserView;
@@ -28,6 +29,7 @@ class ReportController extends Controller
             'total_library_items' => Library::count(),
             'total_trainings' => Training::count(),
             'total_news' => News::count(),
+            'total_media' => Media::count(),
             'total_campaigns' => Campaign::count(),
             'total_files' => File::count(),
         ];
@@ -44,6 +46,7 @@ class ReportController extends Controller
             ['type' => 'Biblioteca', 'total' => Library::count()],
             ['type' => 'Treinamentos', 'total' => Training::count()],
             ['type' => 'Radar', 'total' => News::count()],
+            ['type' => 'Na Mídia', 'total' => Media::count()],
             ['type' => 'Campanhas', 'total' => Campaign::count()],
         ]);
 
@@ -54,6 +57,7 @@ class ReportController extends Controller
             'new_library_items' => Library::where('created_at', '>=', now()->subDays(30))->count(),
             'new_trainings' => Training::where('created_at', '>=', now()->subDays(30))->count(),
             'new_news' => News::where('created_at', '>=', now()->subDays(30))->count(),
+            'new_media' => Media::where('created_at', '>=', now()->subDays(30))->count(),
             'new_campaigns' => Campaign::where('created_at', '>=', now()->subDays(30))->count(),
         ];
 
@@ -110,30 +114,8 @@ class ReportController extends Controller
     public function downloads(Request $request)
     {
         try {
-            // Verificar se o modelo DownloadOption existe
-            if (!class_exists('App\Models\DownloadOption')) {
-                // Se não existir, retornar dados vazios
-                $downloads = new \Illuminate\Pagination\LengthAwarePaginator(
-                    collect(),
-                    0,
-                    20,
-                    1,
-                    ['path' => request()->url(), 'pageName' => 'page']
-                );
-                $downloadStats = [
-                    'total' => 0,
-                    'this_month' => 0,
-                    'this_week' => 0,
-                    'today' => 0,
-                ];
-                $downloadsByType = collect();
-                $downloadsByModule = collect();
-                $topDownloads = collect();
-                
-                return view('admin.reports.downloads', compact('downloads', 'downloadStats', 'downloadsByType', 'downloadsByModule', 'topDownloads'));
-            }
-
-            $query = DownloadOption::with(['user', 'resource']);
+            $query = UserView::with(['user', 'viewable'])
+                ->where('download_count', '>', 0);
 
             // Filtros
             if ($search = $request->get('search')) {
@@ -144,53 +126,78 @@ class ReportController extends Controller
             }
 
             if ($resourceType = $request->get('resource_type')) {
-                $query->where('resource_type', $resourceType);
+                $query->where('viewable_type', $resourceType);
             }
 
             if ($dateFrom = $request->get('date_from')) {
-                $query->where('created_at', '>=', $dateFrom);
+                $query->where('last_viewed_at', '>=', $dateFrom);
             }
 
             if ($dateTo = $request->get('date_to')) {
-                $query->where('created_at', '<=', $dateTo . ' 23:59:59');
+                $query->where('last_viewed_at', '<=', $dateTo . ' 23:59:59');
             }
 
-            $downloads = $query->orderBy('created_at', 'desc')->paginate(20);
+            $downloads = $query->orderBy('last_viewed_at', 'desc')->paginate(20);
 
             // Estatísticas dos downloads
             $downloadStats = [
-                'total' => DownloadOption::count(),
-                'this_month' => DownloadOption::where('created_at', '>=', now()->startOfMonth())->count(),
-                'this_week' => DownloadOption::where('created_at', '>=', now()->startOfWeek())->count(),
-                'today' => DownloadOption::where('created_at', '>=', now()->startOfDay())->count(),
+                'total' => UserView::sum('download_count'),
+                'this_month' => UserView::where('last_viewed_at', '>=', now()->startOfMonth())->sum('download_count'),
+                'this_week' => UserView::where('last_viewed_at', '>=', now()->startOfWeek())->sum('download_count'),
+                'today' => UserView::where('last_viewed_at', '>=', now()->startOfDay())->sum('download_count'),
             ];
 
             // Downloads por tipo de recurso
-            $downloadsByType = DownloadOption::select('resource_type', DB::raw('count(*) as count'))
-                ->groupBy('resource_type')
+            $downloadsByType = UserView::select('viewable_type', DB::raw('SUM(download_count) as count'))
+                ->where('download_count', '>', 0)
+                ->groupBy('viewable_type')
                 ->get()
                 ->mapWithKeys(function ($item) {
-                    $type = class_basename($item->resource_type);
+                    $type = match(class_basename($item->viewable_type)) {
+                        'Product' => 'Produtos',
+                        'Library' => 'Biblioteca',
+                        'Training' => 'Treinamentos',
+                        'News' => 'Radar',
+                        'Media' => 'Na Mídia',
+                        'Campaign' => 'Campanhas',
+                        default => class_basename($item->viewable_type)
+                    };
                     return [$type => $item->count];
                 });
 
             // Downloads por módulo (últimos 30 dias)
-            $downloadsByModule = DownloadOption::select('resource_type', DB::raw('count(*) as count'))
-                ->where('created_at', '>=', now()->subDays(30))
-                ->groupBy('resource_type')
+            $downloadsByModule = UserView::select('viewable_type', DB::raw('SUM(download_count) as count'))
+                ->where('download_count', '>', 0)
+                ->where('last_viewed_at', '>=', now()->subDays(30))
+                ->groupBy('viewable_type')
                 ->get()
                 ->mapWithKeys(function ($item) {
-                    $type = class_basename($item->resource_type);
+                    $type = match(class_basename($item->viewable_type)) {
+                        'Product' => 'Produtos',
+                        'Library' => 'Biblioteca',
+                        'Training' => 'Treinamentos',
+                        'News' => 'Radar',
+                        'Media' => 'Na Mídia',
+                        'Campaign' => 'Campanhas',
+                        default => class_basename($item->viewable_type)
+                    };
                     return [$type => $item->count];
                 });
 
             // Top 10 recursos mais baixados
-            $topDownloads = DownloadOption::select('resource_id', 'resource_type', DB::raw('count(*) as download_count'))
-                ->with(['resource'])
-                ->groupBy('resource_id', 'resource_type')
+            $topDownloads = UserView::select('viewable_id', 'viewable_type', DB::raw('SUM(download_count) as download_count'))
+                ->where('download_count', '>', 0)
+                ->with(['viewable'])
+                ->groupBy('viewable_id', 'viewable_type')
                 ->orderBy('download_count', 'desc')
                 ->limit(10)
-                ->get();
+                ->get()
+                ->map(function($item) {
+                    // Adicionar atributo resource para compatibilidade com a view se necessário
+                    $item->resource = $item->viewable;
+                    $item->resource_type = $item->viewable_type;
+                    return $item;
+                });
 
             return view('admin.reports.downloads', compact('downloads', 'downloadStats', 'downloadsByType', 'downloadsByModule', 'topDownloads'));
         } catch (\Exception $e) {
@@ -219,19 +226,15 @@ class ReportController extends Controller
     public function files(Request $request)
     {
         try {
-            $query = File::with(['fileable']);
+            $query = File::query();
 
-            // Filtros
+            // Filtros básicos
             if ($search = $request->get('search')) {
                 $query->where('name', 'like', '%' . $search . '%');
             }
 
             if ($fileType = $request->get('file_type')) {
-                $query->where('file_type', $fileType);
-            }
-
-            if ($resourceType = $request->get('resource_type')) {
-                $query->where('fileable_type', $resourceType);
+                $query->where('type', $fileType);
             }
 
             if ($dateFrom = $request->get('date_from')) {
@@ -242,7 +245,47 @@ class ReportController extends Controller
                 $query->where('created_at', '<=', $dateTo . ' 23:59:59');
             }
 
+            // Filtragem por módulo (mais complexo sem polimorfismo direto)
+            if ($resourceType = $request->get('resource_type')) {
+                $query->where(function($q) use ($resourceType) {
+                    $pivotMap = [
+                        \App\Models\Product::class => 'product_files',
+                        \App\Models\Library::class => 'library_files',
+                        \App\Models\Training::class => 'training_files',
+                        \App\Models\Media::class => 'media_files',
+                    ];
+
+                    if (isset($pivotMap[$resourceType])) {
+                        $q->whereExists(function($sub) use ($pivotMap, $resourceType) {
+                            $sub->select(DB::raw(1))
+                                ->from($pivotMap[$resourceType])
+                                ->whereRaw($pivotMap[$resourceType] . '.file_id = files.id');
+                        });
+                    } elseif ($resourceType === \App\Models\News::class) {
+                        $q->whereExists(function($sub) {
+                            $sub->select(DB::raw(1))
+                                ->from('news')
+                                ->whereRaw('news.news_file_id = files.id');
+                        });
+                    } elseif ($resourceType === \App\Models\Campaign::class) {
+                        $q->where(function($sub) {
+                            $sub->whereExists(function($s) { $s->select(DB::raw(1))->from('campaign_post_files')->whereRaw('campaign_post_files.file_id = files.id'); })
+                               ->orWhereExists(function($s) { $s->select(DB::raw(1))->from('campaign_folder_files')->whereRaw('campaign_folder_files.file_id = files.id'); })
+                               ->orWhereExists(function($s) { $s->select(DB::raw(1))->from('campaign_video_files')->whereRaw('campaign_video_files.file_id = files.id'); })
+                               ->orWhereExists(function($s) { $s->select(DB::raw(1))->from('campaign_miscellaneous_files')->whereRaw('campaign_miscellaneous_files.file_id = files.id'); });
+                        });
+                    }
+                });
+            }
+
             $files = $query->orderBy('created_at', 'desc')->paginate(20);
+
+            // Adicionar informação de módulo dinamicamente para a view
+            $files->getCollection()->transform(function($file) {
+                $file->module_name = $this->getFileModule($file);
+                $file->url = $file->url; // Accessor
+                return $file;
+            });
 
             // Estatísticas dos arquivos
             $fileStats = [
@@ -253,58 +296,61 @@ class ReportController extends Controller
             ];
 
             // Arquivos por tipo
-            $filesByType = File::select('file_type', DB::raw('count(*) as count'), DB::raw('sum(size) as total_size'))
-                ->groupBy('file_type')
+            $filesByType = File::select('type as file_type', DB::raw('count(*) as count'), DB::raw('sum(size) as total_size'))
+                ->groupBy('type')
                 ->get();
 
-            // Arquivos por módulo
-            $filesByModule = File::select('fileable_type', DB::raw('count(*) as count'), DB::raw('sum(size) as total_size'))
-                ->groupBy('fileable_type')
-                ->get()
-                ->mapWithKeys(function ($item) {
-                    $type = class_basename($item->fileable_type);
-                    return [$type => ['count' => $item->count, 'size' => $item->total_size ?? 0]];
-                });
-
-            // Arquivos por módulo (últimos 30 dias)
-            $filesByModuleRecent = File::select('fileable_type', DB::raw('count(*) as count'), DB::raw('sum(size) as total_size'))
-                ->where('created_at', '>=', now()->subDays(30))
-                ->groupBy('fileable_type')
-                ->get()
-                ->mapWithKeys(function ($item) {
-                    $type = class_basename($item->fileable_type);
-                    return [$type => ['count' => $item->count, 'size' => $item->total_size ?? 0]];
-                });
+            // Estatísticas por módulo (Aproximado)
+            $filesByModuleRecent = collect([
+                'Produtos' => ['count' => DB::table('product_files')->count(), 'size' => 0],
+                'Biblioteca' => ['count' => DB::table('library_files')->count(), 'size' => 0],
+                'Treinamentos' => ['count' => DB::table('training_files')->count(), 'size' => 0],
+                'Radar' => ['count' => DB::table('news')->whereNotNull('news_file_id')->count(), 'size' => 0],
+                'Na Mídia' => ['count' => DB::table('media_files')->count(), 'size' => 0],
+            ]);
 
             // Top 10 arquivos maiores
-            $topFiles = File::with(['fileable'])
-                ->orderBy('size', 'desc')
+            $topFiles = File::orderBy('size', 'desc')
                 ->limit(10)
-                ->get();
+                ->get()
+                ->map(function($file) {
+                    $file->fileable_type = $this->getFileModule($file);
+                    return $file;
+                });
 
-            return view('admin.reports.files', compact('files', 'fileStats', 'filesByType', 'filesByModule', 'filesByModuleRecent', 'topFiles'));
+            return view('admin.reports.files', compact('files', 'fileStats', 'filesByType', 'filesByModuleRecent', 'topFiles'));
         } catch (\Exception $e) {
-            // Se houver erro, retornar dados vazios
-            $files = new \Illuminate\Pagination\LengthAwarePaginator(
-                collect(),
-                0,
-                20,
-                1,
-                ['path' => request()->url(), 'pageName' => 'page']
-            );
-            $fileStats = [
-                'total' => 0,
-                'total_size' => 0,
-                'this_month' => 0,
-                'this_week' => 0,
-            ];
+            Log::error('Erro no relatório de arquivos: ' . $e->getMessage());
+            // Retornar dados vazios em caso de erro
+            $files = new \Illuminate\Pagination\LengthAwarePaginator(collect(), 0, 20);
+            $fileStats = ['total' => 0, 'total_size' => 0, 'this_month' => 0, 'this_week' => 0];
             $filesByType = collect();
-            $filesByModule = collect();
             $filesByModuleRecent = collect();
             $topFiles = collect();
-
-            return view('admin.reports.files', compact('files', 'fileStats', 'filesByType', 'filesByModule', 'filesByModuleRecent', 'topFiles'));
+            return view('admin.reports.files', compact('files', 'fileStats', 'filesByType', 'filesByModuleRecent', 'topFiles'));
         }
+    }
+
+    private function getFileModule($file)
+    {
+        // Verificar News primeiro (FK direta)
+        if (DB::table('news')->where('news_file_id', $file->id)->exists()) return 'Radar';
+        
+        // Verificar Pivots
+        if (DB::table('media_files')->where('file_id', $file->id)->exists()) return 'Na Mídia';
+        if (DB::table('library_files')->where('file_id', $file->id)->exists()) return 'Biblioteca';
+        if (DB::table('product_files')->where('file_id', $file->id)->exists()) return 'Produtos';
+        if (DB::table('training_files')->where('file_id', $file->id)->exists()) return 'Treinamentos';
+        
+        // Verificar Campanhas
+        if (DB::table('campaign_post_files')->where('file_id', $file->id)->exists() ||
+            DB::table('campaign_folder_files')->where('file_id', $file->id)->exists() ||
+            DB::table('campaign_video_files')->where('file_id', $file->id)->exists() ||
+            DB::table('campaign_miscellaneous_files')->where('file_id', $file->id)->exists()) {
+            return 'Campanhas';
+        }
+
+        return 'Outros';
     }
 
     public function access(Request $request)
@@ -324,34 +370,42 @@ class ReportController extends Controller
         }
 
         if ($dateFrom = $request->get('date_from')) {
-            $query->where('created_at', '>=', $dateFrom);
+            $query->where('last_viewed_at', '>=', $dateFrom);
         }
 
         if ($dateTo = $request->get('date_to')) {
-            $query->where('created_at', '<=', $dateTo . ' 23:59:59');
+            $query->where('last_viewed_at', '<=', $dateTo . ' 23:59:59');
         }
 
-        $accesses = $query->orderBy('created_at', 'desc')->paginate(20);
+        $accesses = $query->orderBy('last_viewed_at', 'desc')->paginate(20);
 
         // Estatísticas de acesso
         $accessStats = [
-            'total' => UserView::count(),
-            'this_month' => UserView::where('created_at', '>=', now()->startOfMonth())->count(),
-            'this_week' => UserView::where('created_at', '>=', now()->startOfWeek())->count(),
-            'today' => UserView::where('created_at', '>=', now()->startOfDay())->count(),
+            'total' => UserView::sum('view_count'),
+            'this_month' => UserView::where('last_viewed_at', '>=', now()->startOfMonth())->sum('view_count'),
+            'this_week' => UserView::where('last_viewed_at', '>=', now()->startOfWeek())->sum('view_count'),
+            'today' => UserView::where('last_viewed_at', '>=', now()->startOfDay())->sum('view_count'),
         ];
 
-        // Acessos por tipo de recurso
-        $accessByType = UserView::select('viewable_type', DB::raw('count(*) as count'))
+        // Acessos por tipo de recurso (Módulo)
+        $accessByType = UserView::select('viewable_type', DB::raw('SUM(view_count) as count'))
             ->groupBy('viewable_type')
             ->get()
             ->mapWithKeys(function ($item) {
-                $type = class_basename($item->viewable_type);
+                $type = match(class_basename($item->viewable_type)) {
+                    'Product' => 'Produtos',
+                    'Library' => 'Biblioteca',
+                    'Training' => 'Treinamentos',
+                    'News' => 'Radar',
+                    'Media' => 'Na Mídia',
+                    'Campaign' => 'Campanhas',
+                    default => class_basename($item->viewable_type)
+                };
                 return [$type => $item->count];
             });
 
         // Acessos por usuário (top 10)
-        $topUsers = UserView::select('user_id', DB::raw('count(*) as count'))
+        $topUsers = UserView::select('user_id', DB::raw('SUM(view_count) as count'))
             ->with('user')
             ->groupBy('user_id')
             ->orderBy('count', 'desc')
@@ -359,24 +413,51 @@ class ReportController extends Controller
             ->get();
 
         // Acessos por módulo (últimos 30 dias)
-        $accessByModuleRecent = UserView::select('viewable_type', DB::raw('count(*) as count'))
-            ->where('created_at', '>=', now()->subDays(30))
+        $accessByModuleRecent = UserView::select('viewable_type', DB::raw('SUM(view_count) as count'))
+            ->where('last_viewed_at', '>=', now()->subDays(30))
             ->groupBy('viewable_type')
             ->get()
             ->mapWithKeys(function ($item) {
-                $type = class_basename($item->viewable_type);
+                $type = match(class_basename($item->viewable_type)) {
+                    'Product' => 'Produtos',
+                    'Library' => 'Biblioteca',
+                    'Training' => 'Treinamentos',
+                    'News' => 'Radar',
+                    'Media' => 'Na Mídia',
+                    'Campaign' => 'Campanhas',
+                    default => class_basename($item->viewable_type)
+                };
                 return [$type => $item->count];
             });
 
         // Top 10 recursos mais acessados
-        $topResources = UserView::select('viewable_id', 'viewable_type', DB::raw('count(*) as access_count'))
+        $topResources = UserView::select('viewable_id', 'viewable_type', DB::raw('SUM(view_count) as access_count'))
             ->with(['viewable'])
             ->groupBy('viewable_id', 'viewable_type')
             ->orderBy('access_count', 'desc')
             ->limit(10)
+            ->get()
+            ->map(function($item) {
+                $item->module_display_name = match(class_basename($item->viewable_type)) {
+                    'Product' => 'Produtos',
+                    'Library' => 'Biblioteca',
+                    'Training' => 'Treinamentos',
+                    'News' => 'Radar',
+                    'Media' => 'Na Mídia',
+                    'Campaign' => 'Campanhas',
+                    default => class_basename($item->viewable_type)
+                };
+                return $item;
+            });
+
+        // Últimos acessos ao sistema (quem entrou)
+        $recentLogins = User::with('userType')
+            ->whereNotNull('last_access')
+            ->orderBy('last_access', 'desc')
+            ->limit(5)
             ->get();
 
-        return view('admin.reports.access', compact('accesses', 'accessStats', 'accessByType', 'topUsers', 'accessByModuleRecent', 'topResources'));
+        return view('admin.reports.access', compact('accesses', 'accessStats', 'accessByType', 'topUsers', 'accessByModuleRecent', 'topResources', 'recentLogins'));
     }
 
     public function export(Request $request)

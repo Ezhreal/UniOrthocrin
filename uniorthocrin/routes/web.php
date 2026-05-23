@@ -14,6 +14,7 @@ use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SearchController;
@@ -87,6 +88,10 @@ Route::middleware(['auth', \App\Http\Middleware\NoStoreForAuthenticated::class])
     // Rotas de Biblioteca
     Route::get('/biblioteca-list', [LibraryController::class, 'index'])->name('biblioteca.list');
     Route::get('/biblioteca/{id}', [LibraryController::class, 'show'])->name('biblioteca.detail');
+
+    // Na Mídia (Media)
+    Route::get('/na-midia-list', [MediaController::class, 'index'])->name('media.list');
+    Route::get('/na-midia/{id}', [MediaController::class, 'show'])->name('media.detail');
 
     // Busca global (resultados)
     Route::get('/resultados', [SearchController::class, 'index'])->name('search.results');

@@ -71,7 +71,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-modern-caption">Total de Conteúdo</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['total_products'] + $stats['total_library_items'] + $stats['total_trainings'] + $stats['total_news'] + $stats['total_campaigns'] }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['total_products'] + $stats['total_library_items'] + $stats['total_trainings'] + $stats['total_news'] + $stats['total_media'] + $stats['total_campaigns'] }}</p>
                     <p class="text-modern-caption">{{ $stats['total_files'] }} arquivos</p>
                 </div>
                 <div class="stats-card-icon-modern stats-card-icon-secondary">
@@ -201,7 +201,7 @@
                 </div>
             </div>
         </div>
-        <div class="grid-modern grid-modern-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
             <div class="text-center p-4 bg-primary-50 rounded-xl">
                 <div class="text-2xl font-bold text-primary-500">{{ $recentActivity['new_users'] }}</div>
                 <div class="text-modern-caption">Novos Usuários</div>
@@ -221,6 +221,10 @@
             <div class="text-center p-4 bg-error-50 rounded-xl">
                 <div class="text-2xl font-bold text-error-500">{{ $recentActivity['new_news'] }}</div>
                 <div class="text-modern-caption">Novos Radar</div>
+            </div>
+            <div class="text-center p-4 bg-indigo-50 rounded-xl">
+                <div class="text-2xl font-bold text-indigo-500">{{ $recentActivity['new_media'] }}</div>
+                <div class="text-modern-caption">Novos Na Mídia</div>
             </div>
             <div class="text-center p-4 bg-primary-50 rounded-xl">
                 <div class="text-2xl font-bold text-primary-500">{{ $recentActivity['new_campaigns'] }}</div>

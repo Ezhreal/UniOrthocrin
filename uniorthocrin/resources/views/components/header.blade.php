@@ -16,6 +16,7 @@
                 @endif
                 <li><a href="/produtos-list" class="text-[#910039] font-medium hover:underline">Produtos</a></li>
                 <li><a href="/biblioteca-list" class="text-[#910039] font-medium hover:underline">Biblioteca</a></li>
+                <li><a href="/na-midia-list" class="text-[#910039] font-medium hover:underline">Na Mídia</a></li>
                 <li><a href="/treinamentos-list" class="text-[#910039] font-medium hover:underline">Treinamentos</a></li>
                 <li><a href="/news-list" class="text-[#910039] font-medium hover:underline">Radar</a></li>
             </ul>
@@ -138,6 +139,12 @@
                         <a href="/biblioteca-list" @click="mobileMenuOpen = false" class="flex items-center px-4 py-3 text-gray-700 hover:bg-[#910039] hover:text-white rounded-lg transition-colors duration-200">
                             <i class="fas fa-book mr-3 text-[#910039]"></i>
                             <span class="font-medium">Biblioteca</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/na-midia-list" @click="mobileMenuOpen = false" class="flex items-center px-4 py-3 text-gray-700 hover:bg-[#910039] hover:text-white rounded-lg transition-colors duration-200">
+                            <i class="fas fa-photo-video mr-3 text-[#910039]"></i>
+                            <span class="font-medium">Na Mídia</span>
                         </a>
                     </li>
                     <li>

@@ -15,18 +15,18 @@
         </div>
     </div>
 
-    <!-- Main Stats Cards (2 principais) -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Main Stats Cards (3 principais) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <!-- Campaigns - Card Principal -->
         <div class="stats-card-modern hover-modern-lift">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-modern-caption">Campanhas</p>
                     <p class="text-4xl font-bold text-gray-900">{{ $stats['campaigns'] }}</p>
-                    <p class="text-sm text-gray-500 mt-1">Total de campanhas ativas</p>
+                    <p class="text-sm text-gray-500 mt-1">Campanhas ativas</p>
                 </div>
-                <div class="stats-card-icon-modern stats-card-icon-warning" style="width: 80px; height: 80px;">
-                    <i class="fas fa-bullhorn text-3xl"></i>
+                <div class="stats-card-icon-modern stats-card-icon-warning" style="width: 70px; height: 70px;">
+                    <i class="fas fa-bullhorn text-2xl"></i>
                 </div>
             </div>
             <div class="mt-6">
@@ -42,14 +42,33 @@
                 <div>
                     <p class="text-modern-caption">Produtos</p>
                     <p class="text-4xl font-bold text-gray-900">{{ $stats['products'] }}</p>
-                    <p class="text-sm text-gray-500 mt-1">Total de produtos cadastrados</p>
+                    <p class="text-sm text-gray-500 mt-1">Produtos cadastrados</p>
                 </div>
-                <div class="stats-card-icon-modern stats-card-icon-primary" style="width: 80px; height: 80px;">
-                    <i class="fas fa-box text-3xl"></i>
+                <div class="stats-card-icon-modern stats-card-icon-primary" style="width: 70px; height: 70px;">
+                    <i class="fas fa-box text-2xl"></i>
                 </div>
             </div>
             <div class="mt-6">
                 <a href="{{ route('admin.products.index') }}" class="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors duration-200">
+                    Ver todos →
+                </a>
+            </div>
+        </div>
+
+        <!-- Training - Card Principal -->
+        <div class="stats-card-modern hover-modern-lift">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-modern-caption">Treinamentos</p>
+                    <p class="text-4xl font-bold text-gray-900">{{ $stats['training'] }}</p>
+                    <p class="text-sm text-gray-500 mt-1">Treinamentos disponíveis</p>
+                </div>
+                <div class="stats-card-icon-modern stats-card-icon-success" style="width: 70px; height: 70px;">
+                    <i class="fas fa-graduation-cap text-2xl"></i>
+                </div>
+            </div>
+            <div class="mt-6">
+                <a href="{{ route('admin.training.index') }}" class="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors duration-200">
                     Ver todos →
                 </a>
             </div>
@@ -76,24 +95,6 @@
             </div>
         </div>
 
-        <!-- Training -->
-        <div class="stats-card-modern hover-modern-lift">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-modern-caption">Treinamentos</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['training'] }}</p>
-                </div>
-                <div class="stats-card-icon-modern stats-card-icon-success">
-                    <i class="fas fa-graduation-cap text-xl"></i>
-                </div>
-            </div>
-            <div class="mt-4">
-                <a href="{{ route('admin.training.index') }}" class="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors duration-200">
-                    Ver todos →
-                </a>
-            </div>
-        </div>
-
         <!-- Radar -->
         <div class="stats-card-modern hover-modern-lift">
             <div class="flex items-center justify-between">
@@ -108,6 +109,24 @@
             <div class="mt-4">
                 <a href="{{ route('admin.news.index') }}" class="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors duration-200">
                     Ver todas →
+                </a>
+            </div>
+        </div>
+
+        <!-- Na Mídia -->
+        <div class="stats-card-modern hover-modern-lift">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-modern-caption">Na Mídia</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['media'] }}</p>
+                </div>
+                <div class="stats-card-icon-modern stats-card-icon-primary" style="background-color: #f3f4f6; color: #510020;">
+                    <i class="fas fa-photo-video text-xl"></i>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{{ route('admin.media.index') }}" class="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors duration-200">
+                    Ver todos →
                 </a>
             </div>
         </div>

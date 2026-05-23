@@ -59,6 +59,18 @@ class FileValidationRequest extends FormRequest
     }
 
     /**
+     * Validações específicas para Na Mídia (Media)
+     */
+    public static function getMediaValidationRules()
+    {
+        return [
+            'files' => 'nullable|array',
+            // Permitir qualquer tipo de arquivo, limitando apenas o tamanho (1GB)
+            'files.*' => 'file|max:1024000', 
+        ];
+    }
+
+    /**
      * Validações específicas para Treinamento
      */
     public static function getTrainingValidationRules()

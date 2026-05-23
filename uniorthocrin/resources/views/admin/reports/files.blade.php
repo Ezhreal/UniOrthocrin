@@ -203,249 +203,165 @@
     </div>
     @endif
 
-    <!-- Filters -->
-    <div class="admin-card">
-        <div class="admin-card-header">
-            <h3 class="admin-card-title">Filtros</h3>
+    <!-- Modern Filters -->
+    <div class="modern-card mb-8">
+        <div class="modern-card-header">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 bg-primary-50 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-filter text-primary-500"></i>
+                </div>
+                <div>
+                    <h3 class="modern-card-title">Filtros</h3>
+                    <p class="modern-card-subtitle">Análise detalhada de arquivos</p>
+                </div>
+            </div>
         </div>
-        <form method="GET" class="grid grid-cols-1 gap-4 sm:grid-cols-5">
+        <form method="GET" class="grid grid-cols-1 gap-4 sm:grid-cols-5 p-6 pt-0">
             <div>
-                <label for="search" class="form-label">Buscar</label>
+                <label for="search" class="form-label-modern">Buscar</label>
                 <input type="text" name="search" id="search" value="{{ request('search') }}" 
                        placeholder="Nome do arquivo..."
-                       class="form-input">
+                       class="form-input-modern">
             </div>
             <div>
-                <label for="file_type" class="form-label">Tipo de Arquivo</label>
-                <select name="file_type" id="file_type" class="form-select">
+                <label for="file_type" class="form-label-modern">Tipo de Arquivo</label>
+                <select name="file_type" id="file_type" class="form-select-modern">
                     <option value="">Todos os tipos</option>
                     <option value="image" {{ request('file_type') == 'image' ? 'selected' : '' }}>Imagem</option>
                     <option value="video" {{ request('file_type') == 'video' ? 'selected' : '' }}>Vídeo</option>
                     <option value="audio" {{ request('file_type') == 'audio' ? 'selected' : '' }}>Áudio</option>
                     <option value="pdf" {{ request('file_type') == 'pdf' ? 'selected' : '' }}>PDF</option>
-                    <option value="pdf" {{ request('file_type') == 'pdf' ? 'selected' : '' }}>Documento</option>
                     <option value="spreadsheet" {{ request('file_type') == 'spreadsheet' ? 'selected' : '' }}>Planilha</option>
                     <option value="presentation" {{ request('file_type') == 'presentation' ? 'selected' : '' }}>Apresentação</option>
-                    <option value="other" {{ request('file_type') == 'other' ? 'selected' : '' }}>Outros</option>
                 </select>
             </div>
             <div>
-                <label for="resource_type" class="form-label">Módulo</label>
-                <select name="resource_type" id="resource_type" class="form-select">
+                <label for="resource_type" class="form-label-modern">Módulo</label>
+                <select name="resource_type" id="resource_type" class="form-select-modern">
                     <option value="">Todos os módulos</option>
                     <option value="App\Models\Product" {{ request('resource_type') == 'App\Models\Product' ? 'selected' : '' }}>Produtos</option>
                     <option value="App\Models\Library" {{ request('resource_type') == 'App\Models\Library' ? 'selected' : '' }}>Biblioteca</option>
                     <option value="App\Models\Training" {{ request('resource_type') == 'App\Models\Training' ? 'selected' : '' }}>Treinamentos</option>
                     <option value="App\Models\News" {{ request('resource_type') == 'App\Models\News' ? 'selected' : '' }}>Radar</option>
+                    <option value="App\Models\Media" {{ request('resource_type') == 'App\Models\Media' ? 'selected' : '' }}>Na Mídia</option>
                     <option value="App\Models\Campaign" {{ request('resource_type') == 'App\Models\Campaign' ? 'selected' : '' }}>Campanhas</option>
                 </select>
             </div>
             <div>
-                <label for="date_from" class="form-label">Data Inicial</label>
+                <label for="date_from" class="form-label-modern">Data Inicial</label>
                 <input type="date" name="date_from" id="date_from" value="{{ request('date_from') }}" 
-                       class="form-input">
+                       class="form-input-modern">
             </div>
-            <div>
-                <label for="date_to" class="form-label">Data Final</label>
-                <input type="date" name="date_to" id="date_to" value="{{ request('date_to') }}" 
-                       class="form-input">
-            </div>
-            <div class="flex items-end space-x-3">
-                <button type="submit" class="btn-primary">
+            <div class="flex items-end space-x-2">
+                <button type="submit" class="btn-modern-primary flex-1">
                     <i class="fas fa-search mr-2"></i>
                     Filtrar
                 </button>
-                <a href="{{ route('admin.reports.files') }}" class="btn-secondary">
-                    <i class="fas fa-times mr-2"></i>
-                    Limpar
+                <a href="{{ route('admin.reports.files') }}" class="btn-modern-secondary" title="Limpar Filtros">
+                    <i class="fas fa-times"></i>
                 </a>
             </div>
         </form>
     </div>
 
-    <!-- Files Table -->
-    <div class="admin-card">
-        <div class="admin-card-header">
-            <h3 class="admin-card-title">Lista de Arquivos</h3>
-            <p class="admin-card-subtitle">{{ $files->total() }} arquivos encontrados</p>
+    <!-- Modern Files Table -->
+    <div class="modern-card">
+        <div class="modern-card-header">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="modern-card-title">Lista de Arquivos</h3>
+                    <p class="modern-card-subtitle">{{ $files->total() }} arquivos encontrados</p>
+                </div>
+            </div>
         </div>
         
         @if($files->count() > 0)
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+            <table class="table-modern">
+                <thead>
                     <tr>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            <div class="flex items-center">
-                                <i class="fas fa-file mr-2"></i>
-                                Arquivo
-                            </div>
-                        </th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            <div class="flex items-center">
-                                <i class="fas fa-tag mr-2"></i>
-                                Tipo
-                            </div>
-                        </th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            <div class="flex items-center">
-                                <i class="fas fa-folder mr-2"></i>
-                                Módulo
-                            </div>
-                        </th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            <div class="flex items-center">
-                                <i class="fas fa-weight-hanging mr-2"></i>
-                                Tamanho
-                            </div>
-                        </th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            <div class="flex items-center">
-                                <i class="fas fa-clock mr-2"></i>
-                                Upload
-                            </div>
-                        </th>
+                        <th>Arquivo</th>
+                        <th>Tipo</th>
+                        <th>Módulo</th>
+                        <th>Tamanho</th>
+                        <th>Upload</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody>
                     @foreach($files as $file)
-                    <tr class="hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200 group">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                    <tr>
+                        <td>
                             <div class="flex items-center">
-                                <div class="flex-shrink-0 h-12 w-12">
+                                <div class="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3 overflow-hidden">
                                     @if($file->file_type === 'image')
-                                        <img class="h-12 w-12 rounded-lg object-cover shadow-lg group-hover:shadow-xl transition-shadow duration-200" src="{{ $file->url }}" alt="{{ $file->name }}">
+                                        <img class="h-full w-full object-cover" src="{{ $file->url }}" alt="{{ $file->name }}">
                                     @elseif($file->file_type === 'video')
-                                        <div class="h-12 w-12 rounded-lg bg-gradient-to-r from-red-100 to-red-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
-                                            <i class="fas fa-video text-red-600 text-lg"></i>
-                                        </div>
-                                    @elseif($file->file_type === 'audio')
-                                        <div class="h-12 w-12 rounded-lg bg-gradient-to-r from-blue-100 to-blue-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
-                                            <i class="fas fa-music text-blue-600 text-lg"></i>
-                                        </div>
+                                        <i class="fas fa-video text-red-500"></i>
                                     @elseif($file->file_type === 'pdf')
-                                        <div class="h-12 w-12 rounded-lg bg-gradient-to-r from-red-100 to-red-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
-                                            <i class="fas fa-file-pdf text-red-600 text-lg"></i>
-                                        </div>
-                                    @elseif($file->file_type === 'pdf')
-                                        <div class="h-12 w-12 rounded-lg bg-gradient-to-r from-blue-100 to-blue-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
-                                            <i class="fas fa-file-word text-blue-600 text-lg"></i>
-                                        </div>
-                                    @elseif($file->file_type === 'spreadsheet')
-                                        <div class="h-12 w-12 rounded-lg bg-gradient-to-r from-green-100 to-green-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
-                                            <i class="fas fa-file-excel text-green-600 text-lg"></i>
-                                        </div>
-                                    @elseif($file->file_type === 'presentation')
-                                        <div class="h-12 w-12 rounded-lg bg-gradient-to-r from-orange-100 to-orange-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
-                                            <i class="fas fa-file-powerpoint text-orange-600 text-lg"></i>
-                                        </div>
+                                        <i class="fas fa-file-pdf text-red-500"></i>
                                     @else
-                                        <div class="h-12 w-12 rounded-lg bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
-                                            <i class="fas fa-file text-gray-600 text-lg"></i>
-                                        </div>
+                                        <i class="fas fa-file text-gray-400"></i>
                                     @endif
                                 </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors duration-200 truncate max-w-xs">{{ $file->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $file->mime_type }}</div>
+                                <div class="max-w-xs">
+                                    <div class="text-modern-body font-medium truncate" title="{{ $file->name }}">{{ $file->name }}</div>
+                                    <div class="text-modern-caption">{{ $file->mime_type }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td>
                             @php
                                 $badgeClass = match($file->file_type) {
-                                    'image' => 'bg-green-100 text-green-800',
-                                    'video' => 'bg-red-100 text-red-800',
-                                    'audio' => 'bg-blue-100 text-blue-800',
-                                    'pdf' => 'bg-red-100 text-red-800',
-                                    'pdf' => 'bg-blue-100 text-blue-800',
-                                    'spreadsheet' => 'bg-green-100 text-green-800',
-                                    'presentation' => 'bg-orange-100 text-orange-800',
-                                    default => 'bg-gray-100 text-gray-800'
+                                    'image' => 'badge-modern-success',
+                                    'video' => 'badge-modern-error',
+                                    'pdf' => 'badge-modern-error',
+                                    'spreadsheet' => 'badge-modern-success',
+                                    default => 'badge-modern-primary'
                                 };
                             @endphp
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
-                                <i class="fas fa-tag mr-1"></i>
+                            <span class="badge-modern {{ $badgeClass }}">
                                 {{ ucfirst($file->file_type) }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td>
                             @php
-                                $moduleBadgeClass = match(class_basename($file->fileable_type)) {
-                                    'Product' => 'bg-blue-100 text-blue-800',
-                                    'Library' => 'bg-green-100 text-green-800',
-                                    'Training' => 'bg-purple-100 text-purple-800',
-                                    'News' => 'bg-orange-100 text-orange-800',
-                                    'Campaign' => 'bg-red-100 text-red-800',
-                                    default => 'bg-gray-100 text-gray-800'
+                                $moduleName = match(class_basename($file->fileable_type)) {
+                                    'Product' => 'Produtos',
+                                    'Library' => 'Biblioteca',
+                                    'Training' => 'Treinamentos',
+                                    'News' => 'Radar',
+                                    'Media' => 'Na Mídia',
+                                    'Campaign' => 'Campanhas',
+                                    default => class_basename($file->fileable_type)
                                 };
                             @endphp
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $moduleBadgeClass }}">
-                                <i class="fas fa-folder mr-1"></i>
-                                {{ class_basename($file->fileable_type) }}
-                            </span>
+                            <span class="text-modern-body">{{ $moduleName }}</span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center text-sm text-gray-500">
-                                <div class="flex-shrink-0 h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-3">
-                                    <i class="fas fa-weight-hanging text-gray-600 text-xs"></i>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-gray-900">{{ number_format($file->size / 1024 / 1024, 2) }} MB</div>
-                                    <div class="text-xs text-gray-500">{{ number_format($file->size) }} bytes</div>
-                                </div>
-                            </div>
+                        <td>
+                            <div class="text-modern-body font-medium">{{ number_format($file->size / 1024 / 1024, 2) }} MB</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center text-sm text-gray-500">
-                                <div class="flex-shrink-0 h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-3">
-                                    <i class="fas fa-calendar text-gray-600 text-xs"></i>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-gray-900">{{ $file->created_at->format('d/m/Y') }}</div>
-                                    <div class="text-xs text-gray-500">{{ $file->created_at->format('H:i') }}</div>
-                                </div>
-                            </div>
+                        <td>
+                            <div class="text-modern-body">{{ $file->created_at->format('d/m/Y') }}</div>
+                            <div class="text-modern-caption">{{ $file->created_at->format('H:i') }}</div>
                         </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
+
+        <!-- Modern Pagination -->
+        @if($files->hasPages())
+        <div class="px-6 py-4 border-t border-gray-200">
+            {{ $files->links() }}
+        </div>
+        @endif
         @else
         <div class="text-center py-12">
-            <div class="mx-auto h-24 w-24 text-gray-300 mb-4">
-                <i class="fas fa-file text-6xl"></i>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum arquivo encontrado</h3>
-            <p class="text-gray-500">Não há arquivos que correspondam aos filtros selecionados.</p>
+            <i class="fas fa-file text-gray-300 text-6xl mb-4"></i>
+            <p class="text-modern-caption">Nenhum arquivo encontrado</p>
         </div>
         @endif
     </div>
-
-    <!-- Pagination -->
-    @if($files->hasPages())
-    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-        <div class="flex-1 flex justify-between sm:hidden">
-            {{ $files->links('pagination::tailwind') }}
-        </div>
-        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-                <p class="text-sm text-gray-700">
-                    Mostrando
-                    <span class="font-medium">{{ $files->firstItem() }}</span>
-                    a
-                    <span class="font-medium">{{ $files->lastItem() }}</span>
-                    de
-                    <span class="font-medium">{{ $files->total() }}</span>
-                    resultados
-                </p>
-            </div>
-            <div>
-                {{ $files->links('pagination::tailwind') }}
-            </div>
-        </div>
-    </div>
-    @endif
 </div>
 @endsection

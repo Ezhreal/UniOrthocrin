@@ -13,6 +13,8 @@ use App\Models\Campaign;
 use App\Models\Training;
 use App\Models\Library;
 use App\Models\News;
+use App\Models\Media;
+use App\Models\UserView;
 
 class DownloadController extends Controller
 {
@@ -81,6 +83,30 @@ class DownloadController extends Controller
             'user_id' => auth()->id(),
             'user_email' => auth()->user()->email
         ]);
+
+        // Registrar download nas estatísticas
+        try {
+            $modelMap = [
+                'product' => \App\Models\Product::class,
+                'training' => \App\Models\Training::class,
+                'library' => \App\Models\Library::class,
+                'marketing' => \App\Models\Campaign::class,
+                'news' => \App\Models\News::class,
+                'media' => \App\Models\Media::class,
+            ];
+
+            if (isset($modelMap[$contentType]) && $contentId) {
+                $userView = UserView::recordView(auth()->id(), $modelMap[$contentType], $contentId);
+                $userView->recordDownload();
+                Log::info('Download registrado em UserView', [
+                    'user_id' => auth()->id(),
+                    'content_type' => $contentType,
+                    'content_id' => $contentId
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Falha ao registrar estatística de download: ' . $e->getMessage());
+        }
 
         if ($restrictFileIds !== null && count($restrictFileIds) === 1) {
             return $this->downloadSingleAuthorizedFile($contentId, $contentType, $restrictFileIds[0], (string) $type);
@@ -279,6 +305,8 @@ class DownloadController extends Controller
                 return $this->getMarketingFiles($contentId, $fileType);
             case 'news':
                 return $this->getNewsFiles($contentId, $fileType);
+            case 'media':
+                return $this->getMediaFiles($contentId, $fileType);
             default:
                 throw new \Exception('Tipo de conteúdo não suportado: ' . $contentType);
         }
@@ -430,6 +458,30 @@ class DownloadController extends Controller
         
         return $files;
     }
+
+    private function getMediaFiles($mediaId, $fileType)
+    {
+        Log::info('getMediaFiles iniciado', ['mediaId' => $mediaId, 'fileType' => $fileType]);
+        
+        // Buscar arquivos através da tabela pivot
+        $query = File::join('media_files', 'files.id', '=', 'media_files.file_id')
+                     ->where('media_files.media_id', $mediaId)
+                     ->where(function($q) {
+                         // Excluir thumbnails - arquivos que não são para download
+                         $q->where('files.name', 'not like', '%thumb%')
+                           ->where('files.path', 'not like', '%thumb%')
+                           ->where('files.type', '!=', 'thumbnail');
+                     });
+        
+        if ($fileType !== 'all') {
+            $query->where('files.type', $fileType);
+        }
+        
+        $files = $query->select('files.*')->get();
+        Log::info('Arquivos de mídia encontrados (sem thumbnails)', ['count' => $files->count(), 'files' => $files->pluck('path', 'id')->toArray()]);
+        
+        return $files;
+    }
     
     private function downloadAllProducts(Request $request)
     {
@@ -494,6 +546,7 @@ class DownloadController extends Controller
             'library' => Library::class,
             'marketing' => Campaign::class,
             'news' => News::class,
+            'media' => Media::class,
         ];
         
         if (!isset($modelMap[$contentType])) {
@@ -789,6 +842,10 @@ class DownloadController extends Controller
             case 'news':
                 $news = News::find($contentId);
                 return $news && $news->canBeDownloadedBy($user);
+                
+            case 'media':
+                $media = Media::find($contentId);
+                return $media && $media->canBeDownloadedBy($user);
                 
             default:
                 return false;

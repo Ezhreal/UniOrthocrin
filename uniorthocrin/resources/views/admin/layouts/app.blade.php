@@ -189,6 +189,31 @@
                             </div>
                         </div>
 
+                        <!-- Na Mídia -->
+                        <div class="space-y-1" x-data="{ mediaOpen: false }">
+                            <button @click="mediaOpen = !mediaOpen" 
+                                    class="flex items-center justify-between w-full px-3 py-2 text-white rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.media.*') ? 'bg-primary-600' : 'hover:bg-primary-600' }}"
+                                    :class="(sidebarOpen || mobileMenuOpen) ? 'justify-start' : 'justify-center'">
+                                <div class="flex items-center">
+                                    <i class="fas fa-photo-video text-base"></i>
+                                    <span x-show="sidebarOpen || mobileMenuOpen" class="ml-3 transition-opacity duration-200">Na Mídia</span>
+                                </div>
+                                <i x-show="sidebarOpen || mobileMenuOpen" class="fas fa-chevron-down text-xs transition-transform duration-200 ml-2" :class="mediaOpen ? 'rotate-180' : ''"></i>
+                            </button>
+                            <div x-show="(sidebarOpen || mobileMenuOpen) && mediaOpen" class="ml-6 space-y-1 rounded-lg p-2" style="background-color: #510020;">
+                                <a href="{{ route('admin.media.index') }}" 
+                                   @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
+                                    Ver todos
+                                </a>
+                                <a href="{{ route('admin.media-categories.index') }}" 
+                                   @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
+                                   class="block px-3 py-2 text-sm text-white hover:bg-primary-600 rounded transition-colors duration-200">
+                                    Categorias
+                                </a>
+                            </div>
+                        </div>
+
                         <!-- Training -->
                         <div class="space-y-1" x-data="{ trainingOpen: false }">
                             <button @click="trainingOpen = !trainingOpen" 

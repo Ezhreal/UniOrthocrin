@@ -8,6 +8,7 @@ use App\Models\ProductPermission;
 use App\Models\TrainingPermission;
 use App\Models\NewsPermission;
 use App\Models\LibraryPermission;
+use App\Models\MediaPermission;
 
 class NotificationService
 {
@@ -114,6 +115,32 @@ class NotificationService
             'target_ids' => $targetIds,
             'related_type' => 'App\Models\Library',
             'related_id' => $libraryId,
+        ]);
+    }
+
+    /**
+     * Cria notificação para usuários com permissão de visualizar uma mídia
+     */
+    public static function notifyNewMedia($mediaId, $mediaName)
+    {
+        $userTypeIds = MediaPermission::where('media_id', $mediaId)
+            ->where('can_view', true)
+            ->pluck('user_type_id')
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $targetType = empty($userTypeIds) ? 'all' : 'user_types';
+        $targetIds = empty($userTypeIds) ? null : $userTypeIds;
+
+        Notification::create([
+            'title' => 'Novo Material Na Mídia Disponível',
+            'message' => "Um novo material foi adicionado em Na Mídia: {$mediaName}",
+            'type' => 'info',
+            'target_type' => $targetType,
+            'target_ids' => $targetIds,
+            'related_type' => 'App\Models\Media',
+            'related_id' => $mediaId,
         ]);
     }
 
