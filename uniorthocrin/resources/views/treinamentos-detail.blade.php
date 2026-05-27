@@ -8,7 +8,7 @@
             <div class="text-white">
                 <div class="text-sm mb-2">
                     <a href="{{ route('home') }}" class="hover:underline">Home</a> > 
-                    <a href="{{ route('treinamentos.list') }}" class="hover:underline">Treinamentos</a> > 
+                    <a href="{{ route('treinamentos.list', ['profile_slug' => session('active_profile_slug')]) }}" class="hover:underline">Treinamentos</a> > 
                     {{ $training->name }}
                 </div>
                 <h1 class="text-3xl font-bold">{{ $training->name }}</h1>
@@ -254,7 +254,7 @@
                             <div class="text-gray-500 text-sm mb-2">{{ $otherTraining->category->name ?? 'Sem categoria' }}</div>
                         </div>
                         <div class="flex justify-between items-center mt-2">
-                            <a href="{{ route('treinamentos.detail', $otherTraining->id) }}" class="flex items-center gap-1 text-[#910039] text-xs">
+                            <a href="{{ route('treinamentos.detail', ['profile_slug' => session('active_profile_slug'), 'id' => $otherTraining->id]) }}" class="flex items-center gap-1 text-[#910039] text-xs">
                                 <i class="fa-regular fa-eye"></i>
                                 Detalhes
                             </a>

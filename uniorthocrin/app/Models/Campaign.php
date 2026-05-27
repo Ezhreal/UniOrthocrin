@@ -234,15 +234,17 @@ class Campaign extends Model
     /**
      * Verificar se a campanha pode ser baixada pelo usuário
      */
-    public function canBeDownloadedBy(User $user): bool
+    public function canBeDownloadedBy(User $user, ?int $activeProfileId = null): bool
     {
+        $profileId = $activeProfileId ?? session('active_profile_id') ?? $user->user_type_id;
+
         // Apenas Admin (ID 1) e Franqueado (ID 2) podem baixar campanhas
-        if (!in_array($user->user_type_id, [1, 2])) {
+        if (!in_array($profileId, [1, 2])) {
             return false;
         }
 
         // Se for Franqueado, só pode baixar campanhas visíveis para franqueados
-        if ($user->user_type_id === 2 && !$this->visible_franchise_only) {
+        if ($profileId === 2 && !$this->visible_franchise_only) {
             return false;
         }
 

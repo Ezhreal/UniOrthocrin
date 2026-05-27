@@ -9,6 +9,7 @@ class UserType extends Model
 {
     protected $fillable = [
         'name',
+        'slug',
         'description',
         'level',
         'status'

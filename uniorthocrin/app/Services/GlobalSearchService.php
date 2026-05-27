@@ -43,9 +43,11 @@ class GlobalSearchService
         }
 
         $results = collect();
+        $profileSlug = session('active_profile_slug', 'home');
+        $userTypeId = session('active_profile')->id ?? $user->user_type_id;
 
         // Marketing (apenas user_type 1 e 2)
-        if (in_array($user->user_type_id, [1, 2])) {
+        if (in_array($userTypeId, [1, 2])) {
             $campaigns = $this->campaignRepository->searchCampaigns($user, $q);
             foreach ($campaigns as $c) {
                 $thumb = $c->getMainThumbnailAttribute();
@@ -53,7 +55,7 @@ class GlobalSearchService
                     'thumbnail_url' => $thumb ? url($thumb) : null,
                     'title' => $c->name,
                     'type_label' => 'Marketing',
-                    'url' => route('marketing.detail', $c->id),
+                    'url' => route('marketing.detail', ['profile_slug' => $profileSlug, 'id' => $c->id]),
                 ]);
             }
         }
@@ -71,7 +73,7 @@ class GlobalSearchService
                 'thumbnail_url' => $thumb,
                 'title' => $p->name,
                 'type_label' => 'Produto',
-                'url' => route('produtos.detail', $p->id),
+                'url' => route('produtos.detail', ['profile_slug' => $profileSlug, 'id' => $p->id]),
             ]);
         }
 
@@ -88,7 +90,7 @@ class GlobalSearchService
                 'thumbnail_url' => $thumb,
                 'title' => $t->name,
                 'type_label' => 'Treinamento',
-                'url' => route('treinamentos.detail', $t->id),
+                'url' => route('treinamentos.detail', ['profile_slug' => $profileSlug, 'id' => $t->id]),
             ]);
         }
 
@@ -105,7 +107,7 @@ class GlobalSearchService
                 'thumbnail_url' => $thumb,
                 'title' => $lib->name,
                 'type_label' => 'Biblioteca',
-                'url' => route('biblioteca.detail', $lib->id),
+                'url' => route('biblioteca.detail', ['profile_slug' => $profileSlug, 'id' => $lib->id]),
             ]);
         }
 
@@ -120,7 +122,7 @@ class GlobalSearchService
                 'thumbnail_url' => $thumb,
                 'title' => $n->title,
                 'type_label' => 'Radar',
-                'url' => route('news.detail', $n->id),
+                'url' => route('news.detail', ['profile_slug' => $profileSlug, 'id' => $n->id]),
             ]);
         }
 

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckPermission
@@ -23,20 +24,24 @@ class CheckPermission
             return redirect()->route('login');
         }
 
+        // Usar o perfil ativo da sessão, com fallback para o perfil do usuário
+        $activeProfile = Session::get('active_profile');
+        $userTypeId = $activeProfile ? $activeProfile->id : $user->user_type_id;
+
         // Admin tem acesso total
-        if ($user->user_type_id === 1) {
+        if ($userTypeId === 1) {
             return $next($request);
         }
 
         // Verificar permissão específica se fornecida
         if ($permission) {
-            if (!$this->hasPermission($user, $permission, $resource, $request)) {
+            if (!$this->hasPermission($user, $userTypeId, $permission, $resource, $request)) {
                 abort(403, 'Acesso negado. Você não tem permissão para acessar este recurso.');
             }
         }
 
         // Verificar acesso baseado no tipo de usuário
-        if (!$this->canAccessResource($user, $request)) {
+        if (!$this->canAccessResource($user, $userTypeId, $request)) {
             abort(403, 'Acesso negado. Seu tipo de usuário não tem acesso a este recurso.');
         }
 
@@ -46,7 +51,7 @@ class CheckPermission
     /**
      * Verifica se o usuário tem uma permissão específica
      */
-    protected function hasPermission($user, string $permission, string $resource = null, Request $request = null): bool
+    protected function hasPermission($user, $userTypeId, string $permission, string $resource = null, Request $request = null): bool
     {
         // Verificar permissões do Spatie se disponível
         if (method_exists($user, 'hasPermissionTo')) {
@@ -55,7 +60,7 @@ class CheckPermission
 
         // Verificar permissões customizadas baseadas no recurso
         if ($resource && $request) {
-            return $this->checkResourcePermission($user, $permission, $resource, $request);
+            return $this->checkResourcePermission($user, $userTypeId, $permission, $resource, $request);
         }
 
         return false;
@@ -64,11 +69,10 @@ class CheckPermission
     /**
      * Verifica acesso baseado no tipo de usuário
      */
-    protected function canAccessResource($user, Request $request): bool
+    protected function canAccessResource($user, $userTypeId, Request $request): bool
     {
         $route = $request->route();
         $routeName = $route ? $route->getName() : null;
-        $userTypeId = $user->user_type_id;
 
         // Mapeamento de rotas por tipo de usuário
         $accessMap = [
@@ -133,7 +137,7 @@ class CheckPermission
     /**
      * Verifica permissão específica de recurso
      */
-    protected function checkResourcePermission($user, string $permission, string $resource, Request $request): bool
+    protected function checkResourcePermission($user, $userTypeId, string $permission, string $resource, Request $request): bool
     {
         $resourceId = $request->route($resource);
         
@@ -157,7 +161,7 @@ class CheckPermission
             return false;
         }
 
-        return $resourceModel->hasPermission($user->user_type_id, $permission);
+        return $resourceModel->hasPermission($userTypeId, $permission);
     }
 
     /**

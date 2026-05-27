@@ -17,10 +17,12 @@ class TrainingRepository implements RepositoryInterface
 
     public function getLatestForUser(User $user, $limit = 3)
     {
+        $userTypeId = session('active_profile_id') ?? $user->user_type_id;
+        
         return $this->model->active()
             ->with(['category', 'files'])
-            ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+            ->whereHas('permissions', function($q) use ($userTypeId) {
+                $q->where('user_type_id', $userTypeId)
                   ->where('can_view', true);
             })
             ->latest('id')
@@ -30,10 +32,12 @@ class TrainingRepository implements RepositoryInterface
 
     public function getAllForUser(User $user)
     {
+        $userTypeId = session('active_profile_id') ?? $user->user_type_id;
+
         return $this->model->active()
             ->with(['category', 'files'])
-            ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+            ->whereHas('permissions', function($q) use ($userTypeId) {
+                $q->where('user_type_id', $userTypeId)
                   ->where('can_view', true);
             })
             ->get();
@@ -41,11 +45,13 @@ class TrainingRepository implements RepositoryInterface
 
     public function findByIdForUser($id, User $user)
     {
+        $userTypeId = session('active_profile_id') ?? $user->user_type_id;
+
         return $this->model->active()
             ->with(['category', 'files'])
             ->where('id', $id)
-            ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+            ->whereHas('permissions', function($q) use ($userTypeId) {
+                $q->where('user_type_id', $userTypeId)
                   ->where('can_view', true);
             })
             ->firstOrFail();
@@ -53,10 +59,12 @@ class TrainingRepository implements RepositoryInterface
 
     public function getFilteredForUser(User $user, array $filters = [])
     {
+        $userTypeId = session('active_profile_id') ?? $user->user_type_id;
+
         $query = $this->model->active()
             ->with(['category', 'files'])
-            ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+            ->whereHas('permissions', function($q) use ($userTypeId) {
+                $q->where('user_type_id', $userTypeId)
                   ->where('can_view', true);
             });
 

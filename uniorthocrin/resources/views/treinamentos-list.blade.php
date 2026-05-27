@@ -34,7 +34,7 @@
                                 <div class="text-gray-500 text-sm mb-2">{{ $training->category->name ?? 'Sem categoria' }}</div>
                             </div>
                             <div class="flex justify-between items-center mt-2">
-                                <a href="{{ route('treinamentos.detail', $training->id) }}" class="flex items-center gap-1 text-[#910039] text-xs">
+                                <a href="{{ route('treinamentos.detail', ['profile_slug' => session('active_profile_slug'), 'id' => $training->id]) }}" class="flex items-center gap-1 text-[#910039] text-xs">
                                     <i class="fa-regular fa-eye"></i>
                                     Detalhes
                                 </a>
@@ -87,7 +87,7 @@
                             <div class="text-gray-500 text-sm mb-2">{{ $training->category->name ?? 'Sem categoria' }}</div>
                         </div>
                         <div class="flex justify-between items-center mt-2">
-                            <a href="{{ route('treinamentos.detail', $training->id) }}" class="flex items-center gap-1 text-[#910039] text-xs">
+                            <a href="{{ route('treinamentos.detail', ['profile_slug' => session('active_profile_slug'), 'id' => $training->id]) }}" class="flex items-center gap-1 text-[#910039] text-xs">
                                 <i class="fa-regular fa-eye"></i>
                                 Detalhes
                             </a>

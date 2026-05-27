@@ -8,12 +8,12 @@
             <div class="text-white">
                 <div class="text-sm mb-2">
                     <a href="{{ route('home') }}" class="hover:underline">Home</a> > 
-                    <a href="{{ route('media.list', ['profile_slug' => session('active_profile_slug')]) }}" class="hover:underline">Na Mídia</a> > 
-                    {{ $mediaItem->name }}
+                    <a href="{{ route('biblioteca.list', ['profile_slug' => session('active_profile_slug')]) }}" class="hover:underline">Biblioteca</a> > 
+                    {{ $document->name }}
                 </div>
-                <h1 class="text-3xl font-bold">{{ $mediaItem->name }}</h1>
-                @if($mediaItem->category)
-                    <p class="text-lg mt-2">{{ $mediaItem->category->name }}</p>
+                <h1 class="text-3xl font-bold">{{ $document->name }}</h1>
+                @if($document->category)
+                    <p class="text-lg mt-2">{{ $document->category->name }}</p>
                 @endif
             </div>
         </div>
@@ -25,8 +25,8 @@
             <!-- Descrição -->
             <div class="mb-6">
                 <h3 class="text-[#910039] font-bold text-lg mb-2">Descrição</h3>
-                @if($mediaItem->description)
-                    <p class="text-gray-700 leading-relaxed">{{ $mediaItem->description }}</p>
+                @if($document->description)
+                    <p class="text-gray-700 leading-relaxed">{{ $document->description }}</p>
                 @else
                     <p class="text-gray-500 italic">Nenhuma descrição disponível.</p>
                 @endif
@@ -36,21 +36,21 @@
             <div class="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-6">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-calendar text-[#910039]"></i>
-                    <span>Publicado: <strong>{{ $mediaItem->created_at->format('d/m/Y') }}</strong></span>
+                    <span>Publicado: <strong>{{ $document->created_at->format('d/m/Y') }}</strong></span>
                 </div>
                 <div class="flex items-center gap-2">
                     <i class="fas fa-hdd text-[#910039]"></i>
-                    <span><strong>{{ number_format($mediaItem->files->sum('size') / 1024 / 1024, 2) }} MB</strong> de arquivos</span>
+                    <span><strong>{{ number_format($document->files->sum('size') / 1024 / 1024, 2) }} MB</strong> de arquivos</span>
                 </div>
             </div>
             
-            @if($mediaItem->files->count() > 0 && $mediaItem->canBeDownloadedBy(auth()->user()))
+            @if($document->files->count() > 0 && $document->canBeDownloadedBy(auth()->user()))
             <!-- Botão Download Geral -->
             <div class="pt-4 border-t border-gray-200">
                 <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="w-full">
                     @csrf
-                    <input type="hidden" name="content_type" value="media">
-                    <input type="hidden" name="content_id" value="{{ $mediaItem->id }}">
+                    <input type="hidden" name="content_type" value="library">
+                    <input type="hidden" name="content_id" value="{{ $document->id }}">
                     <input type="hidden" name="type" value="all">
                     <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-[#910039] text-white rounded hover:bg-[#7A0030] transition text-sm font-semibold">
                         <i class="fa-solid fa-download"></i>
@@ -63,10 +63,10 @@
 
         <!-- Lista de Arquivos -->
         <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h2 class="text-[#910039] text-2xl font-bold mb-6">Arquivos do Item</h2>
+            <h2 class="text-[#910039] text-2xl font-bold mb-6">Arquivos do Documento</h2>
             
             <div class="divide-y divide-gray-100">
-                @forelse($mediaItem->files as $file)
+                @forelse($document->files as $file)
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 gap-4">
                     <div class="flex items-start gap-3">
                         @if($file->isPdf())
@@ -97,7 +97,7 @@
                         </a>
                         @endif
                         
-                        @if($mediaItem->canBeDownloadedBy(auth()->user()))
+                        @if($document->canBeDownloadedBy(auth()->user()))
                         <a href="{{ $file->url }}" 
                            download="{{ $file->name }}"
                            class="inline-flex items-center gap-1 text-[#910039] hover:underline text-sm font-semibold">
@@ -108,7 +108,7 @@
                 </div>
                 @empty
                 <div class="text-center text-gray-500 py-8">
-                    <p>Nenhum arquivo disponível neste item.</p>
+                    <p>Nenhum arquivo disponível neste documento.</p>
                 </div>
                 @endforelse
             </div>

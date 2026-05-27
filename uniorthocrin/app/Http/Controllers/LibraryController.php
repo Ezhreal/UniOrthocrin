@@ -14,7 +14,7 @@ class LibraryController extends Controller
         $this->libraryService = $libraryService;
     }
 
-    public function index(Request $request)
+    public function index($profile_slug, Request $request)
     {
         $user = $request->user();
         $filters = $request->only(['search', 'category_id']);
@@ -30,10 +30,10 @@ class LibraryController extends Controller
         }
     }
 
-    public function show($id, Request $request)
+    public function show($profile_slug, $id, Request $request)
     {
         $user = $request->user();
         $document = $this->libraryService->getDocumentById($id, $user);
-        return view('library-detail', compact('document'));
+        return view('biblioteca-detail', compact('document'));
     }
 } 

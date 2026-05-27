@@ -14,7 +14,7 @@ class MediaController extends Controller
         $this->mediaService = $mediaService;
     }
 
-    public function index(Request $request)
+    public function index($profile_slug, Request $request)
     {
         $user = $request->user();
         $filters = $request->only(['search', 'category_id']);
@@ -30,7 +30,7 @@ class MediaController extends Controller
         }
     }
 
-    public function show($id, Request $request)
+    public function show($profile_slug, $id, Request $request)
     {
         $user = $request->user();
         $mediaItem = $this->mediaService->getMediaById($id, $user);

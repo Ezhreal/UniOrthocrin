@@ -12,6 +12,23 @@
     @livewireStyles
 </head>
 <body class="bg-background min-h-screen">
+    <!-- Admin View Indicator -->
+    @if(auth()->check() && auth()->user()->isAdmin())
+        <div class="bg-[#910039] text-white px-6 py-2 text-sm font-medium flex flex-wrap items-center justify-between sticky top-0 z-[60] border-b border-[#7a0030]">
+            <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center justify-center h-5 w-5 rounded-full bg-white/20 text-white">
+                    <i class="fas fa-eye text-xs"></i>
+                </span>
+                <span>Perfil: <strong class="text-white uppercase font-bold">{{ session('active_profile')->name ?? '' }}</strong></span>
+            </div>
+            <div class="flex items-center space-x-3 mt-2 sm:mt-0">
+                <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-3 py-1 bg-white hover:bg-gray-100 text-[#910039] text-xs font-bold rounded transition-colors">
+                    <i class="fas fa-arrow-left mr-1.5 text-[10px]"></i> Painel Admin
+                </a>
+            </div>
+        </div>
+    @endif
+
     @include('components.header')
     
     <!-- Alerta de Download -->

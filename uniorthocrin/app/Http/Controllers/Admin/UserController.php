@@ -16,7 +16,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('userType');
+        $query = User::with(['userType', 'profiles']);
 
         if ($search = $request->get('search')) {
             $query->where('name', 'like', '%' . $search . '%')
@@ -24,7 +24,9 @@ class UserController extends Controller
         }
 
         if ($userType = $request->get('user_type')) {
-            $query->where('user_type_id', $userType);
+            $query->whereHas('profiles', function($q) use ($userType) {
+                $q->where('user_types.id', $userType);
+            });
         }
 
         if ($status = $request->get('status')) {
@@ -49,16 +51,19 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'user_type_id' => 'required|exists:user_types,id',
+            'user_type_ids' => 'required|array|min:1',
+            'user_type_ids.*' => 'exists:user_types,id',
+            'primary_user_type_id' => 'required|exists:user_types,id',
             'status' => 'required|in:active,inactive',
         ];
 
-        $userTypeId = (int) $request->user_type_id;
+        // Verificar se algum perfil empresarial foi selecionado
+        $hasBusinessProfile = collect($request->user_type_ids)->intersect([2, 3, 4])->isNotEmpty();
 
-        if (in_array($userTypeId, [2, 3, 4], true)) {
+        if ($hasBusinessProfile) {
             $validationRules['razao_social'] = 'nullable|string|max:255';
             $validationRules['nome_fantasia'] = 'nullable|string|max:255';
-            $validationRules['cnpj'] = 'nullable|string|max:20';
+            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
         }
 
         $request->validate($validationRules);
@@ -67,33 +72,35 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'user_type_id' => $userTypeId,
+            'user_type_id' => $request->primary_user_type_id,
             'status' => $request->status,
         ];
 
-        if (in_array($userTypeId, [2, 3, 4], true)) {
+        if ($hasBusinessProfile) {
             $userData['razao_social'] = $request->input('razao_social');
             $userData['nome_fantasia'] = $request->input('nome_fantasia');
-            $userData['cnpj'] = $request->input('cnpj');
-            $userData['representante_nome'] = null;
-            $userData['cpf_cnpj'] = null;
+            $userData['cpf_cnpj'] = $request->input('cpf_cnpj');
         }
 
-        User::create($userData);
+        $user = User::create($userData);
+        
+        // Sincronizar perfis na pivot
+        $user->profiles()->sync($request->user_type_ids);
 
         return redirect()->route('admin.users.index')->with('success', 'Usuário criado com sucesso!');
     }
 
     public function show(User $user)
     {
-        $user->load('userType');
+        $user->load(['userType', 'profiles']);
         return view('admin.users.show', compact('user'));
     }
 
     public function edit(User $user)
     {
         $userTypes = UserType::orderBy('name')->get();
-        return view('admin.users.edit', compact('user', 'userTypes'));
+        $userProfiles = $user->profiles->pluck('id')->toArray();
+        return view('admin.users.edit', compact('user', 'userTypes', 'userProfiles'));
     }
 
     public function update(Request $request, User $user)
@@ -102,16 +109,18 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
-            'user_type_id' => 'required|exists:user_types,id',
+            'user_type_ids' => 'required|array|min:1',
+            'user_type_ids.*' => 'exists:user_types,id',
+            'primary_user_type_id' => 'required|exists:user_types,id',
             'status' => 'required|in:active,inactive',
         ];
 
-        $userTypeId = (int) $request->user_type_id;
+        $hasBusinessProfile = collect($request->user_type_ids)->intersect([2, 3, 4])->isNotEmpty();
 
-        if (in_array($userTypeId, [2, 3, 4], true)) {
+        if ($hasBusinessProfile) {
             $validationRules['razao_social'] = 'nullable|string|max:255';
             $validationRules['nome_fantasia'] = 'nullable|string|max:255';
-            $validationRules['cnpj'] = 'nullable|string|max:20';
+            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
         }
 
         $request->validate($validationRules);
@@ -119,21 +128,17 @@ class UserController extends Controller
         $data = [
             'name' => $request->name,
             'email' => $request->email,
-            'user_type_id' => $userTypeId,
+            'user_type_id' => $request->primary_user_type_id,
             'status' => $request->status,
         ];
 
-        if (in_array($userTypeId, [2, 3, 4], true)) {
+        if ($hasBusinessProfile) {
             $data['razao_social'] = $request->input('razao_social');
             $data['nome_fantasia'] = $request->input('nome_fantasia');
-            $data['cnpj'] = $request->input('cnpj');
-            $data['representante_nome'] = null;
-            $data['cpf_cnpj'] = null;
+            $data['cpf_cnpj'] = $request->input('cpf_cnpj');
         } else {
             $data['razao_social'] = null;
             $data['nome_fantasia'] = null;
-            $data['cnpj'] = null;
-            $data['representante_nome'] = null;
             $data['cpf_cnpj'] = null;
         }
 
@@ -142,6 +147,9 @@ class UserController extends Controller
         }
 
         $user->update($data);
+        
+        // Sincronizar perfis na pivot
+        $user->profiles()->sync($request->user_type_ids);
 
         return redirect()->route('admin.users.index')->with('success', 'Usuário atualizado com sucesso!');
     }
@@ -169,7 +177,7 @@ class UserController extends Controller
         if (in_array($user->user_type_id, [2, 3, 4], true)) {
             $validationRules['razao_social'] = 'nullable|string|max:255';
             $validationRules['nome_fantasia'] = 'nullable|string|max:255';
-            $validationRules['cnpj'] = 'nullable|string|max:20';
+            $validationRules['cpf_cnpj'] = 'nullable|string|max:20';
         }
 
         $validated = $request->validate($validationRules);
@@ -181,9 +189,7 @@ class UserController extends Controller
         if (in_array($user->user_type_id, [2, 3, 4], true)) {
             $data['razao_social'] = $request->input('razao_social');
             $data['nome_fantasia'] = $request->input('nome_fantasia');
-            $data['cnpj'] = $request->input('cnpj');
-            $data['representante_nome'] = null;
-            $data['cpf_cnpj'] = null;
+            $data['cpf_cnpj'] = $request->input('cpf_cnpj');
         }
 
         $user->update($data);

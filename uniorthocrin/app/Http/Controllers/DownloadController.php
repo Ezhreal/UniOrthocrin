@@ -15,9 +15,17 @@ use App\Models\Library;
 use App\Models\News;
 use App\Models\Media;
 use App\Models\UserView;
+use App\Services\ProfileService;
 
 class DownloadController extends Controller
 {
+    protected $profileService;
+
+    public function __construct(ProfileService $profileService)
+    {
+        $this->profileService = $profileService;
+    }
+
     public function download(Request $request)
     {
         Log::info('=== INÍCIO DO DOWNLOAD ===');
@@ -180,9 +188,11 @@ class DownloadController extends Controller
             $zipPath = $this->createSimpleZip($files, $contentType . '_' . $contentId . '_imagens');
             Log::info('ZIP criado', ['path' => $zipPath]);
             
+                $slug = session('active_profile_slug');
+                $prefix = $slug ? '/' . $slug : '';
                 $response = response()->json([
                    'success' => true,
-                   'downloadUrl' => url('/private/' . str_replace('private/', '', $zipPath)),
+                   'downloadUrl' => url($prefix . '/private/' . str_replace('private/', '', $zipPath)),
                    'filename' => $contentType . '_' . $content->name . '_imagens.zip'
                ]);
             
@@ -219,9 +229,11 @@ class DownloadController extends Controller
             $zipPath = $this->createSimpleZip($files, $contentType . '_' . $contentId . '_videos');
             Log::info('ZIP criado', ['path' => $zipPath]);
             
+            $slug = session('active_profile_slug');
+            $prefix = $slug ? '/' . $slug : '';
             $response = response()->json([
                 'success' => true,
-                'downloadUrl' => url('/private/' . str_replace('private/', '', $zipPath)),
+                'downloadUrl' => url($prefix . '/private/' . str_replace('private/', '', $zipPath)),
                 'filename' => $contentType . '_' . $content->name . '_videos.zip'
             ]);
             
@@ -256,9 +268,11 @@ class DownloadController extends Controller
             $zipPath = $this->createSimpleZip($files, $contentType . '_' . $contentId . '_pdfs');
             Log::info('ZIP criado', ['path' => $zipPath]);
             
+            $slug = session('active_profile_slug');
+            $prefix = $slug ? '/' . $slug : '';
             $response = response()->json([
                 'success' => true,
-                'downloadUrl' => url('/private/' . str_replace('private/', '', $zipPath)),
+                'downloadUrl' => url($prefix . '/private/' . str_replace('private/', '', $zipPath)),
                 'filename' => $contentType . '_' . $content->name . '_pdfs.zip'
             ]);
             
@@ -285,9 +299,11 @@ class DownloadController extends Controller
         
         $zipPath = $this->createZipFromFiles($files, $contentType . '_' . $contentId . '_completo');
         
+        $slug = session('active_profile_slug');
+        $prefix = $slug ? '/' . $slug : '';
         return response()->json([
             'success' => true,
-            'downloadUrl' => url("/private/" . str_replace('private/', '', $zipPath)),
+            'downloadUrl' => url($prefix . "/private/" . str_replace('private/', '', $zipPath)),
             'filename' => $contentType . '_' . $content->name . '_completo.zip'
         ]);
     }
@@ -489,11 +505,13 @@ class DownloadController extends Controller
         $categoryId = $request->input('category_id');
         $search = $request->input('search');
         
+        $activeProfileId = $this->profileService->getActiveProfile()->id;
+
         // Buscar produtos com os mesmos filtros da lista
         $query = Product::active()
             ->with(['category', 'series', 'mainFile'])
-            ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+            ->whereHas('permissions', function($q) use ($activeProfileId) {
+                $q->where('user_type_id', $activeProfileId)
                   ->where('can_view', true);
             });
 
@@ -528,9 +546,11 @@ class DownloadController extends Controller
         
         $zipPath = $this->createZipFromFiles($allFiles, 'todos_produtos_' . time());
         
+        $slug = session('active_profile_slug');
+        $prefix = $slug ? '/' . $slug : '';
         return response()->json([
             'success' => true,
-            'downloadUrl' => url("/private/" . str_replace('private/', '', $zipPath)),
+            'downloadUrl' => url($prefix . "/private/" . str_replace('private/', '', $zipPath)),
             'filename' => 'todos_produtos.zip'
         ]);
     }
@@ -568,9 +588,11 @@ class DownloadController extends Controller
         
         $zipPath = $this->createZipFromFiles($files, 'galeria_imagens');
         
+        $slug = session('active_profile_slug');
+        $prefix = $slug ? '/' . $slug : '';
         return response()->json([
             'success' => true,
-            'downloadUrl' => url("/private/" . str_replace('private/', '', $zipPath)),
+            'downloadUrl' => url($prefix . "/private/" . str_replace('private/', '', $zipPath)),
             'filename' => 'galeria_imagens.zip'
         ]);
     }
@@ -586,9 +608,11 @@ class DownloadController extends Controller
         
         $zipPath = $this->createZipFromFiles($files, 'galeria_videos');
         
+        $slug = session('active_profile_slug');
+        $prefix = $slug ? '/' . $slug : '';
         return response()->json([
             'success' => true,
-            'downloadUrl' => url("/private/" . str_replace('private/', '', $zipPath)),
+            'downloadUrl' => url($prefix . "/private/" . str_replace('private/', '', $zipPath)),
             'filename' => 'galeria_videos.zip'
         ]);
     }
@@ -810,42 +834,51 @@ class DownloadController extends Controller
     private function checkDownloadPermissions($contentId, $contentType)
     {
         $user = auth()->user();
+        $activeProfile = $this->profileService->getActiveProfile();
+
+        if (!$activeProfile) {
+            return false;
+        }
         
+        $activeProfileId = $activeProfile->id;
+
         switch ($contentType) {
             case 'product':
                 $product = Product::find($contentId);
-                return $product && $product->canBeDownloadedBy($user);
+                return $product && $product->canBeDownloadedBy($user, $activeProfileId);
                 
             case 'training':
                 $training = Training::find($contentId);
-                return $training && $training->canBeDownloadedBy($user);
+                return $training && $training->canBeDownloadedBy($user, $activeProfileId);
                 
             case 'library':
                 $library = Library::find($contentId);
-                return $library && $library->canBeDownloadedBy($user);
+                return $library && $library->canBeDownloadedBy($user, $activeProfileId);
                 
             case 'marketing':
                 $campaign = Campaign::find($contentId);
                 if (!$campaign) return false;
+
+                // Admin (ID 1) and Franqueado (ID 2) can download marketing
+                if (!in_array($activeProfileId, [1, 2])) return false;
                 
-                // Apenas Admin (ID 1) e Franqueado (ID 2) podem baixar marketing
-                if (!in_array($user->user_type_id, [1, 2])) return false;
+                // Admin can download everything
+                if ($activeProfileId == 1) return true;
                 
-                // Admin pode baixar tudo
-                if ($user->user_type_id == 1) return true;
-                
-                // Franqueado pode baixar campanhas exclusivas para franqueados
-                if ($user->user_type_id == 2 && $campaign->visible_franchise_only) return true;
+                // Franqueado can download campaigns not exclusive to representatives
+                if ($activeProfileId == 2) {
+                    return true;
+                }
                 
                 return false;
                 
             case 'news':
                 $news = News::find($contentId);
-                return $news && $news->canBeDownloadedBy($user);
+                return $news && $news->canBeDownloadedBy($user, $activeProfileId);
                 
             case 'media':
                 $media = Media::find($contentId);
-                return $media && $media->canBeDownloadedBy($user);
+                return $media && $media->canBeDownloadedBy($user, $activeProfileId);
                 
             default:
                 return false;

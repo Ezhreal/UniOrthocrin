@@ -92,13 +92,25 @@ class AuthController extends Controller
             'user_type_id' => $user->user_type_id ?? 'N/A',
             'email' => $user->email
         ]);
-        
-        if ((int) ($user->user_type_id ?? 0) === 1) {
-            Log::info('Redirecionando admin para /admin', ['user_id' => $user->id]);
+
+        // Se for Admin, redireciona sempre para o Painel Administrativo fixo
+        if ($user->isAdmin()) {
+            // Inicializar a sessão do admin
+            $profileService = app(\App\Services\ProfileService::class);
+            $profileService->initActiveProfile();
+            
             return redirect()->route('admin.dashboard');
         }
+
+        // Para outros usuários, inicializa o perfil e redireciona para a visão dinâmica
+        $profileService = app(\App\Services\ProfileService::class);
+        $profile = $profileService->getActiveProfile();
+
+        if ($profile) {
+            return redirect()->route('profile.index', ['profile_slug' => $profile->slug]);
+        }
         
-        Log::info('Redirecionando usuário para home', ['user_id' => $user->id]);
+        // Redirecionamento fallback caso algo falhe
         return redirect()->route('home');
     }
 }

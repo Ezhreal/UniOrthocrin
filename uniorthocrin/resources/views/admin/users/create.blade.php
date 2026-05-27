@@ -21,7 +21,7 @@
     <!-- Modern Form -->
     <form method="POST" action="{{ route('admin.users.store') }}" class="space-modern">
         @csrf
-        
+
         <!-- Basic Information Card -->
         <div class="modern-card hover-modern-lift">
             <div class="modern-card-header">
@@ -82,7 +82,7 @@
             </div>
         </div>
 
-        <!-- Profile and Status Card -->
+        <!-- Multi-Profile and Status Card -->
         <div class="modern-card hover-modern-lift">
             <div class="modern-card-header">
                 <div class="flex items-center space-x-3">
@@ -90,40 +90,65 @@
                         <i class="fas fa-id-card text-secondary-500"></i>
                     </div>
                     <div>
-                        <h3 class="modern-card-title">Perfil e Status</h3>
-                        <p class="modern-card-subtitle">Defina o perfil e status do usuário</p>
+                        <h3 class="modern-card-title">Perfis e Status</h3>
+                        <p class="modern-card-subtitle">Defina os perfis e status do usuário</p>
                     </div>
                 </div>
             </div>
             <div class="space-modern-sm">
-                <div class="grid-modern grid-modern-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        <label for="user_type_id" class="form-label-modern">Perfil *</label>
-                        <select id="user_type_id" name="user_type_id" required
-                                class="form-select-modern @error('user_type_id') border-error-500 @enderror">
-                            <option value="">Selecione um perfil</option>
+                        <label class="form-label-modern mb-3 block font-bold">Atribuir Perfis *</label>
+                        <div class="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
                             @foreach($userTypes as $userType)
-                                <option value="{{ $userType->id }}" {{ old('user_type_id') == $userType->id ? 'selected' : '' }}>
-                                    {{ $userType->name }}
-                                </option>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="profile_{{ $userType->id }}" name="user_type_ids[]" value="{{ $userType->id }}" 
+                                           class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 profile-checkbox"
+                                           {{ is_array(old('user_type_ids')) && in_array($userType->id, old('user_type_ids')) ? 'checked' : '' }}
+                                           onchange="updatePrimaryOptions()">
+                                    <label for="profile_{{ $userType->id }}" class="ml-3 text-sm font-medium text-gray-700 cursor-pointer">
+                                        {{ $userType->name }}
+                                    </label>
+                                </div>
                             @endforeach
-                        </select>
-                        @error('user_type_id')
+                        </div>
+                        @error('user_type_ids')
                             <p class="form-error-modern">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="status" class="form-label-modern">Status *</label>
-                        <select id="status" name="status" required
-                                class="form-select-modern @error('status') border-error-500 @enderror">
-                            <option value="">Selecione o status</option>
-                            <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Ativo</option>
-                            <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inativo</option>
-                        </select>
-                        @error('status')
-                            <p class="form-error-modern">{{ $message }}</p>
-                        @enderror
+                    <div class="space-y-6">
+                        <div>
+                            <label for="primary_user_type_id" class="form-label-modern block font-bold">Perfil Principal/Padrão *</label>
+                            <p class="text-xs text-gray-500 mb-2">Este será o perfil carregado automaticamente após o login.</p>
+                            <select id="primary_user_type_id" name="primary_user_type_id" required
+                                    class="form-select-modern @error('primary_user_type_id') border-error-500 @enderror">
+                                <option value="">Selecione os perfis acima primeiro</option>
+                                @foreach($userTypes as $userType)
+                                    <option value="{{ $userType->id }}" 
+                                            class="primary-option hidden" 
+                                            data-id="{{ $userType->id }}"
+                                            {{ old('primary_user_type_id') == $userType->id ? 'selected' : '' }}>
+                                        {{ $userType->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('primary_user_type_id')
+                                <p class="form-error-modern">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="status" class="form-label-modern block font-bold">Status da Conta *</label>
+                            <select id="status" name="status" required
+                                    class="form-select-modern @error('status') border-error-500 @enderror">
+                                <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Ativo</option>
+                                <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inativo</option>
+                            </select>
+                            @error('status')
+                                <p class="form-error-modern">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
             </div>
@@ -165,11 +190,11 @@
                 </div>
 
                 <div>
-                    <label for="cnpj" class="form-label-modern">CNPJ da empresa (opcional)</label>
-                    <input type="text" id="cnpj" name="cnpj" value="{{ old('cnpj') }}"
-                           class="form-input-modern @error('cnpj') border-error-500 @enderror"
+                    <label for="cpf_cnpj" class="form-label-modern">CNPJ da empresa (opcional)</label>
+                    <input type="text" id="cpf_cnpj" name="cpf_cnpj" value="{{ old('cpf_cnpj') }}"
+                           class="form-input-modern @error('cpf_cnpj') border-error-500 @enderror"
                            placeholder="CNPJ">
-                    @error('cnpj')
+                    @error('cpf_cnpj')
                         <p class="form-error-modern">{{ $message }}</p>
                     @enderror
                 </div>
@@ -192,33 +217,55 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const userTypeSelect = document.getElementById('user_type_id');
+function updatePrimaryOptions() {
+    const checkboxes = document.querySelectorAll('.profile-checkbox');
+    const primarySelect = document.getElementById('primary_user_type_id');
+    const primaryOptions = document.querySelectorAll('.primary-option');
     const companyInfoCard = document.getElementById('company-info-card');
-    
-    function toggleFields() {
-        const userTypeId = userTypeSelect.value;
-        
-        companyInfoCard.style.display = 'none';
-        
-        const companyFields = companyInfoCard.querySelectorAll('input');
-        
-        companyFields.forEach(field => {
-            field.disabled = true;
-            field.value = '';
-        });
-        
-        if (userTypeId == 2 || userTypeId == 3 || userTypeId == 4) {
-            companyInfoCard.style.display = 'block';
-            companyFields.forEach(field => { field.disabled = false; });
+    const companyFields = companyInfoCard.querySelectorAll('input');
+
+    let anyChecked = false;
+    let businessChecked = false;
+
+    primaryOptions.forEach(option => {
+        const id = option.dataset.id;
+        const checkbox = document.getElementById('profile_' + id);
+
+        if (checkbox && checkbox.checked) {
+            option.classList.remove('hidden');
+            anyChecked = true;
+            if ([2, 3, 4].includes(parseInt(id))) {
+                businessChecked = true;
+            }
+        } else {
+            option.classList.add('hidden');
+            if (primarySelect.value == id) {
+                primarySelect.value = '';
+            }
         }
+    });
+
+    if (!anyChecked) {
+        primarySelect.firstElementChild.textContent = 'Selecione os perfis acima primeiro';
+    } else {
+        primarySelect.firstElementChild.textContent = 'Selecione o perfil principal';
     }
-    
-    // Executar na mudança do select
-    userTypeSelect.addEventListener('change', toggleFields);
-    
-    // Executar no carregamento da página se já houver valor selecionado
-    toggleFields();
+
+    // Toggle Company Card
+    if (businessChecked) {
+        companyInfoCard.style.display = 'block';
+        companyFields.forEach(f => f.disabled = false);
+    } else {
+        companyInfoCard.style.display = 'none';
+        companyFields.forEach(f => {
+            f.disabled = true;
+            f.value = '';
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updatePrimaryOptions();
 });
 </script>
 @endsection

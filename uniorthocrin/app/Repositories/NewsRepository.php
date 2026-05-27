@@ -19,11 +19,14 @@ class NewsRepository implements RepositoryInterface
     {
         return $this->model->published()
             ->with(['category', 'mainFile', 'author'])
-            ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
-                  ->where('can_view', true);
+            ->where(function ($q) use ($user) {
+                $q->whereHas('permissions', function ($permissionQuery) use ($user) {
+                    $permissionQuery->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
+                                    ->where('can_view', true);
+                })
+                ->orWhereDoesntHave('permissions');
             })
-            ->orderByDesc('published_at')
+            ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->take($limit)
             ->get();
@@ -33,11 +36,14 @@ class NewsRepository implements RepositoryInterface
     {
         return $this->model->published()
             ->with(['category', 'mainFile', 'author'])
-            ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
-                  ->where('can_view', true);
+            ->where(function ($q) use ($user) {
+                $q->whereHas('permissions', function ($permissionQuery) use ($user) {
+                    $permissionQuery->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
+                                    ->where('can_view', true);
+                })
+                ->orWhereDoesntHave('permissions');
             })
-            ->orderByDesc('published_at')
+            ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get();
     }
@@ -47,9 +53,12 @@ class NewsRepository implements RepositoryInterface
         return $this->model->published()
             ->with(['category', 'mainFile', 'author'])
             ->where('id', $id)
-            ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
-                  ->where('can_view', true);
+            ->where(function ($q) use ($user) {
+                $q->whereHas('permissions', function ($permissionQuery) use ($user) {
+                    $permissionQuery->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
+                                    ->where('can_view', true);
+                })
+                ->orWhereDoesntHave('permissions');
             })
             ->firstOrFail();
     }
@@ -58,9 +67,12 @@ class NewsRepository implements RepositoryInterface
     {
         $query = $this->model->published()
             ->with(['category', 'mainFile', 'author'])
-            ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
-                  ->where('can_view', true);
+            ->where(function ($q) use ($user) {
+                $q->whereHas('permissions', function ($permissionQuery) use ($user) {
+                    $permissionQuery->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
+                                    ->where('can_view', true);
+                })
+                ->orWhereDoesntHave('permissions');
             });
 
         // Filtro por categoria
@@ -81,7 +93,7 @@ class NewsRepository implements RepositoryInterface
         $perPage = $filters['per_page'] ?? 12;
         
         return $query
-            ->orderByDesc('published_at')
+            ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate($perPage);
     }

@@ -20,7 +20,7 @@ class ProductRepository implements RepositoryInterface
         return $this->model->active()
             ->with(['category', 'series', 'files'])
             ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+                $q->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
             })
             ->latest('id')
@@ -32,7 +32,7 @@ class ProductRepository implements RepositoryInterface
     {
         return $this->model->active()
             ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+                $q->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
             })
             ->get();
@@ -43,7 +43,7 @@ class ProductRepository implements RepositoryInterface
         return $this->model->active()
             ->where('id', $id)
             ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+                $q->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
             })
             ->firstOrFail();
@@ -54,7 +54,7 @@ class ProductRepository implements RepositoryInterface
         $query = $this->model->active()
             ->with(['category', 'series', 'files'])
             ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+                $q->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
             });
 
@@ -83,7 +83,7 @@ class ProductRepository implements RepositoryInterface
     {
         return $this->model->active()
             ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+                $q->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
             })
             ->count();

@@ -99,7 +99,7 @@ class Notification extends Model
     public static function forUser(int $userId): \Illuminate\Database\Eloquent\Builder
     {
         $user = User::find($userId);
-        $userTypeId = $user?->user_type_id;
+        $userTypeId = session('active_profile_id') ?? $user?->user_type_id;
 
         return static::where(function ($query) use ($userId, $userTypeId) {
             // Notificações para todos

@@ -213,12 +213,15 @@ class NotificationDropdown extends Component
      */
     protected function getRouteForType($type, $id)
     {
+        $profileSlug = session('active_profile_slug', 'home');
+        
         return match ($type) {
-            'App\Models\Campaign' => "/marketing/{$id}",
-            'App\Models\Product' => "/produtos/{$id}",
-            'App\Models\Training' => "/treinamentos/{$id}",
-            'App\Models\Library' => "/biblioteca/{$id}",
-            'App\Models\News' => "/news/{$id}",
+            'App\Models\Campaign' => "/{$profileSlug}/campanhas/{$id}",
+            'App\Models\Product' => "/{$profileSlug}/produtos/{$id}",
+            'App\Models\Training' => "/{$profileSlug}/treinamentos/{$id}",
+            'App\Models\Library' => "/{$profileSlug}/biblioteca/{$id}",
+            'App\Models\News' => "/{$profileSlug}/radar/{$id}",
+            'App\Models\Media' => "/{$profileSlug}/na-midia/{$id}",
             default => null,
         };
     }

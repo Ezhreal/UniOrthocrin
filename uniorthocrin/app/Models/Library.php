@@ -90,16 +90,18 @@ class Library extends Model
     /**
      * Check if the library item can be downloaded by the given user.
      */
-    public function canBeDownloadedBy(User $user): bool
+    public function canBeDownloadedBy(User $user, ?int $activeProfileId = null): bool
     {
         // Verificar se o item está ativo
         if (!$this->isActive()) {
             return false;
         }
 
+        $profileId = $activeProfileId ?? session('active_profile_id') ?? $user->user_type_id;
+
         // Verificar permissões específicas
         $permission = $this->permissions()
-            ->where('user_type_id', $user->user_type_id)
+            ->where('user_type_id', $profileId)
             ->first();
 
         // Se não há permissão específica, permitir para usuários autenticados

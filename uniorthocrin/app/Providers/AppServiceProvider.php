@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Session;
 use App\Services\UiVisibilityService;
 use App\Repositories\UiVisibilityRepository;
 use App\Models\Product;
@@ -40,6 +42,16 @@ class AppServiceProvider extends ServiceProvider
         Blade::if('canSee', function ($feature) {
             return app(\App\Services\UiVisibilityService::class)->canView($feature);
         });
+
+        // Injetar automaticamente o profile_slug em todas as rotas geradas que possuam este parâmetro.
+        // Isso resolve o problema de links quebrados no front-end de forma global.
+        try {
+            if (Session::has('active_profile_slug')) {
+                URL::defaults(['profile_slug' => Session::get('active_profile_slug')]);
+            }
+        } catch (\Exception $e) {
+            // Sessão pode não estar disponível em console commands
+        }
         
         // Register observers for automatic notifications
         Product::observe(ProductObserver::class);

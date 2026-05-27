@@ -35,6 +35,10 @@
                                 <div class="text-gray-500 text-sm mb-2">{{ $document->category->name ?? 'Sem categoria' }}</div>
                             </div>
                             <div class="flex justify-between items-center mt-2">
+                                <a href="{{ route('biblioteca.detail', ['profile_slug' => session('active_profile_slug'), 'id' => $document->id]) }}" class="flex items-center gap-1 text-[#910039] text-xs">
+                                    <i class="fa-regular fa-eye"></i>
+                                    Detalhes
+                                </a>
                                 @if($document->files->count() > 0 && $document->canBeDownloadedBy(auth()->user()))
                                 <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
                                     @csrf
@@ -85,6 +89,10 @@
                             <div class="text-gray-500 text-sm mb-2">{{ $document->category->name ?? 'Sem categoria' }}</div>
                         </div>
                         <div class="flex justify-between items-center mt-2">
+                            <a href="{{ route('biblioteca.detail', ['profile_slug' => session('active_profile_slug'), 'id' => $document->id]) }}" class="flex items-center gap-1 text-[#910039] text-xs">
+                                <i class="fa-regular fa-eye"></i>
+                                Detalhes
+                            </a>
                             @if($document->files->count() > 0 && $document->canBeDownloadedBy(auth()->user()))
                             <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
                                 @csrf

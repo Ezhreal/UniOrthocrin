@@ -104,6 +104,9 @@ class NewsController extends Controller
         // Handle permissions
         if ($request->has('permissions')) {
             foreach ($request->permissions as $permission) {
+                if ($permission['user_type_id'] == 1) {
+                    continue;
+                }
                 NewsPermission::create([
                     'news_id' => $news->id,
                     'user_type_id' => $permission['user_type_id'],
@@ -198,22 +201,18 @@ class NewsController extends Controller
             }
         }
 
-        // Update permissions (simple sync for now, can be more complex)
-        $news->permissions()->where('user_type_id', '!=', 1)->delete(); // Remove existing (exceto admin)
+        // Update permissions
+        $news->permissions()->delete(); // Delete all permissions first
         if ($request->has('permissions')) {
             foreach ($request->permissions as $permission) {
-                try {
-                    NewsPermission::create([
-                        'news_id' => $news->id,
-                        'user_type_id' => $permission['user_type_id'],
-                        'can_view' => isset($permission['can_view']) ? (bool)$permission['can_view'] : false,
-                    ]);
-                } catch (\Exception $e) {
-                    // Ignorar erro de duplicata (admin já existe)
-                    if (!str_contains($e->getMessage(), 'Duplicate entry')) {
-                        throw $e;
-                    }
+                if ($permission['user_type_id'] == 1) {
+                    continue;
                 }
+                NewsPermission::create([
+                    'news_id' => $news->id,
+                    'user_type_id' => $permission['user_type_id'],
+                    'can_view' => isset($permission['can_view']) ? (bool)$permission['can_view'] : false,
+                ]);
             }
         }
 

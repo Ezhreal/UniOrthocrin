@@ -14,19 +14,19 @@ class MarketingController extends Controller
         $this->campaignService = $campaignService;
     }
 
-    public function index(Request $request)
+    public function index($profile_slug, Request $request)
     {
         $user = $request->user();
         $campaigns = $this->campaignService->getCampaignsForList($user);
-        
+
         return view('marketing-list', compact('campaigns'));
     }
 
-    public function show($id, Request $request)
+    public function show($profile_slug, $id, Request $request)
     {
         $user = $request->user();
         $campaign = $this->campaignService->getCampaignById($id, $user);
-        
+
         // Preparar dados para JavaScript organizados por tipo
         $postsByType = $campaign->posts()->active()->with('files')->get()->groupBy('type')->map(function($posts) {
             return $posts->flatMap(function($post) {
@@ -39,12 +39,12 @@ class MarketingController extends Controller
                 });
             });
         });
-        
+
         $videosByType = $campaign->videos()->active()->with('files')->get()->groupBy('type')->map(function($videos) {
             return $videos->map(function($video) {
                 $videoFile = $video->files->where('type', 'video')->first();
                 $videoThumb = $video->files->where('type', 'image')->first();
-                
+
                 return [
                     'id' => $video->id,
                     'file_id' => $videoFile?->id,
@@ -58,14 +58,14 @@ class MarketingController extends Controller
                 ];
             });
         });
-        
+
         return view('marketing-detail', compact('campaign', 'postsByType', 'videosByType'));
     }
 
     /**
      * Download all files from a campaign as ZIP
      */
-    public function downloadCampaign($id, Request $request)
+    public function downloadCampaign($profile_slug, $id, Request $request)
     {
         // Redirecionar para o DownloadController via POST
         $downloadController = new \App\Http\Controllers\DownloadController();
@@ -80,7 +80,7 @@ class MarketingController extends Controller
     /**
      * Download files by content type
      */
-    public function downloadByType($id, $type, Request $request)
+    public function downloadByType($profile_slug, $id, $type, Request $request)
     {
         // Redirecionar para o DownloadController via POST
         $downloadController = new \App\Http\Controllers\DownloadController();
@@ -92,3 +92,4 @@ class MarketingController extends Controller
         return $downloadController->download($request);
     }
 } 
+ 

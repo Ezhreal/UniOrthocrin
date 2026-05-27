@@ -60,7 +60,7 @@
                                     </div>
                                 </div>
                                 <div class="flex justify-between items-center mt-2">
-                                    <a href="{{ route('produtos.detail', $product->id) }}" class="flex items-center gap-1 text-[#910039] text-xs">
+                                    <a href="{{ route('produtos.detail', ['profile_slug' => session('active_profile_slug'), 'id' => $product->id]) }}" class="flex items-center gap-1 text-[#910039] text-xs">
                                         <i class="fa-regular fa-eye"></i>
                                         Detalhes
                                     </a>

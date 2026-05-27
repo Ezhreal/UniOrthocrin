@@ -20,7 +20,7 @@ class LibraryRepository implements RepositoryInterface
         return $this->model->active()
             ->with(['category', 'files'])
             ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+                $q->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
             })
             ->get();
@@ -32,7 +32,7 @@ class LibraryRepository implements RepositoryInterface
             ->with(['category', 'files'])
             ->where('id', $id)
             ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+                $q->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
             })
             ->firstOrFail();
@@ -43,7 +43,7 @@ class LibraryRepository implements RepositoryInterface
         $query = $this->model->active()
             ->with(['category', 'files'])
             ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+                $q->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
             });
 
@@ -75,7 +75,7 @@ class LibraryRepository implements RepositoryInterface
         $categories = $this->model->active()
             ->with(['category', 'files'])
             ->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+                $q->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
             })
             ->orderBy('name')

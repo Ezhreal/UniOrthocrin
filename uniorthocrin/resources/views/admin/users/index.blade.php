@@ -95,7 +95,16 @@
                             </div>
                         </td>
                         <td>
-                            <span class="badge-modern badge-modern-primary">{{ $user->userType->name ?? 'Sem perfil' }}</span>
+                            <div class="flex flex-wrap gap-1">
+                                @foreach($user->profiles as $profile)
+                                    <span class="badge-modern {{ $profile->id == 1 ? 'badge-modern-primary' : 'badge-modern-secondary' }} text-xs">
+                                        {{ $profile->name }}
+                                    </span>
+                                @endforeach
+                                @if($user->profiles->isEmpty())
+                                    <span class="text-modern-caption italic">Sem perfil</span>
+                                @endif
+                            </div>
                         </td>
                         <td>
                             <span class="badge-modern {{ $user->status === 'active' ? 'badge-modern-success' : 'badge-modern-error' }}">

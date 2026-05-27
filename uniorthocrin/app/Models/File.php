@@ -26,12 +26,15 @@ class File extends Model
      */
     public function getUrlAttribute(): string
     {
+        $slug = session('active_profile_slug');
+        $prefix = $slug ? '/' . $slug : '';
+
         // Se o path já começa com 'private/', não adiciona barra extra
         if (str_starts_with($this->path, 'private/')) {
-            return url('/' . $this->path);
+            return url($prefix . '/' . $this->path);
         }
         
-        return url('/' . ltrim($this->path, '/'));
+        return url($prefix . '/' . ltrim($this->path, '/'));
     }
 
     /**
@@ -39,14 +42,17 @@ class File extends Model
      */
     public function getThumbnailUrlAttribute(): string
     {
+        $slug = session('active_profile_slug');
+        $prefix = $slug ? '/' . $slug : '';
+
         // Se tem path, retorna a URL do arquivo original
         if ($this->path) {
             // Se o path já começa com 'private/', não adiciona barra extra
             if (str_starts_with($this->path, 'private/')) {
-                return url('/' . $this->path);
+                return url($prefix . '/' . $this->path);
             }
             
-            return url('/' . ltrim($this->path, '/'));
+            return url($prefix . '/' . ltrim($this->path, '/'));
         }
 
         // Placeholder baseado no tipo de arquivo apenas se não tiver arquivo

@@ -6,7 +6,7 @@
         <div class="text-center">
             <h1 class="text-2xl font-bold text-gray-800 mb-4">Campanha não encontrada</h1>
             <p class="text-gray-600 mb-6">A campanha solicitada não existe ou você não tem permissão para acessá-la.</p>
-            <a href="{{ route('marketing.list') }}" class="inline-flex items-center px-4 py-2 bg-[#910039] text-white rounded-lg hover:bg-[#7a0030] transition-colors">
+            <a href="{{ route('campanhas.list', ['profile_slug' => session('active_profile_slug')]) }}" class="inline-flex items-center px-4 py-2 bg-[#910039] text-white rounded-lg hover:bg-[#7a0030] transition-colors">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Voltar para Marketing
             </a>
@@ -20,7 +20,7 @@
             <div class="text-white">
                 <div class="text-sm mb-2">
                     <a href="{{ route('home') }}" class="hover:underline">Home</a> > 
-                    <a href="{{ route('marketing.list') }}" class="hover:underline">Marketing</a> > 
+                    <a href="{{ route('campanhas.list', ['profile_slug' => session('active_profile_slug')]) }}" class="hover:underline">Marketing</a> > 
                     {{ $campaign->name ?? 'Campanha' }}
                 </div>
                 <h1 class="text-3xl font-bold">{{ $campaign->name ?? 'Campanha' }}</h1>

@@ -41,4 +41,12 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact('stats', 'recentUsers', 'recentAccesses'));
     }
+
+    /**
+     * Alias for index method to prevent errors during refactoring
+     */
+    public function dashboard()
+    {
+        return $this->index();
+    }
 }

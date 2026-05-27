@@ -14,7 +14,7 @@ class TrainingController extends Controller
         $this->trainingService = $trainingService;
     }
 
-    public function index(Request $request)
+    public function index($profile_slug, Request $request)
     {
         $user = $request->user();
         $filters = $request->only(['search', 'category_id']);
@@ -30,7 +30,7 @@ class TrainingController extends Controller
         }
     }
 
-    public function show($id, Request $request)
+    public function show($profile_slug, $id, Request $request)
     {
         $user = $request->user();
         $training = $this->trainingService->getTrainingById($id, $user);

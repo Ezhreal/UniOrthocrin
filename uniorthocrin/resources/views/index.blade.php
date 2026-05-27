@@ -14,7 +14,7 @@
             $desk = $desk ?: $mob;
         @endphp
         <div class="w-full flex items-center justify-center mb-8 min-h-[280px] md:min-h-[400px] lg:h-[600px]">
-            <a href="{{ route('marketing.detail', $camp->id) }}" class="block w-full h-full">
+            <a href="{{ route('campanhas.detail', ['profile_slug' => session('active_profile_slug'), 'id' => $camp->id]) }}" class="block w-full h-full">
                 @if($desk || $mob)
                     <img src="{{ $desk }}" alt="{{ $camp->name }}" class="hidden md:block w-full h-full max-h-[600px] object-cover" />
                     <img src="{{ $mob }}" alt="{{ $camp->name }}" class="md:hidden w-full aspect-square max-h-[100vw] object-cover" />
@@ -74,7 +74,7 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center mt-2">
-                        <a href="{{ route('produtos.detail', $produto->id) }}" class="flex items-center gap-1 text-[#910039] text-xs">
+                        <a href="{{ route('produtos.detail', ['profile_slug' => session('active_profile_slug'), 'id' => $produto->id]) }}" class="flex items-center gap-1 text-[#910039] text-xs">
                             <i class="fa-regular fa-eye"></i>
                             Detalhes
                         </a>
@@ -100,7 +100,7 @@
             @endforelse
         </div>
         <div class="flex justify-center">
-            <a href="{{ route('produtos.list') }}" class="bg-[#910039] text-white px-8 py-2 rounded-full font-semibold">Ver todos</a>
+            <a href="{{ route('produtos.list', ['profile_slug' => session('active_profile_slug')]) }}" class="bg-[#910039] text-white px-8 py-2 rounded-full font-semibold">Ver todos</a>
         </div>
     </div>
     <!-- Acervo Digital -->
@@ -160,7 +160,7 @@
                         <div class="text-gray-500 text-sm mb-2">{{ $treinamento->category->name ?? 'Sem categoria' }}</div>
                     </div>
                     <div class="flex items-center gap-2 mt-2">
-                        <a href="{{ route('treinamentos.detail', $treinamento->id) }}" class="flex items-center gap-1 text-[#910039] text-xs hover:underline">
+                        <a href="{{ route('treinamentos.detail', ['profile_slug' => session('active_profile_slug'), 'id' => $treinamento->id]) }}" class="flex items-center gap-1 text-[#910039] text-xs hover:underline">
                             <i class="fa-regular fa-eye"></i>
                             Ver treinamento
                         </a>
@@ -178,7 +178,7 @@
                 </div>
                 @endif
             </div>
-            <div class="flex"><a href="{{ route('treinamentos.list') }}" class="bg-[#910039] text-white px-8 py-2 rounded-full font-semibold">Ver todos</a></div>
+            <div class="flex"><a href="{{ route('treinamentos.list', ['profile_slug' => session('active_profile_slug')]) }}" class="bg-[#910039] text-white px-8 py-2 rounded-full font-semibold">Ver todos</a></div>
         </div>
         <div class="bg-[#FAFAFA] border border-gray-200 rounded-lg p-6 w-full md:w-auto">
             <div class="flex justify-between items-center mb-6">
@@ -194,9 +194,7 @@
                 @forelse($news as $noticia)
                 <div class="pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
                     <div class="text-[#910039] font-semibold text-sm mb-1">{{ $noticia->title }}</div>
-                    @if($noticia->published_at)
-                    <div class="text-gray-500 text-xs mb-1">{{ $noticia->published_at->format('d/m/Y') }}</div>
-                    @endif
+                    <div class="text-gray-500 text-xs mb-1">{{ $noticia->created_at->format('d/m/Y') }}</div>
                 </div>
                 @empty
                 <div class="text-center text-gray-500 py-4">
@@ -210,7 +208,7 @@
                 @endif
             </div>
             <div class="flex justify-end">
-                <a href="{{ route('news.list') }}" class="inline-flex items-center text-xs text-[#910039] hover:underline mt-2">
+                <a href="{{ route('radar.list', ['profile_slug' => session('active_profile_slug')]) }}" class="inline-flex items-center text-xs text-[#910039] hover:underline mt-2">
                     Ir para o Radar
                     <i class="fas fa-arrow-right ml-1 text-[10px]"></i>
                 </a>
@@ -223,28 +221,28 @@
         <div class="dashboard-card bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
             <div class="text-[#910039] font-bold text-lg mb-2">Marketing</div>
             <div class="text-gray-700 text-sm mb-6">Materiais exclusivos das campanhas Orthocrin para impulsionar sua marca. Acesse vídeos de alta qualidade, imagens otimizadas para redes sociais, e peças gráficas profissionais para todos os canais de comunicação.</div>
-            <a href="{{ route('marketing.list') }}" class="bg-[#910039] text-white px-6 py-2 rounded font-semibold text-sm">Ver todas</a>
+            <a href="{{ route('campanhas.list', ['profile_slug' => session('active_profile_slug')]) }}" class="bg-[#910039] text-white px-6 py-2 rounded font-semibold text-sm">Ver todas</a>
         </div>
         @endcanSee
         @canSee('bloco_produtos')
         <div class="dashboard-card bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
             <div class="text-[#910039] font-bold text-lg mb-2">Produtos</div>
             <div class="text-gray-700 text-sm mb-6">Galeria completa de produtos Orthocrin em imagens e vídeos de alta definição. Recursos visuais premium para potencializar suas vendas e destacar a qualidade superior dos nossos produtos.</div>
-            <a href="{{ route('produtos.list') }}" class="bg-[#910039] text-white px-6 py-2 rounded font-semibold text-sm">Ver todas</a>
+            <a href="{{ route('produtos.list', ['profile_slug' => session('active_profile_slug')]) }}" class="bg-[#910039] text-white px-6 py-2 rounded font-semibold text-sm">Ver todas</a>
         </div>
         @endcanSee
         @canSee('bloco_treinamentos')
         <div class="dashboard-card bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
             <div class="text-[#910039] font-bold text-lg mb-2">Treinamentos</div>
             <div class="text-gray-700 text-sm mb-6">Programa completo de capacitação profissional Orthocrin. Acesse conteúdos especializados em vendas e marketing, com vídeos interativos e manuais detalhados em PDF para maximizar seus resultados.</div>
-            <a href="{{ route('treinamentos.list') }}" class="bg-[#910039] text-white px-6 py-2 rounded font-semibold text-sm">Ver todas</a>
+            <a href="{{ route('treinamentos.list', ['profile_slug' => session('active_profile_slug')]) }}" class="bg-[#910039] text-white px-6 py-2 rounded font-semibold text-sm">Ver todas</a>
         </div>
         @endcanSee
         @canSee('bloco_biblioteca')
         <div class="dashboard-card bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
             <div class="text-[#910039] font-bold text-lg mb-2">Biblioteca</div>
             <div class="text-gray-700 text-sm mb-6">Acervo digital completo da marca Orthocrin. Encontre todos os materiais institucionais, desde documentos impressos até recursos digitais, organizados para facilitar sua consulta e utilização.</div>
-            <a href="{{ route('biblioteca.list') }}" class="bg-[#910039] text-white px-6 py-2 rounded font-semibold text-sm">Ver todas</a>
+            <a href="{{ route('biblioteca.list', ['profile_slug' => session('active_profile_slug')]) }}" class="bg-[#910039] text-white px-6 py-2 rounded font-semibold text-sm">Ver todas</a>
         </div>
         @endcanSee
     </div>

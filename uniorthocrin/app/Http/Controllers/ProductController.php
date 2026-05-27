@@ -17,13 +17,13 @@ class ProductController extends Controller
         $this->productCategoryService = $productCategoryService;
     }
 
-    public function index(Request $request)
+    public function index($profile_slug, Request $request)
     {
         $user = $request->user();
-        
+
         $globalFilterCategoryId = $request->get('category');
         $globalSearch = $request->get('search');
-        
+
         $groupedProducts = [];
 
         // 1. Obter todas as categorias de produtos visíveis para o usuário.
@@ -64,7 +64,7 @@ class ProductController extends Controller
                 ];
             }
         }
-        
+
         // $categories é mantido para compatibilidade, caso seja usado em outras partes do layout ou em lógicas futuras.
         $categories = $this->productCategoryService->getCategoriesWithProductCount($user);
 
@@ -76,19 +76,20 @@ class ProductController extends Controller
         ));
     }
 
-    public function show($id, Request $request)
+    public function show($profile_slug, $id, Request $request)
     {
         $user = $request->user();
         $product = $this->productService->getProductById($id, $user);
-        
+
         if (!$product) {
             abort(404);
         }
-        
+
         // Buscar imagens e vídeos relacionados ao produto
         $images = $this->productService->getProductImages($product);
         $videos = $this->productService->getProductVideos($product);
-        
+
         return view('produtos-detail', compact('product', 'images', 'videos'));
     }
 } 
+ 

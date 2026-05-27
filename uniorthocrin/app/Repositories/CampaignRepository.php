@@ -17,18 +17,21 @@ class CampaignRepository
 
     public function getAllForUser(User $user)
     {
+        $userTypeId = session('active_profile_id') ?? $user->user_type_id;
+        $isFranqueado = $userTypeId === 2;
+        $isAdmin = $userTypeId === 1;
+
         // Marketing é exclusivo para Admin (ID 1) e Franqueado (ID 2)
-        if (!in_array($user->user_type_id, [1, 2])) {
+        if (!in_array($userTypeId, [1, 2])) {
             return collect(); // Retorna coleção vazia para Lojistas/Representantes
         }
         
         return $this->model->current()
             ->active()
-            ->when($user->isFranqueado(), function($q) {
-                // Franqueado vê campanhas exclusivas para franqueados
-                $q->where('visible_franchise_only', true);
+            ->when($isFranqueado, function($q) {
+                // Franqueado e Admin veem todas as campanhas ativas
             })
-            ->when($user->isAdmin(), function($q) {
+            ->when($isAdmin, function($q) {
                 // Admin vê todas as campanhas
             })
             ->get();
@@ -36,19 +39,22 @@ class CampaignRepository
 
     public function findByIdForUser($id, User $user)
     {
+        $userTypeId = session('active_profile_id') ?? $user->user_type_id;
+        $isFranqueado = $userTypeId === 2;
+        $isAdmin = $userTypeId === 1;
+
         // Marketing é exclusivo para Admin (ID 1) e Franqueado (ID 2)
-        if (!in_array($user->user_type_id, [1, 2])) {
+        if (!in_array($userTypeId, [1, 2])) {
             abort(403, 'Acesso negado ao marketing');
         }
         
         return $this->model->current()
             ->active()
             ->where('id', $id)
-            ->when($user->isFranqueado(), function($q) {
-                // Franqueado vê campanhas exclusivas para franqueados
-                $q->where('visible_franchise_only', true);
+            ->when($isFranqueado, function($q) {
+                // Franqueado e Admin veem todas as campanhas ativas
             })
-            ->when($user->isAdmin(), function($q) {
+            ->when($isAdmin, function($q) {
                 // Admin vê todas as campanhas
             })
             ->with([
@@ -68,15 +74,18 @@ class CampaignRepository
      */
     public function getMarketingListForUser(User $user): array
     {
-        if (! in_array($user->user_type_id, [1, 2], true)) {
+        $userTypeId = session('active_profile_id') ?? $user->user_type_id;
+        $isFranqueado = $userTypeId === 2;
+
+        if (! in_array($userTypeId, [1, 2], true)) {
             return ['featured' => null, 'others' => collect()];
         }
 
         $all = $this->model->query()
             ->current()
             ->active()
-            ->when($user->isFranqueado(), function ($q) {
-                $q->where('visible_franchise_only', true);
+            ->when($isFranqueado, function ($q) {
+                // Franqueado e Admin veem todas as campanhas ativas
             })
             ->with(['posts', 'folders', 'videos', 'miscellaneous'])
             ->orderByRaw('end_date IS NULL DESC')
@@ -187,8 +196,12 @@ class CampaignRepository
      */
     public function searchCampaigns(User $user, string $query): Collection
     {
+        $userTypeId = session('active_profile_id') ?? $user->user_type_id;
+        $isFranqueado = $userTypeId === 2;
+        $isAdmin = $userTypeId === 1;
+
         // Marketing é exclusivo para Admin (ID 1) e Franqueado (ID 2)
-        if (!in_array($user->user_type_id, [1, 2])) {
+        if (!in_array($userTypeId, [1, 2])) {
             return collect(); // Retorna coleção vazia para Lojistas/Representantes
         }
         
@@ -198,11 +211,10 @@ class CampaignRepository
         })
         ->current()
         ->active()
-        ->when($user->isFranqueado(), function($q) {
-            // Franqueado vê campanhas exclusivas para franqueados
-            $q->where('visible_franchise_only', true);
+        ->when($isFranqueado, function($q) {
+            // Franqueado e Admin veem todas as campanhas ativas
         })
-        ->when($user->isAdmin(), function($q) {
+        ->when($isAdmin, function($q) {
             // Admin vê todas as campanhas
         })
         ->with(['posts', 'folders', 'videos', 'miscellaneous'])

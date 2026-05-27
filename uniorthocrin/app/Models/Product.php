@@ -107,7 +107,7 @@ class Product extends Model
     public function canBeViewedBy(User $user): bool
     {
         return $this->permissions()
-            ->where('user_type_id', $user->user_type_id)
+            ->where('user_type_id', (session('active_profile_id') ?? $user->user_type_id))
             ->where('can_view', true)
             ->exists();
     }
@@ -115,10 +115,12 @@ class Product extends Model
     /**
      * Check if a user has permission to download the product.
      */
-    public function canBeDownloadedBy(User $user): bool
+    public function canBeDownloadedBy(User $user, ?int $activeProfileId = null): bool
     {
+        $profileId = $activeProfileId ?? session('active_profile_id') ?? $user->user_type_id;
+
         return $this->permissions()
-            ->where('user_type_id', $user->user_type_id)
+            ->where('user_type_id', $profileId)
             ->where('can_download', true)
             ->exists();
     }

@@ -17,7 +17,7 @@ class SearchController extends Controller
     /**
      * Página de resultados da busca global (título: Resultados).
      */
-    public function index(Request $request)
+    public function index($profile_slug, Request $request)
     {
         $query = $request->get('q') ?: $request->get('search') ?: '';
         $user = $request->user();

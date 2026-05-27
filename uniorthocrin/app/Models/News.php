@@ -98,10 +98,7 @@ class News extends Model
      */
     public function scopePublished($query)
     {
-        return $query
-            ->where('status', 'published')
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now());
+        return $query->where('status', 'published');
     }
 
     /**
@@ -117,9 +114,7 @@ class News extends Model
      */
     public function isPublished(): bool
     {
-        return $this->status === 'published' 
-            && $this->published_at 
-            && $this->published_at <= now();
+        return $this->status === 'published';
     }
 
     /**
@@ -153,19 +148,22 @@ class News extends Model
     /**
      * Check if the news can be downloaded by the given user.
      */
-    public function canBeDownloadedBy(User $user): bool
+    public function canBeDownloadedBy(User $user, ?int $activeProfileId = null): bool
     {
         // Verificar se a notícia está publicada
         if (!$this->isPublished()) {
             return false;
         }
 
+        $profileId = $activeProfileId ?? session('active_profile_id') ?? $user->user_type_id;
+
         // Verificar permissões específicas
         $permission = $this->permissions()
-            ->where('user_type_id', $user->user_type_id)
+            ->where('user_type_id', $profileId)
             ->first();
 
-        // Se não há permissão específica, permitir para usuários autenticados
-        return $permission ? $permission->can_download : true;
+        // Se não há permissão específica, permitir para usuários autenticados.
+        // Como a tabela news_permissions não tem a coluna can_download, usamos can_view.
+        return $permission ? (bool)$permission->can_view : true;
     }
 }

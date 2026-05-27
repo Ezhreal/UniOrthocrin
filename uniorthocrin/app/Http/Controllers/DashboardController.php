@@ -10,9 +10,10 @@ use App\Models\Campaign;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    public function index($profile_slug, Request $request)
     {
         $user = $request->user();
+        $userTypeId = session('active_profile')->id ?? $user->user_type_id;
         
         // Garantir que todas as variáveis sejam passadas
         $produtos = collect();
@@ -50,13 +51,13 @@ class DashboardController extends Controller
         
         // Campanhas em destaque (banner) - apenas para Admin (ID 1) e Franqueado (ID 2)
         try {
-            if (in_array($user->user_type_id, [1, 2])) {
+            if (in_array($userTypeId, [1, 2])) {
                 $featuredCampaigns = Campaign::query()
                     ->current()
                     ->where('status', 'active')
                     ->where('is_featured', true)
                     ->whereNotNull('banner_path')
-                    ->when($user->user_type_id === 2, function ($q) {
+                    ->when($userTypeId === 2, function ($q) {
                         $q->where('visible_franchise_only', true);
                     })
                     ->orderByRaw('end_date IS NULL DESC')
@@ -71,6 +72,6 @@ class DashboardController extends Controller
             $featuredCampaigns = collect();
         }
         
-        return view('dashboard', compact('produtos', 'news', 'treinamentos', 'notificacoes', 'featuredCampaigns'));
+        return view('index', compact('produtos', 'news', 'treinamentos', 'notificacoes', 'featuredCampaigns'));
     }
 } 

@@ -18,12 +18,12 @@ class ProductCategoryRepository
     {
         return $this->model->withCount(['products' => function($query) use ($user) {
             $query->whereHas('permissions', function($q) use ($user) {
-                $q->where('user_type_id', $user->user_type_id)
+                $q->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
             });
         }])
         ->whereHas('products.permissions', function($query) use ($user) {
-            $query->where('user_type_id', $user->user_type_id)
+            $query->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
         })
         ->orderBy('name')
@@ -33,7 +33,7 @@ class ProductCategoryRepository
     public function getAllCategories(User $user)
     {
         return $this->model->whereHas('products.permissions', function($query) use ($user) {
-            $query->where('user_type_id', $user->user_type_id)
+            $query->where('user_type_id', session('active_profile_id') ?? $user->user_type_id)
                   ->where('can_view', true);
         })
         ->orderBy('name')

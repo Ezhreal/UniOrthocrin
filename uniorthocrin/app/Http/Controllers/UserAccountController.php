@@ -16,13 +16,13 @@ class UserAccountController extends Controller
         $this->userAccountService = $userAccountService;
     }
 
-    public function index(Request $request)
+    public function index($profile_slug, Request $request)
     {
         $user = $request->user();
         return view('my-account', compact('user'));
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile($profile_slug, Request $request)
     {
         $user = $request->user();
         
@@ -62,7 +62,7 @@ class UserAccountController extends Controller
         }
     }
 
-    public function updatePassword(Request $request)
+    public function updatePassword($profile_slug, Request $request)
     {
         $user = $request->user();
         

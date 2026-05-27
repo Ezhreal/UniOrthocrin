@@ -78,7 +78,7 @@
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <a href="{{ route('marketing.detail', $campaigns['featured']->id) }}" 
+                                    <a href="{{ route('campanhas.detail', ['profile_slug' => session('active_profile_slug', 'admin'), 'id' => $campaigns['featured']->id]) }}" 
                                        class="text-[#910039] hover:text-[#7a0030] p-1">
                                         <i class="fas fa-eye"></i>
                                     </a>
@@ -111,7 +111,7 @@
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <a href="{{ route('marketing.detail', $campaigns['featured']->id) }}" 
+                                    <a href="{{ route('campanhas.detail', ['profile_slug' => session('active_profile_slug', 'admin'), 'id' => $campaigns['featured']->id]) }}" 
                                        class="text-[#910039] hover:text-[#7a0030] p-1">
                                         <i class="fas fa-eye"></i>
                                     </a>
@@ -150,7 +150,7 @@
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <a href="{{ route('marketing.detail', $campaigns['featured']->id) }}" 
+                                    <a href="{{ route('campanhas.detail', ['profile_slug' => session('active_profile_slug', 'admin'), 'id' => $campaigns['featured']->id]) }}" 
                                        class="text-[#910039] hover:text-[#7a0030] p-1">
                                         <i class="fas fa-eye"></i>
                                     </a>
@@ -193,7 +193,7 @@
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <a href="{{ route('marketing.detail', $campaigns['featured']->id) }}" 
+                                    <a href="{{ route('campanhas.detail', ['profile_slug' => session('active_profile_slug', 'admin'), 'id' => $campaigns['featured']->id]) }}" 
                                        class="text-[#910039] hover:text-[#7a0030] p-1">
                                         <i class="fas fa-eye"></i>
                                     </a>
@@ -219,7 +219,7 @@
                         <div class="flex items-center gap-2 text-gray-600 justify-between">
                                
                         <!-- Botão Detalhes -->
-                        <a href="{{ route('marketing.detail', $campaigns['featured']->id) }}" 
+                        <a href="{{ route('campanhas.detail', ['profile_slug' => session('active_profile_slug', 'admin'), 'id' => $campaigns['featured']->id]) }}" 
                                class="bg-[#910039] text-white px-3 py-2 rounded-lg font-semibold hover:bg-[#7a0030] transition-colors duration-200 inline-block">
                                 
                                 Detalhes
@@ -299,7 +299,7 @@
                         </div>
                         
                         <div class="flex justify-between items-center mt-2">
-                            <a href="{{ route('marketing.detail', $campaign->id) }}" class="flex items-center gap-1 text-[#910039] text-xs">
+                            <a href="{{ route('campanhas.detail', ['profile_slug' => session('active_profile_slug'), 'id' => $campaign->id]) }}" class="flex items-center gap-1 text-[#910039] text-xs">
                                 <i class="fa-regular fa-eye"></i>
                                 Detalhes
                             </a>

@@ -14,7 +14,7 @@ class NewsController extends Controller
         $this->newsService = $newsService;
     }
 
-    public function index(Request $request)
+    public function index($profile_slug, Request $request)
     {
         $user = $request->user();
         $filters = $request->only(['search', 'category_id']);
@@ -22,7 +22,7 @@ class NewsController extends Controller
         return view('news-list', compact('news'));
     }
 
-    public function show($id, Request $request)
+    public function show($profile_slug, $id, Request $request)
     {
         $user = $request->user();
         $newsItem = $this->newsService->getNewsById($id, $user);

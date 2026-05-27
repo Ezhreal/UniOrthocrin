@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const formData = new FormData(this);
         
-        fetch('{{ route("my.account.profile") }}', {
+        fetch('{{ route("my.account.profile", ["profile_slug" => session("active_profile_slug", "admin")]) }}', {
             method: 'POST',
             body: formData,
             headers: {
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const formData = new FormData(this);
         
-        fetch('{{ route("my.account.password") }}', {
+        fetch('{{ route("my.account.password", ["profile_slug" => session("active_profile_slug", "admin")]) }}', {
             method: 'POST',
             body: formData,
             headers: {

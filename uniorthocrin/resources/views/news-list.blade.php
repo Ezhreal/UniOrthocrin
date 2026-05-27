@@ -46,16 +46,33 @@
                 <div class="p-4 flex-1 flex flex-col justify-between">
                     <div>
                         <div class="text-[#910039] font-bold text-base mb-1 line-clamp-2">{{ $newsItem->title }}</div>
-                        <div class="text-gray-500 text-sm mb-2">{{ $newsItem->published_at ? $newsItem->published_at->format('d/m/Y') : 'Data não informada' }}</div>
+                        <div class="text-gray-500 text-sm mb-2">{{ $newsItem->created_at->format('d/m/Y') }}</div>
                     </div>
                     <div class="flex justify-between items-center mt-2">
                         @if($newsItem->mainFile)
-                        <a href="{{ $newsItem->mainFile->url }}" 
-                           class="flex items-center gap-1 text-[#910039] text-xs news-view-btn hover:bg-[#910039] hover:text-white px-2 py-1 rounded transition-colors duration-200"
-                           data-title="{{ $newsItem->title }}">
+                        <a href="{{ $newsItem->mainFile->url }}"
+                           data-title="{{ $newsItem->title }}"
+                           class="news-view-btn flex items-center gap-1 text-[#910039] text-xs hover:bg-[#910039] hover:text-white px-2 py-1 rounded transition-colors duration-200">
                             <i class="fa-regular fa-eye"></i>
-                            Visualizar
+                            Visualizar Detalhes
                         </a>
+                        @else
+                        <span class="text-gray-400 text-xs px-2 py-1 flex items-center gap-1">
+                            <i class="fa-regular fa-eye-slash"></i>
+                            Sem imagem
+                        </span>
+                        @endif
+                        @if($newsItem->mainFile && $newsItem->canBeDownloadedBy(auth()->user()))
+                        <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
+                            @csrf
+                            <input type="hidden" name="content_type" value="news">
+                            <input type="hidden" name="content_id" value="{{ $newsItem->id }}">
+                            <input type="hidden" name="type" value="all">
+                            <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs hover:bg-[#910039] hover:text-white px-2 py-1 rounded transition-colors duration-200">
+                                <i class="fa-solid fa-download"></i>
+                                Download
+                            </button>
+                        </form>
                         @endif
                     </div>
                 </div>
@@ -87,7 +104,7 @@
 </div>
 
 <!-- Modal para visualização de imagens -->
-<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
+<div id="imageModal" class="fixed inset-0 bg-black/40 backdrop-blur-md z-50 hidden items-center justify-center p-4">
     <div class="relative max-w-4xl max-h-full">
         <!-- Botão fechar -->
         <button id="closeModal" class="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl font-bold z-10">

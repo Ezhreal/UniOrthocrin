@@ -8,7 +8,7 @@
             <div class="text-white">
                 <div class="text-sm mb-2">
                     <a href="{{ route('home') }}" class="hover:underline">Home</a> > 
-                    <a href="{{ route('produtos.list') }}" class="hover:underline">Produtos</a> > 
+                    <a href="{{ route('produtos.list', ['profile_slug' => session('active_profile_slug')]) }}" class="hover:underline">Produtos</a> > 
                     {{ $product->name }}
                 </div>
                 <h1 class="text-3xl font-bold">{{ $product->name }}</h1>
