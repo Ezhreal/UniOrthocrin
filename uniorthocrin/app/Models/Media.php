@@ -106,4 +106,13 @@ class Media extends Model
         // Se não há permissão específica, permitir para usuários autenticados
         return $permission ? $permission->can_download : true;
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($media) {
+            if ($media->thumbnail_path && ($media->wasChanged('thumbnail_path') || !$media->exists)) {
+                \App\Jobs\OptimizeModelImage::dispatch($media, 'thumbnail_path');
+            }
+        });
+    }
 }

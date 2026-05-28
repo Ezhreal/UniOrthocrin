@@ -32,10 +32,12 @@
                         <a href="{{ $newsItem->mainFile->url }}" 
                            data-title="{{ $newsItem->title }}"
                            class="block w-full h-full news-image-link">
-                            <img src="{{ $newsItem->mainFile->url }}" 
-                                 alt="{{ $newsItem->title }}" 
-                                 class="w-full h-full object-cover news-image cursor-pointer hover:scale-105 transition-transform duration-200"
-                                 loading="lazy">
+                             <img src="{{ $newsItem->mainFile->optimized_url }}" 
+                                  srcset="{{ $newsItem->mainFile->srcset }}" 
+                                  sizes="(max-width: 640px) 320px, (max-width: 1024px) 640px, 800px"
+                                  alt="{{ $newsItem->title }}" 
+                                  class="w-full h-full object-cover news-image cursor-pointer hover:scale-105 transition-transform duration-200"
+                                  loading="lazy">
                         </a>
                     @else
                         <div class="w-full h-full flex items-center justify-center">

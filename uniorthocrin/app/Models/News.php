@@ -166,4 +166,13 @@ class News extends Model
         // Como a tabela news_permissions não tem a coluna can_download, usamos can_view.
         return $permission ? (bool)$permission->can_view : true;
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($news) {
+            if ($news->thumbnail_path && ($news->wasChanged('thumbnail_path') || !$news->exists)) {
+                \App\Jobs\OptimizeModelImage::dispatch($news, 'thumbnail_path');
+            }
+        });
+    }
 }

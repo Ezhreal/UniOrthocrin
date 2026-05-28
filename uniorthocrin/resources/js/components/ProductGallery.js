@@ -65,9 +65,30 @@ class ProductGallery {
         const rightImgElement = this.rightImage.querySelector('img');
         
         if (leftImgElement && centerImgElement && rightImgElement) {
-            leftImgElement.src = this.images[(this.currentIndex - 1 + this.images.length) % this.images.length].src;
-            centerImgElement.src = this.images[this.currentIndex].src;
-            rightImgElement.src = this.images[(this.currentIndex + 1) % this.images.length].src;
+            const leftData = this.images[(this.currentIndex - 1 + this.images.length) % this.images.length];
+            const centerData = this.images[this.currentIndex];
+            const rightData = this.images[(this.currentIndex + 1) % this.images.length];
+
+            leftImgElement.src = leftData.src;
+            if (leftData.srcset) {
+                leftImgElement.srcset = leftData.srcset;
+            } else {
+                leftImgElement.removeAttribute('srcset');
+            }
+
+            centerImgElement.src = centerData.src;
+            if (centerData.srcset) {
+                centerImgElement.srcset = centerData.srcset;
+            } else {
+                centerImgElement.removeAttribute('srcset');
+            }
+
+            rightImgElement.src = rightData.src;
+            if (rightData.srcset) {
+                rightImgElement.srcset = rightData.srcset;
+            } else {
+                rightImgElement.removeAttribute('srcset');
+            }
             
             // Atualizar alt text
             leftImgElement.alt = this.images[(this.currentIndex - 1 + this.images.length) % this.images.length].alt;

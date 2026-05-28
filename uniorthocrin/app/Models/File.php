@@ -13,13 +13,28 @@ class File extends Model
         'extension',
         'mime_type',
         'size',
-        'order'
+        'order',
+        'optimized_path',
+        'thumbnail_sm_path',
+        'thumbnail_md_path',
+        'thumbnail_lg_path',
+        'is_optimized',
     ];
 
     protected $casts = [
         'size' => 'integer',
-        'order' => 'integer'
+        'order' => 'integer',
+        'is_optimized' => 'boolean',
     ];
+
+    protected static function booted()
+    {
+        static::created(function ($file) {
+            if ($file->type === 'image') {
+                \App\Jobs\OptimizeImage::dispatch($file);
+            }
+        });
+    }
 
     /**
      * Get the full URL for the file.
@@ -107,5 +122,84 @@ class File extends Model
     public function isAudio(): bool
     {
         return $this->type === 'audio';
+    }
+
+    /**
+     * Get URL for a specific file path, keeping context slug.
+     */
+    public function getUrlForPath(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+
+        $slug = session('active_profile_slug');
+        $prefix = $slug ? '/' . $slug : '';
+
+        if (str_starts_with($path, 'private/')) {
+            return url($prefix . '/' . $path);
+        }
+        
+        return url($prefix . '/' . ltrim($path, '/'));
+    }
+
+    /**
+     * Get the responsive srcset value for images.
+     */
+    public function getSrcsetAttribute(): string
+    {
+        if ($this->type !== 'image') {
+            return '';
+        }
+
+        $sources = [];
+        if ($this->thumbnail_sm_path) {
+            $sources[] = $this->getUrlForPath($this->thumbnail_sm_path) . ' 320w';
+        }
+        if ($this->thumbnail_md_path) {
+            $sources[] = $this->getUrlForPath($this->thumbnail_md_path) . ' 640w';
+        }
+        if ($this->thumbnail_lg_path) {
+            $sources[] = $this->getUrlForPath($this->thumbnail_lg_path) . ' 1024w';
+        }
+        
+        $mainPath = $this->optimized_path ?: $this->path;
+        if ($mainPath) {
+            $sources[] = $this->getUrlForPath($mainPath) . ' 1920w';
+        }
+
+        return implode(', ', $sources);
+    }
+
+    /**
+     * Get optimized WebP URL falling back to original URL.
+     */
+    public function getOptimizedUrlAttribute(): string
+    {
+        return $this->getUrlForPath($this->optimized_path ?: $this->path);
+    }
+
+    /**
+     * Get small size URL falling back to optimized or original.
+     */
+    public function getUrlSmAttribute(): string
+    {
+        return $this->getUrlForPath($this->thumbnail_sm_path ?: $this->optimized_path ?: $this->path);
+    }
+
+    /**
+     * Get medium size URL falling back to optimized or original.
+     */
+    public function getUrlMdAttribute(): string
+    {
+        return $this->getUrlForPath($this->thumbnail_md_path ?: $this->optimized_path ?: $this->path);
+    }
+
+    /**
+     * Get large size URL falling back to optimized or original.
+     */
+    public function getUrlLgAttribute(): string
+    {
+        return $this->getUrlForPath($this->thumbnail_lg_path ?: $this->optimized_path ?: $this->path);
     }
 } 

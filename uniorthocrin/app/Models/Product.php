@@ -162,4 +162,13 @@ class Product extends Model
     {
         return $this->files()->exists();
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($product) {
+            if ($product->thumbnail_path && ($product->wasChanged('thumbnail_path') || !$product->exists)) {
+                \App\Jobs\OptimizeModelImage::dispatch($product, 'thumbnail_path');
+            }
+        });
+    }
 } 

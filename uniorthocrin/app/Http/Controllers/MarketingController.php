@@ -33,7 +33,8 @@ class MarketingController extends Controller
                 return $post->files->where('type', 'image')->map(function($file) {
                     return [
                         'id' => $file->id,
-                        'src' => url('/' . $file->path),
+                        'src' => $file->optimized_url,
+                        'srcset' => $file->srcset,
                         'alt' => $file->name
                     ];
                 });
@@ -51,8 +52,8 @@ class MarketingController extends Controller
                     'name' => $video->name,
                     'title' => $video->name,
                     'type' => $video->type,
-                    'video_url' => $videoFile ? url('/' . $videoFile->path) : '',
-                    'thumbnail' => $videoThumb ? url('/' . $videoThumb->path) : '',
+                    'video_url' => $videoFile ? $videoFile->url : '',
+                    'thumbnail' => $videoThumb ? $videoThumb->optimized_url : '',
                     'file_name' => $videoFile?->name,
                     'description' => $video->description,
                 ];

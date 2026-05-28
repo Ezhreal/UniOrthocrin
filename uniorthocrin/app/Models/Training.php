@@ -127,4 +127,13 @@ class Training extends Model
         return $permission ? $permission->can_download : true;
     }
 
-} 
+    protected static function booted()
+    {
+        static::saved(function ($training) {
+            if ($training->thumbnail_path && ($training->wasChanged('thumbnail_path') || !$training->exists)) {
+                \App\Jobs\OptimizeModelImage::dispatch($training, 'thumbnail_path');
+            }
+        });
+    }
+
+}

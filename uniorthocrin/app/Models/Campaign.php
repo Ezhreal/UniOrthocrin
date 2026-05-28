@@ -254,4 +254,19 @@ class Campaign extends Model
 
         return $this->isCurrent();
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($campaign) {
+            if ($campaign->thumbnail_path && ($campaign->wasChanged('thumbnail_path') || !$campaign->exists)) {
+                \App\Jobs\OptimizeModelImage::dispatch($campaign, 'thumbnail_path');
+            }
+            if ($campaign->banner_path && ($campaign->wasChanged('banner_path') || !$campaign->exists)) {
+                \App\Jobs\OptimizeModelImage::dispatch($campaign, 'banner_path');
+            }
+            if ($campaign->banner_mobile_path && ($campaign->wasChanged('banner_mobile_path') || !$campaign->exists)) {
+                \App\Jobs\OptimizeModelImage::dispatch($campaign, 'banner_mobile_path');
+            }
+        });
+    }
 } 

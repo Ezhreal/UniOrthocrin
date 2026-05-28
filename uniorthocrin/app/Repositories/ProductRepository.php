@@ -96,7 +96,8 @@ class ProductRepository implements RepositoryInterface
         
         return $images->map(function($file) use ($product) {
             return [
-                'src' => $file->url,
+                'src' => $file->optimized_url,
+                'srcset' => $file->srcset,
                 'alt' => $product->name . ' - ' . $file->name
             ];
         });

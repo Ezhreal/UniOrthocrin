@@ -107,4 +107,13 @@ class Library extends Model
         // Se não há permissão específica, permitir para usuários autenticados
         return $permission ? $permission->can_download : true;
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($library) {
+            if ($library->thumbnail_path && ($library->wasChanged('thumbnail_path') || !$library->exists)) {
+                \App\Jobs\OptimizeModelImage::dispatch($library, 'thumbnail_path');
+            }
+        });
+    }
 } 
