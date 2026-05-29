@@ -155,9 +155,25 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($library->files as $file)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-medium text-gray-900 truncate">{{ $file->name }}</p>
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $file->status === 'pending' ? 'uppy-file-item' : '' }}" {!! $file->status === 'pending' ? 'data-file-uuid="' . $file->chunk_upload_uuid . '"' : '' !!}>
+                                            <div class="flex items-center space-x-3 flex-1 min-w-0">
+                                                <div class="flex-shrink-0">
+                                                    @if($file->status === 'pending')
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-sm"></i>
+                                                    @else
+                                                        <i class="fas fa-file text-gray-400 text-sm"></i>
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $file->name }}
+                                                        @if($file->status === 'pending')
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
+                                                </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
                                                     onclick="deleteFile({{ $library->id }}, {{ $file->id }})">

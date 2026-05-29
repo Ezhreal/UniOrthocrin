@@ -238,4 +238,22 @@ trait HasCampaignContent
             default => 'bg-gray-50'
         };
     }
+
+    /**
+     * Get the chunk upload UUID for the primary file.
+     */
+    public function getChunkUploadUuidAttribute(): ?string
+    {
+        $primaryFile = $this->primaryFile();
+        return $primaryFile ? $primaryFile->chunk_upload_uuid : null;
+    }
+
+    /**
+     * Check if the primary file is pending chunk upload.
+     */
+    public function getIsPendingAttribute(): bool
+    {
+        $primaryFile = $this->primaryFile();
+        return $primaryFile ? ($primaryFile->status === 'pending') : false;
+    }
 }

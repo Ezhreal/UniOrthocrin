@@ -217,13 +217,24 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->folders->where('state', 'MG/SP') as $folder)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $folder->is_pending ? 'uppy-file-item' : '' }}" {!! $folder->is_pending ? 'data-file-uuid="' . $folder->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
-                                                    <i class="fas fa-file-pdf text-gray-400 text-lg"></i>
+                                                    @if($folder->is_pending)
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-file-pdf text-gray-400 text-lg"></i>
+                                                    @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $folder->name }}</p>
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $folder->name }}
+                                                        @if($folder->is_pending)
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
@@ -262,13 +273,24 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->folders->where('state', 'DF/ES') as $folder)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $folder->is_pending ? 'uppy-file-item' : '' }}" {!! $folder->is_pending ? 'data-file-uuid="' . $folder->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
-                                                    <i class="fas fa-file-pdf text-gray-400 text-lg"></i>
+                                                    @if($folder->is_pending)
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-file-pdf text-gray-400 text-lg"></i>
+                                                    @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $folder->name }}</p>
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $folder->name }}
+                                                        @if($folder->is_pending)
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
@@ -323,12 +345,19 @@
                                 <h5 class="text-modern-body font-medium mb-3">Posts Feed Existentes ({{ $campaign->posts->where('type', 'feeds')->count() }})</h5>
                                  <div class="flex flex-wrap gap-4 mb-8">
                                      @foreach($campaign->posts->where('type', 'feeds') as $post)
-                                     <div class="relative shrink-0">
-                                         <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
-                                             @if($post->mainImage())
+                                     <div class="relative shrink-0 {{ $post->is_pending ? 'uppy-file-item' : '' }}" {!! $post->is_pending ? 'data-file-uuid="' . $post->chunk_upload_uuid . '"' : '' !!}>
+                                         <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden relative">
+                                             @if($post->is_pending)
+                                                 <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white p-1">
+                                                     <i class="fas fa-spinner fa-spin text-sm mb-1"></i>
+                                                     <span class="uppy-pending-badge text-[10px] font-bold text-center leading-tight">Processando...</span>
+                                                 </div>
+                                             @elseif($post->mainImage())
                                                  <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
                                              @else
-                                                 <i class="fas fa-image text-gray-400 text-lg"></i>
+                                                 <div class="flex items-center justify-center h-full">
+                                                     <i class="fas fa-image text-gray-400 text-lg"></i>
+                                                 </div>
                                              @endif
                                          </div>
                                          <button type="button" class="absolute h-8 w-8 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 text-xs"
@@ -365,12 +394,19 @@
                                 <h5 class="text-modern-body font-medium mb-3">Stories MG Existentes ({{ $campaign->posts->where('type', 'stories_mg_sp')->count() }})</h5>
                                  <div class="flex flex-wrap gap-4 mb-8">
                                      @foreach($campaign->posts->where('type', 'stories_mg_sp') as $post)
-                                     <div class="relative shrink-0">
-                                         <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
-                                             @if($post->mainImage())
+                                     <div class="relative shrink-0 {{ $post->is_pending ? 'uppy-file-item' : '' }}" {!! $post->is_pending ? 'data-file-uuid="' . $post->chunk_upload_uuid . '"' : '' !!}>
+                                         <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden relative">
+                                             @if($post->is_pending)
+                                                 <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white p-1">
+                                                     <i class="fas fa-spinner fa-spin text-sm mb-1"></i>
+                                                     <span class="uppy-pending-badge text-[10px] font-bold text-center leading-tight">Processando...</span>
+                                                 </div>
+                                             @elseif($post->mainImage())
                                                  <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
                                              @else
-                                                 <i class="fas fa-image text-gray-400 text-lg"></i>
+                                                 <div class="flex items-center justify-center h-full">
+                                                     <i class="fas fa-image text-gray-400 text-lg"></i>
+                                                 </div>
                                              @endif
                                          </div>
                                          <button type="button" class="absolute h-8 w-8 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 text-xs"
@@ -407,12 +443,19 @@
                                 <h5 class="text-modern-body font-medium mb-3">Stories Outros Estados Existentes ({{ $campaign->posts->where('type', 'stories_df_es')->count() }})</h5>
                                  <div class="flex flex-wrap gap-4 mb-8">
                                      @foreach($campaign->posts->where('type', 'stories_df_es') as $post)
-                                     <div class="relative shrink-0">
-                                         <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
-                                             @if($post->mainImage())
+                                     <div class="relative shrink-0 {{ $post->is_pending ? 'uppy-file-item' : '' }}" {!! $post->is_pending ? 'data-file-uuid="' . $post->chunk_upload_uuid . '"' : '' !!}>
+                                         <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden relative">
+                                             @if($post->is_pending)
+                                                 <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white p-1">
+                                                     <i class="fas fa-spinner fa-spin text-sm mb-1"></i>
+                                                     <span class="uppy-pending-badge text-[10px] font-bold text-center leading-tight">Processando...</span>
+                                                 </div>
+                                             @elseif($post->mainImage())
                                                  <img src="{{ url('/private/' . str_replace('private/', '', $post->mainImage()->path)) }}" alt="{{ $post->name }}" class="w-full h-full object-cover">
                                              @else
-                                                 <i class="fas fa-image text-gray-400 text-lg"></i>
+                                                 <div class="flex items-center justify-center h-full">
+                                                     <i class="fas fa-image text-gray-400 text-lg"></i>
+                                                 </div>
                                              @endif
                                          </div>
                                          <button type="button" class="absolute h-8 w-8 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 text-xs"
@@ -471,13 +514,24 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->videos->where('type', 'reels') as $video)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $video->is_pending ? 'uppy-file-item' : '' }}" {!! $video->is_pending ? 'data-file-uuid="' . $video->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
-                                                    <i class="fas fa-video text-gray-400 text-lg"></i>
+                                                    @if($video->is_pending)
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-video text-gray-400 text-lg"></i>
+                                                    @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $video->name }}</p>
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $video->name }}
+                                                        @if($video->is_pending)
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
@@ -520,13 +574,24 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->videos->where('type', 'marketing_campaigns') as $video)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $video->is_pending ? 'uppy-file-item' : '' }}" {!! $video->is_pending ? 'data-file-uuid="' . $video->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
-                                                    <i class="fas fa-video text-gray-400 text-lg"></i>
+                                                    @if($video->is_pending)
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-video text-gray-400 text-lg"></i>
+                                                    @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $video->name }}</p>
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $video->name }}
+                                                        @if($video->is_pending)
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
@@ -582,13 +647,24 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->miscellaneous->where('type', 'spot') as $misc)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $misc->is_pending ? 'uppy-file-item' : '' }}" {!! $misc->is_pending ? 'data-file-uuid="' . $misc->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
-                                                    <i class="fas fa-broadcast-tower text-gray-400 text-lg"></i>
+                                                    @if($misc->is_pending)
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-broadcast-tower text-gray-400 text-lg"></i>
+                                                    @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p>
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $misc->name }}
+                                                        @if($misc->is_pending)
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
@@ -627,13 +703,24 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->miscellaneous->where('type', 'tag') as $misc)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $misc->is_pending ? 'uppy-file-item' : '' }}" {!! $misc->is_pending ? 'data-file-uuid="' . $misc->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
-                                                    <i class="fas fa-tag text-gray-400 text-lg"></i>
+                                                    @if($misc->is_pending)
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-tag text-gray-400 text-lg"></i>
+                                                    @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p>
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $misc->name }}
+                                                        @if($misc->is_pending)
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
@@ -670,10 +757,25 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->miscellaneous->where('type', 'adesivo') as $misc)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $misc->is_pending ? 'uppy-file-item' : '' }}" {!! $misc->is_pending ? 'data-file-uuid="' . $misc->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
-                                                <div class="flex-shrink-0"><i class="fas fa-sticky-note text-gray-400 text-lg"></i></div>
-                                                <div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p></div>
+                                                <div class="flex-shrink-0">
+                                                    @if($misc->is_pending)
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-sticky-note text-gray-400 text-lg"></i>
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $misc->name }}
+                                                        @if($misc->is_pending)
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
+                                                </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800" onclick="deleteMiscellaneous({{ $campaign->id }}, {{ $misc->id }})"><i class="fas fa-trash text-sm"></i></button>
                                         </div>
@@ -706,10 +808,25 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->miscellaneous->where('type', 'banner') as $misc)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $misc->is_pending ? 'uppy-file-item' : '' }}" {!! $misc->is_pending ? 'data-file-uuid="' . $misc->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
-                                                <div class="flex-shrink-0"><i class="fas fa-image text-gray-400 text-lg"></i></div>
-                                                <div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p></div>
+                                                <div class="flex-shrink-0">
+                                                    @if($misc->is_pending)
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-image text-gray-400 text-lg"></i>
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $misc->name }}
+                                                        @if($misc->is_pending)
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
+                                                </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800" onclick="deleteMiscellaneous({{ $campaign->id }}, {{ $misc->id }})"><i class="fas fa-trash text-sm"></i></button>
                                         </div>
@@ -742,10 +859,25 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->miscellaneous->where('type', 'faixa') as $misc)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $misc->is_pending ? 'uppy-file-item' : '' }}" {!! $misc->is_pending ? 'data-file-uuid="' . $misc->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
-                                                <div class="flex-shrink-0"><i class="fas fa-align-center text-gray-400 text-lg"></i></div>
-                                                <div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p></div>
+                                                <div class="flex-shrink-0">
+                                                    @if($misc->is_pending)
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-align-center text-gray-400 text-lg"></i>
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $misc->name }}
+                                                        @if($misc->is_pending)
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
+                                                </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800" onclick="deleteMiscellaneous({{ $campaign->id }}, {{ $misc->id }})"><i class="fas fa-trash text-sm"></i></button>
                                         </div>
@@ -780,13 +912,24 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($campaign->miscellaneous->where('type', 'script') as $misc)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $misc->is_pending ? 'uppy-file-item' : '' }}" {!! $misc->is_pending ? 'data-file-uuid="' . $misc->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
-                                                    <i class="fas fa-file-alt text-gray-400 text-lg"></i>
+                                                    @if($misc->is_pending)
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-file-alt text-gray-400 text-lg"></i>
+                                                    @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $misc->name }}</p>
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $misc->name }}
+                                                        @if($misc->is_pending)
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"

@@ -122,11 +122,20 @@
 
                         <!-- Existing Image -->
                         @if($news->image)
-                        <div class="mt-6">
+                        <div class="mt-6 {{ $news->image->status === 'pending' ? 'uppy-file-item' : '' }}" {!! $news->image->status === 'pending' ? 'data-file-uuid="' . $news->image->chunk_upload_uuid . '"' : '' !!}>
                             <h5 class="text-modern-body font-medium mb-3">Imagem Atual</h5>
                             <div class="relative group">
-                                <img src="{{ $news->image->url }}" alt="{{ $news->title }}" 
-                                     class="w-full h-64 object-cover rounded-lg border border-gray-200">
+                                @if($news->image->status === 'pending')
+                                    <div class="w-full h-64 bg-gray-100 flex flex-col items-center justify-center rounded-lg border border-gray-200">
+                                        <i class="fas fa-spinner fa-spin text-primary-500 text-3xl mb-3"></i>
+                                        <span class="uppy-pending-badge text-sm font-semibold bg-amber-100 text-amber-800 px-3 py-1 rounded-full">
+                                            Processando...
+                                        </span>
+                                    </div>
+                                @else
+                                    <img src="{{ $news->image->url }}" alt="{{ $news->title }}" 
+                                         class="w-full h-64 object-cover rounded-lg border border-gray-200">
+                                @endif
                                 <div class="absolute top-2 right-2 bg-black bg-opacity-50 rounded-full p-2">
                                     <button type="button" class="text-white hover:text-red-400 transition-colors duration-200"
                                             onclick="deleteImage({{ $news->id }})">

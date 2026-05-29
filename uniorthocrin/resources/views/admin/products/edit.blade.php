@@ -193,9 +193,14 @@
                                 <h5 class="text-modern-body font-medium mb-3">Imagens Existentes ({{ $product->images->count() }})</h5>
                                 <div class="flex flex-wrap gap-4 mb-8">
                                     @foreach($product->images as $image)
-                                    <div class="relative shrink-0">
-                                        <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
-                                            @if($image->thumbnail_url || $image->url)
+                                    <div class="relative shrink-0 {{ $image->status === 'pending' ? 'uppy-file-item' : '' }}" {!! $image->status === 'pending' ? 'data-file-uuid="' . $image->chunk_upload_uuid . '"' : '' !!}>
+                                        <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden relative">
+                                            @if($image->status === 'pending')
+                                                <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white p-1">
+                                                    <i class="fas fa-spinner fa-spin text-sm mb-1"></i>
+                                                    <span class="uppy-pending-badge text-[10px] font-bold text-center leading-tight">Processando...</span>
+                                                </div>
+                                            @elseif($image->thumbnail_url || $image->url)
                                                 <img src="{{ $image->thumbnail_url ?? $image->url }}" alt="Imagem" class="w-full h-full object-cover">
                                             @else
                                                 <div class="flex items-center justify-center h-full">
@@ -238,25 +243,35 @@
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
                             <div id="gallery_videos_preview" class="mt-4"></div>
-                            
-                            <!-- Lista dos Vídeos Existentes -->
+                                  <!-- Lista dos Vídeos Existentes -->
                             @if($product->videos && $product->videos->count() > 0)
                             <div class="mt-4">
                                 <h5 class="text-modern-body font-medium mb-3">Vídeos Existentes ({{ $product->videos->count() }})</h5>
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($product->videos as $video)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $video->status === 'pending' ? 'uppy-file-item' : '' }}" {!! $video->status === 'pending' ? 'data-file-uuid="' . $video->chunk_upload_uuid . '"' : '' !!}>
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
-                                                    <i class="fas fa-video text-gray-400 text-lg"></i>
+                                                    @if($video->status === 'pending')
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-lg"></i>
+                                                    @else
+                                                        <i class="fas fa-video text-gray-400 text-lg"></i>
+                                                    @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 truncate" title="{{ $video->name }}">{{ $video->name }}</p>
+                                                    <p class="text-sm font-medium text-gray-900 truncate" title="{{ $video->name }}">
+                                                        {{ $video->name }}
+                                                        @if($video->status === 'pending')
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
                                                 </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
-                                                    onclick="deleteFile({{ $video->id }})">
+                                                     onclick="deleteFile({{ $video->id }})">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button>
                                         </div>
