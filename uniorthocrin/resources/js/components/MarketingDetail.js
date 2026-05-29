@@ -235,11 +235,38 @@ class MarketingDetail {
     
     updateMainVideo(video) {
         const mainVideo = document.getElementById('mainVideo');
-        if (mainVideo && video.video_url) {
-            const source = mainVideo.querySelector('source');
-            if (source) {
-                source.src = video.video_url;
-                mainVideo.load(); // Recarregar o vídeo
+        if (!mainVideo) return;
+        
+        const videoContainer = mainVideo.closest('.bg-gray-800') || mainVideo.parentElement;
+        if (videoContainer) {
+            if (video.video_source === 'url' && video.embed_url) {
+                videoContainer.innerHTML = `
+                    <div class="relative w-full" style="padding-top: 56.25%;" id="mainVideoWrapper">
+                        <iframe id="mainVideo"
+                                class="absolute inset-0 w-full h-full"
+                                src="${video.embed_url}"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                `;
+                console.log('MarketingDetail: Main video updated to embed:', video.embed_url);
+            } else if (video.video_url) {
+                videoContainer.innerHTML = `
+                    <video id="mainVideo" class="w-full h-96" controls>
+                        <source src="${video.video_url}" type="video/mp4">
+                        Seu navegador não suporta o elemento de vídeo.
+                    </video>
+                    ${video.file_name ? `<p class="text-gray-400 text-xs mt-2 px-2 pb-2 truncate" title="${video.file_name}">Ficheiro: ${video.file_name}</p>` : ''}
+                `;
+                console.log('MarketingDetail: Main video updated to HTML5:', video.video_url);
+            } else {
+                videoContainer.innerHTML = `
+                    <div class="w-full h-96 bg-gray-800 flex items-center justify-center">
+                        <p class="text-white">Nenhum vídeo disponível</p>
+                    </div>
+                `;
             }
         }
     }

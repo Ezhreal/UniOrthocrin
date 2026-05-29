@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Helpers\VideoUrlHelper;
 use App\Models\Product;
 use App\Models\User;
 use App\Repositories\Interfaces\RepositoryInterface;
@@ -105,18 +106,41 @@ class ProductRepository implements RepositoryInterface
 
     public function getProductVideos($product)
     {
-        // Buscar vídeos relacionados ao produto usando a nova estrutura
+        $result = collect();
+
+        // --- Vídeo via URL externa (YouTube / Vimeo) ---
+        if ($product->video_source === 'url' && !empty($product->video_url)) {
+            $embedUrl = VideoUrlHelper::toEmbedUrl($product->video_url);
+            $result->push([
+                'id'           => 'ext_' . $product->id,
+                'title'        => $product->name,
+                'file_name'    => null,
+                'video_url'    => $product->video_url,
+                'embed_url'    => $embedUrl,
+                'video_source' => 'url',
+                'type'         => 'video',
+                'thumbnail'    => VideoUrlHelper::getThumbnailUrl($product->video_url)
+                                   ?? ($product->thumbnail_path ? url('/' . $product->thumbnail_path) : 'https://placehold.co/600x600?text=Vídeo'),
+            ]);
+        }
+
+        // --- Vídeos por upload (tabela files) ---
         $videos = $product->videos()->get();
-        
-        return $videos->map(function($file) use ($product) {
-            return [
-                'id' => $file->id,
-                'title' => $product->name . ' - ' . $file->name,
-                'file_name' => $file->name,
-                'video_url' => $file->url,
-                'type' => 'video',
-                'thumbnail' => $product->thumbnail_path ? url('/' . $product->thumbnail_path) : 'https://placehold.co/600x600?text=Vídeo'
-            ];
+        $videos->each(function ($file) use ($product, &$result) {
+            $result->push([
+                'id'           => $file->id,
+                'title'        => $product->name . ' - ' . $file->name,
+                'file_name'    => $file->name,
+                'video_url'    => $file->url,
+                'embed_url'    => null,
+                'video_source' => 'upload',
+                'type'         => 'video',
+                'thumbnail'    => $product->thumbnail_path
+                                    ? url('/' . $product->thumbnail_path)
+                                    : 'https://placehold.co/600x600?text=Vídeo',
+            ]);
         });
+
+        return $result;
     }
 } 

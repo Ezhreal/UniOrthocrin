@@ -9,10 +9,12 @@ class ProductVideoPlayer {
         this.currentVideoIndex = 0;
         
         this.mainVideo = document.getElementById('mainVideo');
+        this.videoContainer = this.mainVideo ? (this.mainVideo.closest('.bg-gray-800') || this.mainVideo.parentElement) : null;
         this.videoItems = document.querySelectorAll('.video-item');
         
         console.log('ProductVideoPlayer: Elementos encontrados:', {
             mainVideo: !!this.mainVideo,
+            videoContainer: !!this.videoContainer,
             videoItems: this.videoItems.length
         });
         
@@ -35,7 +37,7 @@ class ProductVideoPlayer {
         this.videoItems.forEach((item, index) => {
             console.log(`ProductVideoPlayer: Adicionando listener para item ${index}`);
             item.addEventListener('click', (e) => {
-                // Não interceptar download (form) nem links — senão o submit/default é bloqueado
+                // Não interceptar download (form) nem links — senão o submit/default é bloco
                 if (e.target.closest('form') || e.target.closest('a[href]')) {
                     return;
                 }
@@ -58,13 +60,37 @@ class ProductVideoPlayer {
         console.log('ProductVideoPlayer: Vídeo selecionado:', video);
         
         // Atualizar vídeo principal
-        if (this.mainVideo) {
-            const source = this.mainVideo.querySelector('source');
-            if (source) {
-                source.src = video.video_url;
-                this.mainVideo.load(); // Recarregar o vídeo
-                console.log('ProductVideoPlayer: Vídeo principal atualizado para:', video.video_url);
+        if (this.videoContainer) {
+            if (video.video_source === 'url' && video.embed_url) {
+                this.videoContainer.innerHTML = `
+                    <div class="relative w-full" style="padding-top: 56.25%;" id="mainVideoWrapper">
+                        <iframe id="mainVideo"
+                                class="absolute inset-0 w-full h-full"
+                                src="${video.embed_url}"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                `;
+                console.log('ProductVideoPlayer: Vídeo principal atualizado para embed:', video.embed_url);
+            } else if (video.video_url) {
+                this.videoContainer.innerHTML = `
+                    <video id="mainVideo" class="w-full h-96" controls>
+                        <source src="${video.video_url}" type="video/mp4">
+                        Seu navegador não suporta o elemento de vídeo.
+                    </video>
+                    ${video.file_name ? `<p class="text-gray-400 text-xs mt-2 px-2 pb-2 truncate" title="${video.file_name}">Ficheiro: ${video.file_name}</p>` : ''}
+                `;
+                console.log('ProductVideoPlayer: Vídeo principal atualizado para HTML5:', video.video_url);
+            } else {
+                this.videoContainer.innerHTML = `
+                    <div class="w-full h-96 bg-gray-800 flex items-center justify-center">
+                        <p class="text-white">Nenhum vídeo disponível</p>
+                    </div>
+                `;
             }
+            this.mainVideo = document.getElementById('mainVideo');
         }
         
         // Atualizar estado visual dos itens
@@ -74,7 +100,7 @@ class ProductVideoPlayer {
             
             if (i === index) {
                 // Item ativo
-                item.classList.add('border-l-4');
+                item.classList.add('border-l-4', 'border-l-[#910039]');
                 console.log(`ProductVideoPlayer: Item ${i} marcado como ativo`);
             } else {
                 // Item inativo

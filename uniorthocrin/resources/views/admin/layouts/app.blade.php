@@ -641,5 +641,6 @@
     <script src="https://releases.transloadit.com/uppy/v3.27.3/uppy.min.js"></script>
     <script src="{{ asset('js/uppy-global.js') }}"></script>
 
+    @stack('scripts')
 </body>
 </html>

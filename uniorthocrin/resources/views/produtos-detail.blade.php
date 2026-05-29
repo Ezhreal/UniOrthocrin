@@ -132,15 +132,34 @@
                 <div class="flex-grow max-w-[70%]">
                     <div class="bg-gray-900 rounded-lg">
                         <div class="relative">
-                            <!-- Thumbnail do vídeo -->
+                        <!-- Thumbnail do vídeo -->
                             <div class="bg-gray-800">
+                                @php $mainV = $videos->first(); @endphp
+                                @if(!empty($mainV['video_source']) && $mainV['video_source'] === 'url' && !empty($mainV['embed_url']))
+                                {{-- Player embed (YouTube / Vimeo) --}}
+                                <div class="relative w-full" style="padding-top: 56.25%;" id="mainVideoWrapper">
+                                    <iframe id="mainVideo"
+                                            class="absolute inset-0 w-full h-full"
+                                            src="{{ $mainV['embed_url'] }}"
+                                            frameborder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowfullscreen>
+                                    </iframe>
+                                </div>
+                                @elseif(!empty($mainV['video_url']))
+                                {{-- Player HTML5 (upload) --}}
                                 <video id="mainVideo" class="w-full h-96" controls>
-                                    <source src="{{ $videos->first()['video_url'] ?? '' }}" type="video/mp4">
+                                    <source src="{{ $mainV['video_url'] ?? '' }}" type="video/mp4">
                                     Seu navegador não suporta o elemento de vídeo.
                                 </video>
-                                @php $mainV = $videos->first(); @endphp
                                 @if(!empty($mainV['file_name']))
                                 <p class="text-gray-400 text-xs mt-2 px-1 truncate" title="{{ $mainV['file_name'] }}">{{ $mainV['file_name'] }}</p>
+                                @endif
+                                @else
+                                {{-- Nenhum vídeo disponível --}}
+                                <div class="w-full h-64 flex items-center justify-center bg-gray-800">
+                                    <p class="text-gray-500 text-sm">Nenhum vídeo disponível.</p>
+                                </div>
                                 @endif
                             </div>
                             

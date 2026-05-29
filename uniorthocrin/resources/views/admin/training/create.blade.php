@@ -120,28 +120,14 @@
                     <div class="space-modern-sm">
                         <!-- Galeria de Vídeos -->
                         <div>
-                            <label for="videos" class="form-label-modern">Galeria de Vídeos</label>
-                            <p class="text-xs text-gray-500 mb-2">O nome original de cada ficheiro é guardado e mostrado na listagem e no detalhe do treinamento.</p>
-                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
-                                <div class="text-center">
-                                    <i class="fas fa-video text-4xl text-gray-400 mb-4"></i>
-                                    <p class="text-modern-body font-medium mb-2">Arraste e solte os vídeos aqui</p>
-                                    <p class="text-modern-caption mb-4">ou clique para selecionar</p>
-                                    <input type="file" id="videos" name="videos[]" multiple
-                                           class="hidden" accept="video/*">
-                                    <label for="videos" class="btn-modern-secondary cursor-pointer">
-                                        <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Vídeos
-                                    </label>
-                                </div>
-                            </div>
-                            <div id="videos_preview" class="mt-4"></div>
-                            @error('videos')
-                                <p class="form-error-modern">{{ $message }}</p>
-                            @enderror
-                            @error('videos.*')
-                                <p class="form-error-modern">{{ $message }}</p>
-                            @enderror
+                            <x-video-source-selector
+                                inputId="videos"
+                                inputName="videos[]"
+                                urlFieldName="video_url"
+                                label="Galeria de Vídeos"
+                                description="Faça upload de um arquivo de vídeo ou informe um link do YouTube/Vimeo."
+                                :multiple="true"
+                            />
                         </div>
 
                         <!-- Galeria de PDFs -->

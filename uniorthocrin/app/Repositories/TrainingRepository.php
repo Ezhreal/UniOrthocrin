@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Helpers\VideoUrlHelper;
 use App\Models\Training;
 use App\Models\User;
 use App\Repositories\Interfaces\RepositoryInterface;
@@ -100,18 +101,40 @@ class TrainingRepository implements RepositoryInterface
 
     public function getTrainingVideos($training)
     {
-        // Buscar vídeos relacionados ao treinamento
+        $result = collect();
+
+        // --- Vídeo via URL externa (YouTube / Vimeo) ---
+        if ($training->video_source === 'url' && !empty($training->video_url)) {
+            $embedUrl = VideoUrlHelper::toEmbedUrl($training->video_url);
+            $result->push([
+                'id'           => 'ext_' . $training->id,
+                'title'        => $training->name,
+                'file_name'    => null,
+                'video_url'    => $training->video_url,
+                'embed_url'    => $embedUrl,
+                'video_source' => 'url',
+                'type'         => 'video',
+                'thumbnail'    => VideoUrlHelper::getThumbnailUrl($training->video_url)
+                                   ?? ($training->thumbnail_path ? url('/' . $training->thumbnail_path) : 'https://placehold.co/600x600?text=Vídeo'),
+            ]);
+        }
+
+        // --- Vídeos por upload (tabela files) ---
         $videos = $training->videos()->get();
-        
-        return $videos->map(function($file) use ($training) {
-            return [
-                'id' => $file->id,
-                'title' => $training->name . ' - ' . $file->name,
-                'video_url' => $file->url,
-                'type' => 'video',
-                'thumbnail' => $file->thumbnail_url ?? 'https://placehold.co/600x600?text=Vídeo'
-            ];
+        $videos->each(function ($file) use ($training, &$result) {
+            $result->push([
+                'id'           => $file->id,
+                'title'        => $training->name . ' - ' . $file->name,
+                'file_name'    => $file->name,
+                'video_url'    => $file->url,
+                'embed_url'    => null,
+                'video_source' => 'upload',
+                'type'         => 'video',
+                'thumbnail'    => $file->thumbnail_url ?? 'https://placehold.co/600x600?text=Vídeo',
+            ]);
         });
+
+        return $result;
     }
 
     public function getTrainingPdfs($training)

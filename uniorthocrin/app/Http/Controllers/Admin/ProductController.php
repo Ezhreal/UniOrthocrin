@@ -12,6 +12,7 @@ use App\Models\UserType;
 use App\Models\ProductPermission;
 use App\Models\OneDriveSync;
 use App\Models\ChunkUpload;
+use App\Rules\ExternalVideoUrl;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -60,16 +61,19 @@ class ProductController extends Controller
     {
         // Validações básicas + validações específicas de arquivo
         $validationRules = array_merge([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'product_category_id' => 'required|exists:product_categories,id',
-            'product_series_id' => 'nullable|exists:product_series,id',
-            'status' => 'required|in:active,inactive',
-            'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
-            'permissions' => 'nullable|array',
+            'name'                   => 'required|string|max:255',
+            'description'            => 'nullable|string|max:1000',
+            'product_category_id'    => 'required|exists:product_categories,id',
+            'product_series_id'      => 'nullable|exists:product_series,id',
+            'status'                 => 'required|in:active,inactive',
+            'thumbnail'              => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
+            'permissions'            => 'nullable|array',
             'permissions.*.user_type_id' => 'required|exists:user_types,id',
-            'permissions.*.can_view' => 'boolean',
+            'permissions.*.can_view'     => 'boolean',
             'permissions.*.can_download' => 'boolean',
+            // Vídeo externo
+            'video_source'           => 'nullable|in:upload,url',
+            'video_url'              => ['nullable', 'required_if:video_source,url', new ExternalVideoUrl()],
         ], FileValidationRequest::getProductValidationRules());
 
         $request->validate($validationRules, (new FileValidationRequest())->messages());
@@ -79,7 +83,8 @@ class ProductController extends Controller
         try {
             // Criar produto
             $product = Product::create($request->only([
-                'name', 'description', 'product_category_id', 'product_series_id', 'status'
+                'name', 'description', 'product_category_id', 'product_series_id', 'status',
+                'video_url', 'video_source',
             ]));
 
             // Thumbnail opcional
@@ -211,16 +216,19 @@ class ProductController extends Controller
     {
         // Validações básicas + validações específicas de arquivo
         $validationRules = array_merge([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'product_category_id' => 'required|exists:product_categories,id',
-            'product_series_id' => 'nullable|exists:product_series,id',
-            'status' => 'required|in:active,inactive',
-            'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
-            'permissions' => 'nullable|array',
+            'name'                   => 'required|string|max:255',
+            'description'            => 'nullable|string|max:1000',
+            'product_category_id'    => 'required|exists:product_categories,id',
+            'product_series_id'      => 'nullable|exists:product_series,id',
+            'status'                 => 'required|in:active,inactive',
+            'thumbnail'              => 'nullable|image|mimes:jpeg,jpg,png,webp|max:10240',
+            'permissions'            => 'nullable|array',
             'permissions.*.user_type_id' => 'required|exists:user_types,id',
-            'permissions.*.can_view' => 'boolean',
+            'permissions.*.can_view'     => 'boolean',
             'permissions.*.can_download' => 'boolean',
+            // Vídeo externo
+            'video_source'           => 'nullable|in:upload,url',
+            'video_url'              => ['nullable', 'required_if:video_source,url', new ExternalVideoUrl()],
         ], FileValidationRequest::getProductValidationRules());
 
         $request->validate($validationRules, (new FileValidationRequest())->messages());
@@ -230,7 +238,8 @@ class ProductController extends Controller
         try {
             // Atualizar produto
             $product->update($request->only([
-                'name', 'description', 'product_category_id', 'product_series_id', 'status'
+                'name', 'description', 'product_category_id', 'product_series_id', 'status',
+                'video_url', 'video_source',
             ]));
 
             if ($request->hasFile('thumbnail')) {

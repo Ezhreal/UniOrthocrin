@@ -707,12 +707,19 @@ document.addEventListener('DOMContentLoaded', function () {
                             payload: uploadPayload
                         });
                         uploadBc.close();
-
-                        // Foca a aba existente sem recarregá-la
-                        window.open('', 'uppy_upload_manager');
+                        
+                        // NOTA: Não chamamos window.open se o gerenciador já estiver aberto.
+                        // Isso previne que o foco do usuário seja roubado, permitindo que continue preenchendo a tela atual.
                     } else {
-                        // Abre o gerenciador de uploads em nova aba com o nome do target
-                        const managerWindow = window.open('/admin/upload-manager', 'uppy_upload_manager');
+                        // Abre o gerenciador de uploads em janela popup para não atrapalhar a navegação principal
+                        const managerWindow = window.open('/admin/upload-manager?popup=1', 'uppy_upload_manager', 'width=850,height=600,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes');
+
+                        if (managerWindow) {
+                            try {
+                                managerWindow.blur();
+                            } catch(e) {}
+                            window.focus();
+                        }
 
                         // Aguarda o sinal de prontidão da nova aba antes de enviar os arquivos
                         const readyHandler = function(event) {
@@ -819,7 +826,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (isOpen) {
                         window.open('', 'uppy_upload_manager');
                     } else {
-                        window.open('/admin/upload-manager', 'uppy_upload_manager');
+                        window.open('/admin/upload-manager?popup=1', 'uppy_upload_manager', 'width=850,height=600,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes');
                     }
                 });
             });

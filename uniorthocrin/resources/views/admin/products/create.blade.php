@@ -180,29 +180,14 @@
 
                         <!-- Galeria de Vídeos -->
                         <div>
-                            <label for="gallery_videos" class="form-label-modern">Galeria de Vídeos</label>
-                            <p class="text-xs text-gray-500 mb-2">O nome original de cada arquivo é guardado e aparece na listagem de produtos e na área do cliente.</p>
-                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
-                                <div class="text-center">
-                                    <i class="fas fa-video text-4xl text-gray-400 mb-4"></i>
-                                    <p class="text-modern-body font-medium mb-2">Arraste e solte os vídeos aqui</p>
-                                    <p class="text-modern-caption mb-4">ou clique para selecionar</p>
-                                    <input type="file" id="gallery_videos" name="gallery_videos[]" multiple
-                                           class="hidden" accept="video/*">
-                                    <label for="gallery_videos" class="btn-modern-secondary cursor-pointer">
-                                        <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Vídeos
-                                    </label>
-                                </div>
-                            </div>
-                            <div id="gallery_videos_preview" class="mt-4"></div>
-                            @error('gallery_videos')
-                                <p class="form-error-modern">{{ $message }}</p>
-                            @enderror
-                            @error('gallery_videos.*')
-                                <p class="form-error-modern">{{ $message }}</p>
-                            @enderror
-                            
+                            <x-video-source-selector
+                                inputId="gallery_videos"
+                                inputName="gallery_videos[]"
+                                urlFieldName="video_url"
+                                label="Galeria de Vídeos"
+                                description="Faça upload de um arquivo de vídeo ou informe um link do YouTube/Vimeo. Ao usar link externo, o vídeo será exibido via player embed."
+                                :multiple="true"
+                            />
                         </div>
                     </div>
                 </div>

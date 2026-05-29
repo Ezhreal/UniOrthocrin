@@ -125,29 +125,18 @@
                     <div class="space-modern-sm">
                             <!-- Galeria de Vídeos -->
                         <div>
-                            <label for="videos" class="form-label-modern">Galeria de Vídeos</label>
-                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
-                                <div class="text-center">
-                                    <i class="fas fa-video text-4xl text-gray-400 mb-4"></i>
-                                    <p class="text-modern-body font-medium mb-2">Arraste e solte os vídeos aqui</p>
-                                    <p class="text-modern-caption mb-4">ou clique para selecionar</p>
-                                    <input type="file" id="videos" name="videos[]" multiple
-                                           class="hidden" accept="video/*">
-                                    <label for="videos" class="btn-modern-secondary cursor-pointer">
-                                        <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Vídeos
-                                    </label>
-                                </div>
-                            </div>
-                            @error('videos')
-                                <p class="form-error-modern">{{ $message }}</p>
-                            @enderror
-                            @error('videos.*')
-                                <p class="form-error-modern">{{ $message }}</p>
-                            @enderror
+                            <x-video-source-selector
+                                inputId="videos"
+                                inputName="videos[]"
+                                urlFieldName="video_url"
+                                label="Galeria de Vídeos"
+                                description="Faça upload de um novo arquivo de vídeo ou informe um link do YouTube/Vimeo."
+                                :currentUrl="old('video_url', $training->video_url)"
+                                :currentSource="old('video_source', $training->video_source)"
+                                :multiple="true"
+                            />
 
                             <!-- Preview dos NOVOS vídeos selecionados nesta edição -->
-                            <div id="videos_preview" class="mt-4"></div>
                             
                             @php
                                 // Compatível com dados antigos (sem file_type no pivot)

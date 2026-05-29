@@ -59,11 +59,8 @@
                 </form>
             </div>
             @endif
-        </div>
-
-        <!-- Box 1: Galeria de Vídeos -->
-        @if($training->files()->where('type', 'video')->count() > 0)
-        @php $trainingMainVideo = $training->files()->where('type', 'video')->first(); @endphp
+             <!-- Box 1: Galeria de Vídeos -->
+        @if($videos && $videos->count() > 0)
         <div class="mb-12 bg-white p-8">
             <h2 class="text-[#910039] text-2xl font-bold mb-8">Galeria de Vídeos</h2>
             
@@ -74,48 +71,33 @@
                     <div class="bg-gray-900 rounded-lg">
                         <div class="relative">
                             <!-- Thumbnail do vídeo -->
-                            <div class="bg-gray-800">
+                            <div class="bg-gray-800" id="videoPlayerContainer">
+                                @php $mainV = $videos->first(); @endphp
+                                @if(!empty($mainV['video_source']) && $mainV['video_source'] === 'url' && !empty($mainV['embed_url']))
+                                {{-- Player embed (YouTube / Vimeo) --}}
+                                <div class="relative w-full" style="padding-top: 56.25%;">
+                                    <iframe id="mainVideo"
+                                            class="absolute inset-0 w-full h-full"
+                                            src="{{ $mainV['embed_url'] }}"
+                                            frameborder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowfullscreen>
+                                    </iframe>
+                                </div>
+                                @elseif(!empty($mainV['video_url']))
+                                {{-- Player HTML5 (upload) --}}
                                 <video id="mainVideo" class="w-full h-96" controls>
-                                    <source src="{{ $trainingMainVideo->url ?? '' }}" type="video/mp4">
+                                    <source src="{{ $mainV['video_url'] ?? '' }}" type="video/mp4">
                                     Seu navegador não suporta o elemento de vídeo.
                                 </video>
-                                @if($trainingMainVideo && $trainingMainVideo->name)
-                                <p class="text-gray-400 text-xs mt-2 px-2 pb-2 truncate" title="{{ $trainingMainVideo->name }}">Ficheiro: {{ $trainingMainVideo->name }}</p>
+                                @if(!empty($mainV['file_name']))
+                                <p class="text-gray-400 text-xs mt-2 px-2 pb-2 truncate" title="{{ $mainV['file_name'] }}">Ficheiro: {{ $mainV['file_name'] }}</p>
                                 @endif
-                            </div>
-                            
-                            <!-- Controles do vídeo -->
-                            <div class="bg-gray-800 p-4">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-4">
-                                        <button class="text-white hover:text-gray-300 cursor-pointer">
-                                            <i class="fas fa-play"></i>
-                                        </button>
-                                        <div class="flex items-center gap-2">
-                                            <i class="fas fa-volume-up text-white"></i>
-                                            <div class="w-20 h-1 bg-gray-600 rounded-full">
-                                                <div class="w-3/4 h-full bg-white rounded-full"></div>
-                                            </div>
-                                        </div>
-                                        <span class="text-white text-sm">0:00 / 0:30</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-white hover:text-gray-300 cursor-pointer">
-                                            <i class="fas fa-expand"></i>
-                                        </button>
-                                        @if($training->canBeDownloadedBy(auth()->user()))
-                                        <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-block">
-                                            @csrf
-                                            <input type="hidden" name="content_type" value="training">
-                                            <input type="hidden" name="content_id" value="{{ $training->id }}">
-                                            <input type="hidden" name="type" value="video">
-                                            <button type="submit" class="text-white hover:text-gray-300 cursor-pointer">
-                                                <i class="fas fa-download"></i>
-                                            </button>
-                                        </form>
-                                        @endif
-                                    </div>
+                                @else
+                                <div class="w-full h-96 bg-gray-800 flex items-center justify-center">
+                                    <p class="text-white">Nenhum vídeo disponível</p>
                                 </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -125,27 +107,31 @@
                 <div class="flex-shrink-0 max-w-[30%]">
                     <h3 class="text-[#910039] font-bold text-lg mb-4">Lista de Vídeos</h3>
                     <div class="space-y-0">
-                        @forelse($training->files()->where('type', 'video')->get() as $video)
+                        @foreach($videos as $video)
                         @php
-                            $thumbSrc = $training->thumbnail_path
-                                ? url('/' . ltrim($training->thumbnail_path, '/'))
-                                : 'https://placehold.co/600x600?text=Vídeo';
+                            $videoSource = $video['video_source'] ?? 'upload';
+                            $videoTitle = $video['title'] ?? $training->name;
+                            $videoFileName = $video['file_name'] ?? null;
+                            $thumbSrc = $video['thumbnail'] ?? ($training->thumbnail_path ? url('/' . ltrim($training->thumbnail_path, '/')) : 'https://placehold.co/600x600?text=Vídeo');
                         @endphp
-                        <div class="video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t {{ $loop->last ? 'border-b' : '' }} border-gray-200" data-video="{{ $video->id }}" data-title="{{ $video->name }}">
+                        <div class="video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t {{ $loop->last ? 'border-b' : '' }} border-gray-200" 
+                             data-video="{{ $video['id'] }}" 
+                             data-title="{{ $videoTitle }}">
                             <div class="flex gap-3">
                                 <div class="w-20 h-12 bg-gray-300 rounded overflow-hidden flex-shrink-0">
                                     <img src="{{ $thumbSrc }}" alt="Thumbnail" class="w-full h-full object-cover">
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <h4 class="text-[#910039] font-semibold text-sm mb-1">{{ $video->name }}</h4>
+                                    <h4 class="text-[#910039] font-semibold text-sm mb-1">{{ $videoFileName ?? $videoTitle }}</h4>
                                     <div class="flex items-center justify-between">
-                                        <span class="text-gray-600 text-xs">Assistir</span>
-                                        @if($training->canBeDownloadedBy(auth()->user()))
+                                        <span class="text-gray-600 text-xs">{{ $videoSource === 'url' ? 'Link Externo' : 'Assistir' }}</span>
+                                        @if($videoSource !== 'url' && $training->canBeDownloadedBy(auth()->user()))
                                         <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
                                             @csrf
                                             <input type="hidden" name="content_type" value="training">
                                             <input type="hidden" name="content_id" value="{{ $training->id }}">
                                             <input type="hidden" name="type" value="video">
+                                            <input type="hidden" name="file_ids[]" value="{{ $video['id'] }}">
                                             <button type="submit" class="text-[#910039] text-xs hover:underline inline-flex items-center gap-1">
                                                 <i class="fas fa-download mr-1"></i>Download
                                             </button>
@@ -155,25 +141,29 @@
                                 </div>
                             </div>
                         </div>
-                        @empty
-                        <div class="text-center text-gray-500 py-4">
-                            <p>Nenhum vídeo disponível</p>
-                        </div>
-                        @endforelse
+                        @endforeach
 
                         <!-- Download dos vídeos -->
-                        @if($training->files()->where('type', 'video')->count() > 0 && $training->canBeDownloadedBy(auth()->user()))
+                        @php
+                            $downloadableCount = $videos->filter(fn($v) => ($v['video_source'] ?? 'upload') !== 'url')->count();
+                        @endphp
+                        @if($downloadableCount > 0 && $training->canBeDownloadedBy(auth()->user()))
                         <div class="mt-6">
-                <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-2">
-                    @csrf
-                    <input type="hidden" name="content_type" value="training">
-                    <input type="hidden" name="content_id" value="{{ $training->id }}">
-                    <input type="hidden" name="type" value="video">
-                    <button type="submit" class="inline-flex items-center gap-2 text-[#910039] font-semibold hover:underline">
-                        <i class="fas fa-download"></i>
-                        {{ $training->files()->where('type', 'video')->count() }} Vídeo{{ $training->files()->where('type', 'video')->count() > 1 ? 's' : '' }} disponíve{{ $training->files()->where('type', 'video')->count() > 1 ? 'is' : 'l' }}
-                    </button>
-                </form>
+                            <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-2">
+                                @csrf
+                                <input type="hidden" name="content_type" value="training">
+                                <input type="hidden" name="content_id" value="{{ $training->id }}">
+                                <input type="hidden" name="type" value="video">
+                                @foreach($videos as $video)
+                                    @if(($video['video_source'] ?? 'upload') !== 'url')
+                                        <input type="hidden" name="file_ids[]" value="{{ $video['id'] }}">
+                                    @endif
+                                @endforeach
+                                <button type="submit" class="inline-flex items-center gap-2 text-[#910039] font-semibold hover:underline">
+                                    <i class="fas fa-download"></i>
+                                    {{ $downloadableCount }} Vídeo{{ $downloadableCount > 1 ? 's' : '' }} disponíve{{ $downloadableCount > 1 ? 'is' : 'l' }}
+                                </button>
+                            </form>
                         </div>
                         @endif
                     </div>
@@ -293,7 +283,12 @@ document.addEventListener('DOMContentLoaded', function() {
         new window.DownloadManager();
     }
     
-         
+    // Inicializar Product Video Player
+    const videos = {!! json_encode($videos ?? []) !!};
+    if (window.ProductVideoPlayer && videos.length > 0) {
+        console.log('Inicializando ProductVideoPlayer para treinamento');
+        new window.ProductVideoPlayer(videos);
+    }
 });
 </script>
 @endsection 

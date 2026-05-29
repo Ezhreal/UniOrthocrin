@@ -297,37 +297,27 @@
                         <!-- Reels -->
                         <div class="mb-6">
                             <h4 class="text-modern-body font-medium mb-4">Reels</h4>
-                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
-                                <div class="text-center">
-                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
-                                    <p class="text-modern-body font-medium mb-2">Arraste e solte os vídeos aqui</p>
-                                    <p class="text-modern-caption mb-4">ou clique para selecionar</p>
-                                    <input type="file" id="videos_reels" name="videos_reels[]" multiple
-                                           class="hidden" accept=".mp4,.avi,.mov">
-                                    <label for="videos_reels" class="btn-modern-secondary cursor-pointer">
-                                        <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Reels
-                                    </label>
-                                </div>
-                            </div>
+                            <x-video-source-selector
+                                inputId="videos_reels"
+                                inputName="videos_reels[]"
+                                urlFieldName="video_url_reels"
+                                label="Reels"
+                                description="Faça upload de arquivo(s) de vídeo ou informe um link do YouTube/Vimeo."
+                                :multiple="true"
+                            />
                         </div>
-                        
+
                         <!-- Vídeos TV - Campanha -->
                         <div>
                             <h4 class="text-modern-body font-medium mb-4">Vídeos TV - Campanha</h4>
-                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
-                                <div class="text-center">
-                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
-                                    <p class="text-modern-body font-medium mb-2">Arraste e solte os vídeos aqui</p>
-                                    <p class="text-modern-caption mb-4">ou clique para selecionar</p>
-                                    <input type="file" id="videos_campaigns" name="videos_campaigns[]" multiple
-                                           class="hidden" accept=".mp4,.avi,.mov">
-                                    <label for="videos_campaigns" class="btn-modern-secondary cursor-pointer">
-                                        <i class="fas fa-plus mr-2"></i>
-                                        Selecionar Vídeos TV - Campanha
-                                    </label>
-                                </div>
-                            </div>
+                            <x-video-source-selector
+                                inputId="videos_campaigns"
+                                inputName="videos_campaigns[]"
+                                urlFieldName="video_url_campaigns"
+                                label="Vídeos TV - Campanha"
+                                description="Faça upload de arquivo(s) de vídeo ou informe um link do YouTube/Vimeo."
+                                :multiple="true"
+                            />
                         </div>
                     </div>
                 </div>

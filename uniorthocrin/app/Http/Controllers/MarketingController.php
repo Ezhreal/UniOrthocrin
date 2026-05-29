@@ -46,14 +46,33 @@ class MarketingController extends Controller
                 $videoFile = $video->files->where('type', 'video')->first();
                 $videoThumb = $video->files->where('type', 'image')->first();
 
+                $videoSource = $video->video_source ?? 'upload';
+                $embedUrl = null;
+                $videoUrl = $videoFile ? $videoFile->url : '';
+                $thumbnail = $videoThumb ? $videoThumb->optimized_url : '';
+
+                if ($videoSource === 'url' && !empty($video->video_url)) {
+                    $embedUrl = \App\Helpers\VideoUrlHelper::toEmbedUrl($video->video_url);
+                    $videoUrl = $video->video_url;
+                    if (empty($thumbnail)) {
+                        $thumbnail = \App\Helpers\VideoUrlHelper::getThumbnailUrl($video->video_url) ?? '';
+                    }
+                }
+
+                if (empty($thumbnail)) {
+                    $thumbnail = 'https://placehold.co/600x600?text=Vídeo';
+                }
+
                 return [
                     'id' => $video->id,
                     'file_id' => $videoFile?->id,
                     'name' => $video->name,
                     'title' => $video->name,
                     'type' => $video->type,
-                    'video_url' => $videoFile ? $videoFile->url : '',
-                    'thumbnail' => $videoThumb ? $videoThumb->optimized_url : '',
+                    'video_url' => $videoUrl,
+                    'embed_url' => $embedUrl,
+                    'video_source' => $videoSource,
+                    'thumbnail' => $thumbnail,
                     'file_name' => $videoFile?->name,
                     'description' => $video->description,
                 ];

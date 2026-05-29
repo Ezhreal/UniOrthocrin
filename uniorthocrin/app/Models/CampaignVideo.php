@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\VideoUrlHelper;
 use App\Models\Traits\HasCampaignContent;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,13 +25,32 @@ class CampaignVideo extends Model
         'description',
         'type',
         'status',
-        'thumbnail_path'
+        'thumbnail_path',
+        'video_url',
+        'video_source',
     ];
 
     protected $casts = [
-        'status' => 'string',
-        'type' => 'string'
+        'status'       => 'string',
+        'type'         => 'string',
+        'video_source' => 'string',
     ];
+
+    /**
+     * Retorna a URL de embed do vídeo externo, ou null.
+     */
+    public function getEmbedUrlAttribute(): ?string
+    {
+        return VideoUrlHelper::toEmbedUrl($this->video_url);
+    }
+
+    /**
+     * Indica se este vídeo usa URL externa (YouTube/Vimeo).
+     */
+    public function hasExternalVideo(): bool
+    {
+        return $this->video_source === 'url' && !empty($this->video_url);
+    }
 
     /**
      * Get the campaign that owns the video.

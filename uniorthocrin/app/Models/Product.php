@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\VideoUrlHelper;
 use App\Models\Traits\HasFiles;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,12 +19,31 @@ class Product extends Model
         'product_category_id',
         'description',
         'status',
-        'thumbnail_path'
+        'thumbnail_path',
+        'video_url',
+        'video_source',
     ];
 
     protected $casts = [
-        'status' => 'string'
+        'status'       => 'string',
+        'video_source' => 'string',
     ];
+
+    /**
+     * Retorna a URL de embed do vídeo externo, ou null se for upload ou não definido.
+     */
+    public function getEmbedUrlAttribute(): ?string
+    {
+        return VideoUrlHelper::toEmbedUrl($this->video_url);
+    }
+
+    /**
+     * Verifica se o produto tem vídeo via URL externa.
+     */
+    public function hasExternalVideo(): bool
+    {
+        return $this->video_source === 'url' && !empty($this->video_url);
+    }
 
     /**
      * Get the category that owns the product.

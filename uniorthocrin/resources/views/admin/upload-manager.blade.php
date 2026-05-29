@@ -3,6 +3,19 @@
 @section('title', 'Gerenciador de Uploads - Admin')
 
 @section('content')
+@if(request()->has('popup'))
+<style>
+    /* Hide layout sidebar, headers, and footer-like structures */
+    aside, header, footer { display: none !important; }
+    /* Override padding and margins on the main content area */
+    main { padding: 24px !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; height: auto !important; overflow: auto !important; }
+    body { background-color: #f8fafc !important; }
+    .flex-1 { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
+    /* Hide scrollbar restrictions */
+    .overflow-hidden { overflow: auto !important; }
+    .h-screen { height: auto !important; min-height: 100vh !important; }
+</style>
+@endif
 <div class="space-y-6">
     <!-- Modern Page Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

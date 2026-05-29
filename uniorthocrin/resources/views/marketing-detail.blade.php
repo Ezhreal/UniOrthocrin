@@ -370,13 +370,12 @@
             @endif
             
             <!-- Conteúdo dos vídeos -->
-            <div class="flex gap-8">
-                <!-- Player principal -->
+                          <!-- Player principal -->
                 <div class="flex-grow max-w-[70%]">
                     <div class="bg-gray-900 rounded-lg">
                         <div class="relative">
                             <!-- Thumbnail do vídeo -->
-                            <div class="bg-gray-800">
+                            <div class="bg-gray-800" id="videoPlayerContainer">
                                 @php
                                     $firstVideoType = $campaign->videos()->active()->pluck('type')->first();
                                     $mainVideo = $campaign->videos()->active()->where('type', $firstVideoType)->with('files')->first();
@@ -384,7 +383,19 @@
                                     $mainVideoThumb = $mainVideo ? $mainVideo->files->where('type', 'image')->first() : null;
                                 @endphp
                                 
-                                @if($mainVideoFile)
+                                @if($mainVideo && $mainVideo->video_source === 'url' && !empty($mainVideo->video_url))
+                                    @php $embedUrl = app('App\Helpers\VideoUrlHelper')::toEmbedUrl($mainVideo->video_url); @endphp
+                                    {{-- Player embed (YouTube / Vimeo) --}}
+                                    <div class="relative w-full" style="padding-top: 56.25%;">
+                                        <iframe id="mainVideo"
+                                                class="absolute inset-0 w-full h-full"
+                                                src="{{ $embedUrl }}"
+                                                frameborder="0"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                @elseif($mainVideoFile)
                                 <video id="mainVideo" class="w-full h-96" controls>
                                     <source src="{{ url('/' . $mainVideoFile->path) }}" type="video/mp4">
                                     Seu navegador não suporta o elemento de vídeo.
@@ -415,14 +426,30 @@
                         @php
                             $videoFile = $video->files->where('type', 'video')->first();
                             $videoThumb = $video->files->where('type', 'image')->first();
+                            $videoSource = $video->video_source ?? 'upload';
+                            
+                            $thumbUrl = '';
+                            if ($videoThumb && file_exists(storage_path('app/' . $videoThumb->path))) {
+                                $thumbUrl = '/private/' . str_replace('private/', '', $videoThumb->path);
+                            } elseif ($videoSource === 'url' && !empty($video->video_url)) {
+                                $thumbUrl = app('App\Helpers\VideoUrlHelper')::getThumbnailUrl($video->video_url);
+                            }
+                            if (empty($thumbUrl)) {
+                                $thumbUrl = $campaign->thumbnail_path 
+                                    ? url('/' . $campaign->thumbnail_path) 
+                                    : 'https://placehold.co/600x600?text=Vídeo';
+                            }
                         @endphp
                         
-                        @if($videoFile)
-                        <div class="video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t {{ $loop->last ? 'border-b' : '' }} border-gray-200" data-video="{{ $videoFile->id }}" data-title="{{ $video->name }}" data-type="{{ $video->type }}">
+                        @if(($videoSource === 'url' && !empty($video->video_url)) || $videoFile)
+                        <div class="video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t {{ $loop->last ? 'border-b' : '' }} border-gray-200" 
+                             data-video="{{ $videoSource === 'url' ? 'ext_' . $video->id : ($videoFile ? $videoFile->id : $video->id) }}" 
+                             data-title="{{ $video->name }}" 
+                             data-type="{{ $video->type }}">
                             <div class="flex gap-3">
                                 <div class="w-20 h-12 bg-gray-300 rounded overflow-hidden flex-shrink-0">
-                                    @if($videoThumb && file_exists(storage_path('app/' . $videoThumb->path)))
-                                    <img src="/private/{{ str_replace('private/', '', $videoThumb->path) }}" alt="Thumbnail" class="w-full h-auto object-cover">
+                                    @if(!empty($thumbUrl))
+                                    <img src="{{ $thumbUrl }}" alt="Thumbnail" class="w-full h-full object-cover">
                                     @else
                                     <div class="w-full h-12 bg-gray-400 flex items-center justify-center">
                                         <i class="fas fa-video text-gray-600"></i>
@@ -431,11 +458,14 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h4 class="text-[#910039] font-semibold text-sm mb-1">{{ $video->name }}</h4>
-                                    @if($videoFile->name)
+                                    @if($videoSource === 'url')
+                                    <p class="text-gray-500 text-xs truncate mb-1" title="{{ $video->video_url }}">Link: {{ $video->video_url }}</p>
+                                    @elseif($videoFile && $videoFile->name)
                                     <p class="text-gray-500 text-xs truncate mb-1" title="{{ $videoFile->name }}">{{ $videoFile->name }}</p>
                                     @endif
                                     <div class="flex items-center justify-between gap-2">
                                         <span class="text-gray-600 text-xs">{{ ucfirst(str_replace('_', ' ', $video->type)) }}</span>
+                                        @if($videoSource !== 'url' && $videoFile)
                                         <form method="POST" action="{{ route('download.files') }}" onclick="event.stopPropagation()" onsubmit="event.stopPropagation(); return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1 shrink-0 relative z-10">
                                             @csrf
                                             <input type="hidden" name="content_type" value="marketing">
@@ -447,15 +477,19 @@
                                                 Download
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
                         </div>
                         @endif
                         @endforeach
-
+ 
                         <!-- Download dos vídeos (só deste grupo / tab) -->
-                        @if($videosToShow->count() > 0)
+                        @php
+                            $withFilesCount = $videosToShow->filter(fn($v) => ($v->video_source ?? 'upload') !== 'url' && $v->files->where('type', 'video')->first())->count();
+                        @endphp
+                        @if($withFilesCount > 0)
                         <div class="mt-6">
                             <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline">
                                 @csrf
@@ -463,14 +497,14 @@
                                 <input type="hidden" name="content_id" value="{{ $campaign->id }}">
                                 <input type="hidden" name="type" value="video">
                                 @foreach($videosToShow as $vBatch)
-                                    @php $vf = $vBatch->files->where('type', 'video')->first(); @endphp
+                                    @php $vf = ($vBatch->video_source ?? 'upload') !== 'url' ? $vBatch->files->where('type', 'video')->first() : null; @endphp
                                     @if($vf)
                                         <input type="hidden" name="file_ids[]" value="{{ $vf->id }}">
                                     @endif
                                 @endforeach
                                 <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
                                     <i class="fa-solid fa-download"></i>
-                                    Baixar {{ $videosToShow->count() }} vídeo{{ $videosToShow->count() > 1 ? 's' : '' }}
+                                    Baixar {{ $withFilesCount }} vídeo{{ $withFilesCount > 1 ? 's' : '' }}
                                 </button>
                             </form>
                         </div>

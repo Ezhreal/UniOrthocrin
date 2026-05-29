@@ -34,6 +34,7 @@ class TrainingController extends Controller
     {
         $user = $request->user();
         $training = $this->trainingService->getTrainingById($id, $user);
-        return view('treinamentos-detail', compact('training'));
+        $videos = $this->trainingService->getTrainingVideos($training);
+        return view('treinamentos-detail', compact('training', 'videos'));
     }
 } 

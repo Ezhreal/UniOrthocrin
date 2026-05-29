@@ -12,6 +12,7 @@ use App\Models\CampaignMiscellaneous;
 use App\Models\File;
 use App\Models\UserType;
 use App\Models\OneDriveSync;
+use App\Rules\ExternalVideoUrl;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -73,6 +74,9 @@ class CampaignController extends Controller
             'videos_reels.*' => 'nullable|file|mimes:mp4,avi,mov|max:' . config('upload.max_video_size'),
             'videos_campaigns' => 'nullable|array',
             'videos_campaigns.*' => 'nullable|file|mimes:mp4,avi,mov|max:' . config('upload.max_video_size'),
+            // URLs externas de vídeo (YouTube/Vimeo) por tipo
+            'video_url_reels'     => ['nullable', new ExternalVideoUrl()],
+            'video_url_campaigns' => ['nullable', new ExternalVideoUrl()],
             'misc_spot' => 'nullable|array',
             'misc_tag' => 'nullable|array',
             'misc_sticker' => 'nullable|array',
@@ -166,6 +170,9 @@ class CampaignController extends Controller
             'videos_reels.*' => 'nullable|file|mimes:mp4,avi,mov|max:' . config('upload.max_video_size'),
             'videos_campaigns' => 'nullable|array',
             'videos_campaigns.*' => 'nullable|file|mimes:mp4,avi,mov|max:' . config('upload.max_video_size'),
+            // URLs externas de vídeo (YouTube/Vimeo) por tipo
+            'video_url_reels'     => ['nullable', new ExternalVideoUrl()],
+            'video_url_campaigns' => ['nullable', new ExternalVideoUrl()],
             'misc_spot' => 'nullable|array',
             'misc_tag' => 'nullable|array',
             'misc_sticker' => 'nullable|array',
@@ -730,46 +737,66 @@ class CampaignController extends Controller
     {
         $publishOneDrive = $request->boolean('publish_onedrive');
         $videoTypes = [
-            'videos_reels' => 'reels',
+            'videos_reels'     => 'reels',
             'videos_campaigns' => 'marketing_campaigns'
         ];
 
+        // Mapeamento de campos de URL externa por tipo
+        $urlFields = [
+            'videos_reels'     => 'video_url_reels',
+            'videos_campaigns' => 'video_url_campaigns',
+        ];
+
         foreach ($videoTypes as $inputName => $type) {
+            // --- Upload de arquivo ---
             if ($request->hasFile($inputName)) {
                 foreach ($request->file($inputName) as $file) {
                     $path = $file->store('private/campaigns/' . $campaign->id . '/videos', 'private');
                     
                     $video = $campaign->videos()->create([
-                        'name' => $file->getClientOriginalName(),
-                        'type' => $type,
-                        'status' => 'active'
+                        'name'         => $file->getClientOriginalName(),
+                        'type'         => $type,
+                        'status'       => 'active',
+                        'video_source' => 'upload',
                     ]);
                     
                     // Criar o arquivo
                     $fileRecord = File::create([
-                        'name' => $file->getClientOriginalName(),
-                        'path' => $path,
-                        'type' => 'video',
+                        'name'      => $file->getClientOriginalName(),
+                        'path'      => $path,
+                        'type'      => 'video',
                         'extension' => $this->getFileExtension($file->getClientOriginalName()),
                         'mime_type' => $file->getMimeType(),
-                        'size' => $file->getSize(),
-                        'order' => 0,
+                        'size'      => $file->getSize(),
+                        'order'     => 0,
                     ]);
                     
                     // Associar o arquivo ao vídeo
                     $video->files()->attach($fileRecord->id, [
-                        'file_type' => 'video',
+                        'file_type'  => 'video',
                         'sort_order' => 0,
                         'is_primary' => true
                     ]);
 
                     if ($publishOneDrive && $path) {
-                        $localPath = storage_path('app/' . $path);
+                        $localPath  = storage_path('app/' . $path);
                         $remotePath = 'Campaigns/' . $campaign->id . '/videos/' . $type . '-' . $fileRecord->id . '.' . $this->getFileExtension($file->getClientOriginalName());
                         $sync = $this->createOneDriveSync($campaign, $path, $remotePath);
                         \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
                     }
                 }
+            }
+
+            // --- URL externa (YouTube / Vimeo) ---
+            $urlField = $urlFields[$inputName] ?? null;
+            if ($urlField && $request->filled($urlField)) {
+                $campaign->videos()->create([
+                    'name'         => $request->input($urlField),
+                    'type'         => $type,
+                    'status'       => 'active',
+                    'video_url'    => $request->input($urlField),
+                    'video_source' => 'url',
+                ]);
             }
         }
     }
