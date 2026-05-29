@@ -218,6 +218,28 @@ document.addEventListener('DOMContentLoaded', function () {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
+    // Verifica de forma assíncrona se a aba do gerenciador de uploads está aberta
+    function checkIfManagerOpen() {
+        return new Promise((resolve) => {
+            let responded = false;
+            const tempBc = new BroadcastChannel('uppy-upload-channel');
+            tempBc.onmessage = (event) => {
+                if (event.data && event.data.type === 'PONG_MANAGER') {
+                    responded = true;
+                    tempBc.close();
+                    resolve(true);
+                }
+            };
+            tempBc.postMessage({ type: 'PING_MANAGER' });
+            setTimeout(() => {
+                if (!responded) {
+                    tempBc.close();
+                    resolve(false);
+                }
+            }, 300);
+        });
+    }
+
     // Exibe diálogo interativo para arquivos pesados
     function showHeavyFilesModal(heavyFiles, onSelectBg, onSelectFg, onCancel) {
         const existing = document.getElementById('uppy-modal-dialog');
@@ -239,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modalDiv.innerHTML = `
             <div style="background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:32px;max-width:550px;width:90%;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);color:#f8fafc;display:flex;flex-direction:column;gap:20px;animation:modalScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
                 <div style="display:flex;align-items:flex-start;gap:16px;">
-                    <div style="background:rgba(56,189,248,0.1);border-radius:16px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;flex-shrink:0;">
+                    <div style="background:rgba(145,0,57,0.1);border-radius:16px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#910039;flex-shrink:0;">
                         <svg style="width:24px;height:24px;fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z"/></svg>
                     </div>
                     <div style="flex:1;min-width:0;">
@@ -253,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 
                 <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
-                    <button id="uppy-modal-btn-bg" style="background:#0ea5e9;color:white;border:none;border-radius:14px;padding:14px 20px;font-size:0.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s ease;box-shadow:0 4px 12px rgba(14,165,233,0.35);">
+                    <button id="uppy-modal-btn-bg" style="background:#910039;color:white;border:none;border-radius:14px;padding:14px 20px;font-size:0.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s ease;box-shadow:0 4px 12px rgba(145,0,57,0.35);">
                         🚀 Iniciar Upload em Segundo Plano
                     </button>
                     
@@ -269,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <style>
                 @keyframes modalScale { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-                #uppy-modal-btn-bg:hover { background:#0284c7; transform: translateY(-1px); }
+                #uppy-modal-btn-bg:hover { background:#7c1d3a; transform: translateY(-1px); }
                 #uppy-modal-btn-bg:active { transform: translateY(0); }
                 #uppy-modal-btn-fg:hover { color:#cbd5e0; }
                 #uppy-modal-btn-cancel:hover { color:#ef4444; }
@@ -293,12 +315,83 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Exibe diálogo informativo/hint na página de criação
+    function showCreatePageHint(form, heavyFiles, input, lightFiles) {
+        const existing = document.getElementById('uppy-create-hint-modal');
+        if (existing) existing.remove();
+
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'uppy-create-hint-modal';
+        modalDiv.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(15,23,42,0.85);display:flex;justify-content:center;align-items:center;z-index:100000;font-family:\'Outfit\',system-ui,-apple-system,sans-serif;backdrop-filter:blur(8px);';
+        
+        const filesListHtml = heavyFiles.map(f => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.85rem;">
+                <span style="font-weight:500;color:#f1f5f9;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;max-width:300px;">📄 ${f.name}</span>
+                <span style="color:#94a3b8;margin-left:auto;flex-shrink:0;">${formatBytes(f.size)}</span>
+            </div>
+        `).join('');
+
+        const totalSize = heavyFiles.reduce((acc, f) => acc + f.size, 0);
+
+        modalDiv.innerHTML = `
+            <div style="background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:32px;max-width:550px;width:90%;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);color:#f8fafc;display:flex;flex-direction:column;gap:20px;animation:modalScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                <div style="display:flex;align-items:flex-start;gap:16px;">
+                    <div style="background:rgba(254,173,0,0.1);border-radius:16px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#FEAD00;flex-shrink:0;">
+                        <svg style="width:24px;height:24px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <h3 style="margin:0;font-size:1.25rem;font-weight:600;color:#f8fafc;letter-spacing:-0.02em;">Salve o registro primeiro</h3>
+                        <p style="margin:6px 0 0 0;font-size:0.85rem;color:#94a3b8;line-height:1.5;">Você selecionou arquivos grandes (Total: <strong>${formatBytes(totalSize)}</strong>). Para fazer o upload de arquivos pesados, você deve primeiro salvar a criação do registro para que eles possam ser associados corretamente.</p>
+                    </div>
+                </div>
+                
+                <div style="background:rgba(15,23,42,0.4);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.04);max-height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin:4px 0;">
+                    ${filesListHtml}
+                </div>
+                
+                <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
+                    <button id="uppy-hint-btn-save" style="background:#910039;color:white;border:none;border-radius:14px;padding:14px 20px;font-size:0.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s ease;box-shadow:0 4px 12px rgba(145,0,57,0.35);">
+                        💾 Salvar Agora
+                    </button>
+                    
+                    <button id="uppy-hint-btn-cancel" style="background:none;border:none;color:#94a3b8;cursor:pointer;text-decoration:underline;padding:4px;transition:color 0.2s;text-align:center;font-size:0.85rem;">
+                        Cancelar e manter arquivos leves
+                    </button>
+                </div>
+            </div>
+            <style>
+                @keyframes modalScale { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+                #uppy-hint-btn-save:hover { background:#7c1d3a; transform: translateY(-1px); }
+                #uppy-hint-btn-save:active { transform: translateY(0); }
+                #uppy-hint-btn-cancel:hover { color:#cbd5e0; }
+            </style>
+        `;
+        document.body.appendChild(modalDiv);
+
+        document.getElementById('uppy-hint-btn-save').addEventListener('click', () => {
+            modalDiv.remove();
+            const dt = new DataTransfer();
+            lightFiles.forEach(f => dt.items.add(f));
+            input.files = dt.files;
+            form.submit();
+        });
+
+        document.getElementById('uppy-hint-btn-cancel').addEventListener('click', () => {
+            modalDiv.remove();
+            input.value = '';
+            const dt = new DataTransfer();
+            lightFiles.forEach(f => dt.items.add(f));
+            input.files = dt.files;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    }
+
     // HTML de carregamento no primeiro plano (Foreground)
     const overlayHtml = `
         <div id="uppy-global-overlay" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.75);display:none;flex-direction:column;justify-content:center;align-items:center;z-index:99999;color:white;font-family:system-ui,-apple-system,sans-serif;backdrop-filter:blur(5px);">
             <div style="background:#1e1e24;border-radius:16px;padding:32px;max-width:500px;width:90%;box-shadow:0 20px 40px rgba(0,0,0,0.5);border:1px solid #2d3748;">
                 <div style="display:flex;align-items:center;margin-bottom:16px;">
-                    <div style="background:#2b6cb0;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0;">
+                    <div style="background:#910039;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;margin-right:12px;flex-shrink:0;">
                         <svg style="width:20px;height:20px;fill:white;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
                     </div>
                     <div>
@@ -307,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                 </div>
                 <div style="background:#2d3748;height:10px;border-radius:5px;overflow:hidden;width:100%;margin-bottom:12px;margin-top:20px;">
-                    <div id="uppy-global-progress" style="background:#3182ce;height:100%;width:0%;transition:width 0.3s ease;border-radius:5px;"></div>
+                    <div id="uppy-global-progress" style="background:#910039;height:100%;width:0%;transition:width 0.3s ease;border-radius:5px;"></div>
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#cbd5e0;">
                     <span id="uppy-global-status">Processando...</span>
@@ -457,6 +550,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (heavyFiles.length === 0) return;
 
+            const modelInfo = window.getModelInfoFromForm(form, input.name);
+            if (!modelInfo || !modelInfo.modelId) {
+                showCreatePageHint(form, heavyFiles, input, lightFiles);
+                return;
+            }
+
             window.pendingUploads = window.pendingUploads || {};
             
             const fileMapping = [];
@@ -470,15 +569,15 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!previewList) {
                 previewList = document.createElement('div');
                 previewList.className = 'uppy-file-preview-list';
-                previewList.style.cssText = 'display: flex; flex-direction: column; gap: 8px; margin-top: 12px; font-family: "Outfit", sans-serif;';
+                previewList.style.cssText = 'display: flex; flex-direction: column; gap: 0px; margin-top: 12px; font-family: "Outfit", sans-serif; background: #ffffff; border: 1px solid #e4e7ec; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px 0 rgba(16, 24, 40, 0.1), 0 1px 2px 0 rgba(16, 24, 40, 0.06);';
                 input.parentNode.appendChild(previewList);
             }
 
             // Gera e renderiza previews instantâneos via FileReader / ObjectURL
             fileMapping.forEach(item => {
                 const itemDiv = document.createElement('div');
-                itemDiv.className = `uppy-preview-item-${item.uuid}`;
-                itemDiv.style.cssText = 'display: flex; align-items: center; gap: 12px; background: rgba(30, 41, 59, 0.6); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); transition: all 0.3s ease;';
+                itemDiv.className = `uppy-preview-item uppy-preview-item-${item.uuid}`;
+                itemDiv.style.cssText = 'display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 12px 16px; border-bottom: 1px solid #f2f4f7; transition: all 0.3s ease;';
 
                 let previewSrc = '';
                 const isImage = item.file.type.startsWith('image/');
@@ -495,16 +594,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 else if (item.file.type.includes('zip') || item.file.type.includes('rar')) iconClass = 'fa-solid fa-file-zipper';
 
                 const mediaContainer = isImage 
-                    ? `<img src="${previewSrc}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);" />`
-                    : `<div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(56,189,248,0.1); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;"><i class="${iconClass}"></i></div>`;
+                    ? `<img src="${previewSrc}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid #e4e7ec;" />`
+                    : `<div style="width: 40px; height: 40px; border-radius: 8px; background: #f2f4f7; color: #475467; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 1px solid #e4e7ec;"><i class="${iconClass}"></i></div>`;
 
                 itemDiv.innerHTML = `
                     ${mediaContainer}
-                    <div style="flex: 1; min-width: 0;">
-                        <div style="font-size: 0.85rem; font-weight: 500; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.file.name}</div>
-                        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">${formatBytes(item.file.size)}</div>
+                    <div style="flex: 1; min-width: 0; text-align: left;">
+                        <div style="font-size: 0.85rem; font-weight: 600; color: #344054; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Outfit', sans-serif;">${item.file.name}</div>
+                        <div style="font-size: 0.75rem; color: #667085; margin-top: 2px;">${formatBytes(item.file.size)}</div>
                     </div>
-                    <span class="uppy-badge-${item.uuid}" style="padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; background: rgba(14, 165, 233, 0.15); color: #38bdf8; transition: all 0.3s ease;">Enviando...</span>
+                    <span class="uppy-badge-${item.uuid}" style="padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: #fffaeb; color: #b54708; border: 1px solid #fedf89; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 4px;">
+                        <i class="fas fa-spinner fa-spin text-[10px]"></i> Enviando...
+                    </span>
                 `;
                 previewList.appendChild(itemDiv);
 
@@ -516,26 +617,24 @@ document.addEventListener('DOMContentLoaded', function () {
                             const data = await res.json();
                             const badge = document.querySelector(`.uppy-badge-${item.uuid}`);
                             if (badge) {
-                                if (data.upload_status === 'completed' || data.status === 'completed') {
-                                    badge.style.background = 'rgba(34, 197, 94, 0.15)';
-                                    badge.style.color = '#4ade80';
-                                    badge.textContent = 'Concluído';
-                                    
-                                    setTimeout(() => {
-                                        badge.style.opacity = '0';
-                                        setTimeout(() => badge.remove(), 300);
-                                    }, 2000);
+                                if (data.upload_status === 'completed' || data.status === 'completed' || data.status === 'ready') {
+                                    badge.style.background = '#ecfdf3';
+                                    badge.style.color = '#027a48';
+                                    badge.style.borderColor = '#abf2c6';
+                                    badge.innerHTML = '<i class="fas fa-circle-check text-xs"></i> Concluído';
                                     
                                     clearInterval(pollInterval);
                                 } else if (data.upload_status === 'error' || data.status === 'failed') {
-                                    badge.style.background = 'rgba(239, 68, 68, 0.15)';
-                                    badge.style.color = '#f87171';
-                                    badge.textContent = 'Falhou';
+                                    badge.style.background = '#fef3f2';
+                                    badge.style.color = '#b42318';
+                                    badge.style.borderColor = '#fecdca';
+                                    badge.innerHTML = '<i class="fas fa-circle-xmark text-xs"></i> Falhou';
                                     clearInterval(pollInterval);
                                 } else if (data.upload_status === 'merging' || data.status === 'merging') {
-                                    badge.style.background = 'rgba(234, 179, 8, 0.15)';
-                                    badge.style.color = '#facc15';
-                                    badge.textContent = 'Mesclando...';
+                                    badge.style.background = '#fffaeb';
+                                    badge.style.color = '#b54708';
+                                    badge.style.borderColor = '#fedf89';
+                                    badge.innerHTML = '<i class="fas fa-arrows-spin fa-spin text-xs"></i> Mesclando...';
                                 }
                             }
                         }
@@ -551,23 +650,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 // ─────────────────────────────────────────────────────────────
                 // Fluxo via postMessage — sem salvar blobs no IndexedDB.
                 // File objects são transferíveis entre abas same-origin via
-                // postMessage sem cópia de memória e sem limite de espaço.
+                // postMessage/BroadcastChannel sem cópia de memória.
                 //
                 // Sequência:
                 //   1. Injeta hidden inputs no form (UUID já disponível para salvar o form)
                 //   2. Salva apenas os metadados no IndexedDB (sem blobs)
-                //   3. Abre o upload-manager em nova aba
-                //   4. Aguarda o sinal "UPLOAD_MANAGER_READY" da nova aba
-                //   5. Envia os File objects diretamente via postMessage
+                //   3. Verifica se a aba do gerenciador já está aberta
+                //   4. Se sim, envia via BroadcastChannel e foca a aba existente
+                //   5. Se não, abre nova aba e envia via postMessage (handshake)
                 //   6. Aba do produto fica 100% livre imediatamente
                 // ─────────────────────────────────────────────────────────────
                 async function() {
+                    input.value = '';
                     const dt = new DataTransfer();
                     lightFiles.forEach(f => dt.items.add(f));
                     input.files = dt.files;
                     input.dispatchEvent(new Event('change', { bubbles: true }));
 
-                    const modelInfo = window.getModelInfoFromForm(form, input.name);
                     const origin    = window.location.origin;
 
                     // Prepara payload a ser enviado à nova aba após o handshake
@@ -599,28 +698,40 @@ document.addEventListener('DOMContentLoaded', function () {
                         });
                     }
 
-                    // Abre o gerenciador de uploads em nova aba
-                    const managerWindow = window.open('/admin/upload-manager', '_blank');
-
-                    // Aguarda o sinal de prontidão da nova aba antes de enviar os arquivos
-                    const readyHandler = function(event) {
-                        if (event.source !== managerWindow) return;
-                        if (!event.data || event.data.type !== 'UPLOAD_MANAGER_READY') return;
-
-                        window.removeEventListener('message', readyHandler);
-
-                        // Envia os File objects diretamente para a nova aba
-                        managerWindow.postMessage({
-                            type:    'START_UPLOADS',
+                    const isManagerOpen = await checkIfManagerOpen();
+                    if (isManagerOpen) {
+                        // Se a aba já está ativa, envia os arquivos via BroadcastChannel
+                        const uploadBc = new BroadcastChannel('uppy-upload-channel');
+                        uploadBc.postMessage({
+                            type: 'START_UPLOADS',
                             payload: uploadPayload
-                        }, origin);
-                    };
-                    window.addEventListener('message', readyHandler);
+                        });
+                        uploadBc.close();
 
-                    // Timeout de segurança: se a nova aba não sinalizar em 15s, remove o listener
-                    setTimeout(() => window.removeEventListener('message', readyHandler), 15000);
+                        // Foca a aba existente sem recarregá-la
+                        window.open('', 'uppy_upload_manager');
+                    } else {
+                        // Abre o gerenciador de uploads em nova aba com o nome do target
+                        const managerWindow = window.open('/admin/upload-manager', 'uppy_upload_manager');
 
-                    showUploadManagerToast(heavyFiles.map(f => f.name).join(', '));
+                        // Aguarda o sinal de prontidão da nova aba antes de enviar os arquivos
+                        const readyHandler = function(event) {
+                            if (event.source !== managerWindow) return;
+                            if (!event.data || event.data.type !== 'UPLOAD_MANAGER_READY') return;
+
+                            window.removeEventListener('message', readyHandler);
+
+                            // Envia os File objects diretamente para a nova aba
+                            managerWindow.postMessage({
+                                type:    'START_UPLOADS',
+                                payload: uploadPayload
+                            }, origin);
+                        };
+                        window.addEventListener('message', readyHandler);
+
+                        // Timeout de segurança: se a nova aba não sinalizar em 15s, remove o listener
+                        setTimeout(() => window.removeEventListener('message', readyHandler), 15000);
+                    }
                 },
                 // Ação B: Enviar nesta aba (Foreground)
                 async function() {
@@ -628,8 +739,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     lightFiles.forEach(f => dt.items.add(f));
                     input.files = dt.files;
                     input.dispatchEvent(new Event('change', { bubbles: true }));
-
-                    const modelInfo = window.getModelInfoFromForm(form, input.name);
 
                     // Envia os arquivos de forma sequencial bloqueando a interface
                     for (let item of fileMapping) {
@@ -672,6 +781,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         const itemEl = previewList.querySelector(`.uppy-preview-item-${item.uuid}`);
                         if (itemEl) itemEl.remove();
                     });
+                    if (previewList.children.length === 0) {
+                        previewList.remove();
+                    }
                 }
             );
         });
@@ -687,7 +799,7 @@ document.addEventListener('DOMContentLoaded', function () {
             widget.id = 'uppy-floating-widget';
             widget.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#f8fafc;padding:14px 20px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.4);z-index:99999;font-family:\'Outfit\',sans-serif;border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;transition:all 0.3s ease;animation:slideIn 0.3s ease;cursor:pointer;';
             widget.innerHTML = `
-                <div style="background:#0ea5e9;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:white;animation:spin 2s linear infinite;flex-shrink:0;">
+                <div style="background:#910039;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:white;animation:spin 2s linear infinite;flex-shrink:0;">
                     <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:2px;">
@@ -696,14 +808,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <style>
                     @keyframes spin { 100% { transform: rotate(360deg); } }
-                    #uppy-floating-widget:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(14,165,233,0.25); background:#1e293b; }
+                    #uppy-floating-widget:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(145,0,57,0.25); background:#1e293b; }
                 </style>
             `;
             document.body.appendChild(widget);
             
             widget.addEventListener('click', () => {
-                // Abre o gerenciador de uploads em uma nova aba
-                window.open('/admin/upload-manager', '_blank');
+                // Abre ou foca o gerenciador de uploads sem duplicar
+                checkIfManagerOpen().then(isOpen => {
+                    if (isOpen) {
+                        window.open('', 'uppy_upload_manager');
+                    } else {
+                        window.open('/admin/upload-manager', 'uppy_upload_manager');
+                    }
+                });
             });
         }
 
@@ -768,32 +886,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 500);
 });
 
-// Mostra um toast informando sobre o início do envio assíncrono
-function showUploadManagerToast(filenames) {
-    let toast = document.getElementById('uppy-global-toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'uppy-global-toast';
-        toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#f8fafc;padding:16px 20px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.3);z-index:99999;font-family:system-ui,-apple-system,sans-serif;border:1px solid rgba(255,255,255,0.08);max-width:350px;display:flex;flex-direction:column;gap:6px;animation:slideIn 0.3s ease;';
-        toast.innerHTML = `
-            <div style="display:flex;align-items:center;gap:10px;">
-                <div style="background:#0ea5e9;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:white;font-size:0.8rem;">
-                    <i class="fa-solid fa-info"></i>
-                </div>
-                <span style="font-weight:600;font-size:0.9rem;">Enviando em segundo plano</span>
-            </div>
-            <p style="margin:0;font-size:0.8rem;color:#94a3b8;" id="uppy-global-toast-text"></p>
-            <style>
-                @keyframes slideIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-            </style>
-        `;
-        document.body.appendChild(toast);
-    }
-    document.getElementById('uppy-global-toast-text').innerText = `Os seguintes arquivos estão sendo enviados pelo Gerenciador de Uploads: ${filenames}. Mantenha a janela de uploads aberta.`;
-    setTimeout(() => {
-        if (toast) toast.style.opacity = '0.7';
-    }, 5000);
-}
 
 /**
  * Helper global para inicializar o painel/dashboard Uppy.
@@ -992,7 +1084,7 @@ window.initUppyDashboard = function(options) {
             banner.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1a202c;color:white;padding:16px 24px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.3);z-index:99999;font-family:system-ui;border:1px solid #2d3748;';
             banner.innerHTML = `
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="border:3px solid #cbd5e0;border-top:3px solid #3182ce;border-radius:50%;width:20px;height:20px;animation:spin 1s linear infinite;"></div>
+                    <div style="border:3px solid #cbd5e0;border-top:3px solid #910039;border-radius:50%;width:20px;height:20px;animation:spin 1s linear infinite;"></div>
                     <span style="font-weight:600;">Salvando dados...</span>
                 </div>
                 <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>

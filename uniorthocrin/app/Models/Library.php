@@ -50,7 +50,7 @@ class Library extends Model
     {
         return $this->belongsToMany(File::class, 'library_files')
                     ->withPivot('file_type', 'sort_order', 'is_primary')
-                    ->orderBy('pivot_sort_order');
+                    ->orderByPivot('sort_order');
     }
 
     /**

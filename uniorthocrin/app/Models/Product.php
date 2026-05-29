@@ -133,7 +133,7 @@ class Product extends Model
         return $this->belongsToMany(File::class, 'product_files', 'product_id', 'file_id')
                     ->wherePivot('file_type', 'image')
                     ->withPivot('file_type', 'sort_order', 'is_primary')
-                    ->orderBy('pivot_sort_order');
+                    ->orderByPivot('sort_order');
     }
 
     /**
@@ -144,7 +144,7 @@ class Product extends Model
         return $this->belongsToMany(File::class, 'product_files', 'product_id', 'file_id')
                     ->wherePivot('file_type', 'video')
                     ->withPivot('file_type', 'sort_order', 'is_primary')
-                    ->orderBy('pivot_sort_order');
+                    ->orderByPivot('sort_order');
     }
 
     /**
@@ -152,7 +152,7 @@ class Product extends Model
      */
     public function documents()
     {
-        return $this->files()->wherePivot('file_type', 'pdf')->orderBy('pivot_sort_order');
+        return $this->files()->wherePivot('file_type', 'pdf')->orderByPivot('sort_order');
     }
 
     /**

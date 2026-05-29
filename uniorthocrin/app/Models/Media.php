@@ -49,7 +49,7 @@ class Media extends Model
     {
         return $this->belongsToMany(File::class, 'media_files')
                     ->withPivot('file_type', 'sort_order', 'is_primary')
-                    ->orderBy('pivot_sort_order');
+                    ->orderByPivot('sort_order');
     }
 
     /**

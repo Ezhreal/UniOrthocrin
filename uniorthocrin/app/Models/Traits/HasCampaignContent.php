@@ -25,7 +25,7 @@ trait HasCampaignContent
     public function mainImage()
     {
         return $this->files()->wherePivot('file_type', 'image')
-            ->orderBy('pivot_sort_order')
+            ->orderByPivot('sort_order')
             ->first();
     }
 
@@ -35,7 +35,7 @@ trait HasCampaignContent
     public function images()
     {
         return $this->files()->wherePivot('file_type', 'image')
-            ->orderBy('pivot_sort_order');
+            ->orderByPivot('sort_order');
     }
 
     /**
@@ -44,7 +44,7 @@ trait HasCampaignContent
     public function videos()
     {
         return $this->files()->wherePivot('file_type', 'video')
-            ->orderBy('pivot_sort_order');
+            ->orderByPivot('sort_order');
     }
 
     /**
@@ -53,7 +53,7 @@ trait HasCampaignContent
     public function documents()
     {
         return $this->files()->wherePivot('file_type', 'pdf')
-            ->orderBy('pivot_sort_order');
+            ->orderByPivot('sort_order');
     }
 
     /**
@@ -62,7 +62,7 @@ trait HasCampaignContent
     public function audios()
     {
         return $this->files()->wherePivot('file_type', 'audio')
-            ->orderBy('pivot_sort_order');
+            ->orderByPivot('sort_order');
     }
 
     /**

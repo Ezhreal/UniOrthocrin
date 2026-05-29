@@ -47,7 +47,7 @@ class Training extends Model
     {
         return $this->belongsToMany(File::class, 'training_files')
                     ->withPivot('file_type', 'sort_order', 'is_primary')
-                    ->orderBy('pivot_sort_order');
+                    ->orderByPivot('sort_order');
     }
 
     /**
@@ -58,7 +58,7 @@ class Training extends Model
         return $this->belongsToMany(File::class, 'training_files')
                     ->wherePivot('file_type', 'video')
                     ->withPivot('file_type', 'sort_order', 'is_primary')
-                    ->orderBy('pivot_sort_order');
+                    ->orderByPivot('sort_order');
     }
 
     /**
@@ -69,7 +69,7 @@ class Training extends Model
         return $this->belongsToMany(File::class, 'training_files')
                     ->wherePivot('file_type', 'pdf')
                     ->withPivot('file_type', 'sort_order', 'is_primary')
-                    ->orderBy('pivot_sort_order');
+                    ->orderByPivot('sort_order');
     }
 
     /**

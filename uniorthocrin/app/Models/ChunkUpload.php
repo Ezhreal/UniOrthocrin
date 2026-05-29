@@ -304,7 +304,7 @@ class ChunkUpload extends Model
                 $type = $postTypes[$property] ?? 'feeds';
                 $post = $model->posts()->where('name', $this->filename)->first()
                     ?? $model->posts()->create(['name' => $this->filename, 'type' => $type, 'status' => 'active']);
-                if (!$post->files()->where('file_id', $fileRecord->id)->exists()) {
+                if (!$post->files()->reorder()->where('file_id', $fileRecord->id)->exists()) {
                     $post->files()->attach($fileRecord->id, ['file_type' => 'image', 'sort_order' => 0, 'is_primary' => true]);
                 }
             } elseif (str_starts_with($property, 'folder_')) {
@@ -312,7 +312,7 @@ class ChunkUpload extends Model
                 $state = $folderTypes[$property] ?? 'MG/SP';
                 $folder = $model->folders()->where('name', $this->filename)->first()
                     ?? $model->folders()->create(['name' => $this->filename, 'state' => $state, 'status' => 'active']);
-                if (!$folder->files()->where('file_id', $fileRecord->id)->exists()) {
+                if (!$folder->files()->reorder()->where('file_id', $fileRecord->id)->exists()) {
                     $folder->files()->attach($fileRecord->id, ['file_type' => $fileType, 'sort_order' => 0, 'is_primary' => true]);
                 }
             } elseif (str_starts_with($property, 'videos_')) {
@@ -320,22 +320,22 @@ class ChunkUpload extends Model
                 $type = $videoTypes[$property] ?? 'reels';
                 $video = $model->videos()->where('name', $this->filename)->first()
                     ?? $model->videos()->create(['name' => $this->filename, 'type' => $type, 'status' => 'active']);
-                if (!$video->files()->where('file_id', $fileRecord->id)->exists()) {
+                if (!$video->files()->reorder()->where('file_id', $fileRecord->id)->exists()) {
                     $video->files()->attach($fileRecord->id, ['file_type' => 'video', 'sort_order' => 0, 'is_primary' => true]);
                 }
             } elseif (str_starts_with($property, 'misc_')) {
                 $type = substr($property, 5);
                 $misc = $model->miscellaneous()->where('name', $this->filename)->first()
                     ?? $model->miscellaneous()->create(['name' => $this->filename, 'type' => $type, 'status' => 'active']);
-                if (!$misc->files()->where('file_id', $fileRecord->id)->exists()) {
+                if (!$misc->files()->reorder()->where('file_id', $fileRecord->id)->exists()) {
                     $misc->files()->attach($fileRecord->id, ['file_type' => $fileType, 'sort_order' => 0, 'is_primary' => true]);
                 }
             }
         } elseif (method_exists($model, $property)) {
             // Usa files() sem filtros de pivot para evitar query incorreta no belong-to-many filtrado
             $filesRelation = method_exists($model, 'files') ? $model->files() : $model->{$property}();
-            if (!$filesRelation->where('file_id', $fileRecord->id)->exists()) {
-                $order = $filesRelation->count() + 1;
+            if (!$filesRelation->reorder()->where('file_id', $fileRecord->id)->exists()) {
+                $order = $filesRelation->reorder()->count() + 1;
                 $filesRelation->attach($fileRecord->id, [
                     'file_type'  => $fileType,
                     'sort_order' => $order,
@@ -350,8 +350,8 @@ class ChunkUpload extends Model
             }
         } elseif (method_exists($model, 'files')) {
             $filesRelation = $model->files();
-            if (!$filesRelation->where('file_id', $fileRecord->id)->exists()) {
-                $order = $filesRelation->count() + 1;
+            if (!$filesRelation->reorder()->where('file_id', $fileRecord->id)->exists()) {
+                $order = $filesRelation->reorder()->count() + 1;
                 $filesRelation->attach($fileRecord->id, [
                     'file_type'  => $fileType,
                     'sort_order' => $order,

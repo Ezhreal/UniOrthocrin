@@ -76,7 +76,7 @@ class CampaignVideo extends Model
     public function mainVideo()
     {
         return $this->files()->wherePivot('file_type', 'video')
-            ->orderBy('pivot_sort_order')
+            ->orderByPivot('sort_order')
             ->first();
     }
 

@@ -28,12 +28,12 @@
         <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
             <div class="flex items-center gap-2 font-semibold text-gray-800">
                 <span class="flex h-3 w-3 relative">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
                 </span>
                 Fila de Transmissão Ativa
             </div>
-            <span class="bg-sky-100 text-sky-800 px-3 py-1 rounded-full text-xs font-semibold" id="active-count-badge">0 ativo(s)</span>
+            <span class="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-xs font-semibold" id="active-count-badge">0 ativo(s)</span>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="active-uploads-container">
             <!-- Injetados dinamicamente via Javascript -->
@@ -72,14 +72,14 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <div class="flex items-center gap-2">
                                 <div class="w-24 bg-gray-100 rounded-full h-2 overflow-hidden">
-                                    <div class="h-full rounded-full transition-all duration-300" style="width: {{ $upload->upload_progress }}%; background-color: {{ $upload->upload_status === 'completed' ? '#22c55e' : ($upload->upload_status === 'error' ? '#ef4444' : '#0ea5e9') }};"></div>
+                                    <div class="h-full rounded-full transition-all duration-300" style="width: {{ $upload->upload_progress }}%; background-color: {{ $upload->upload_status === 'completed' ? '#22c55e' : ($upload->upload_status === 'error' ? '#ef4444' : '#910039') }};"></div>
                                 </div>
                                 <span class="text-xs font-bold text-gray-700">{{ $upload->upload_progress }}%</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($upload->upload_status === 'uploading')
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-700">
                                     <i class="fa-solid fa-spinner fa-spin"></i> Enviando
                                 </span>
                             @elseif($upload->upload_status === 'merging')
@@ -103,8 +103,8 @@
                             {{ $upload->attempts }} / 3
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            @if(in_array($upload->upload_status, ['uploading', 'merging', 'error']))
-                            <button class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1" id="btn-sync-{{ $upload->uuid }}" onclick="syncSingleUpload('{{ $upload->uuid }}')">
+                            @if($upload->upload_status !== 'completed')
+                            <button class="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1" id="btn-sync-{{ $upload->uuid }}" onclick="syncSingleUpload('{{ $upload->uuid }}')">
                                 <i class="fa-solid fa-arrows-spin"></i> Sincronizar
                             </button>
                             @endif
@@ -133,6 +133,9 @@
 </div>
 
 <script>
+    // Garante que a janela do gerenciador tenha o nome correto para reutilização de abas
+    window.name = 'uppy_upload_manager';
+
     // Armazena o token CSRF para validação das requisições via fetch
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const CHUNK_SIZE = 5 * 1024 * 1024;
@@ -160,8 +163,19 @@
     }
 
     bc.onmessage = (event) => {
-        if (event.data && event.data.type === 'REQUEST_STATUS') {
-            broadcastStatus();
+        if (event.data) {
+            if (event.data.type === 'REQUEST_STATUS') {
+                broadcastStatus();
+            } else if (event.data.type === 'PING_MANAGER') {
+                bc.postMessage({ type: 'PONG_MANAGER' });
+            } else if (event.data.type === 'START_UPLOADS') {
+                const items = event.data.payload || [];
+                for (const item of items) {
+                    if (activeUploads[item.uuid]) continue; // já na fila
+                    activeUploads[item.uuid] = true;
+                    startUploadFromFile(item);
+                }
+            }
         }
     };
 
@@ -234,16 +248,16 @@
         card.id = `card-${uuid}`;
         card.innerHTML = `
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-sky-50 text-sky-600 rounded-lg flex items-center justify-center flex-shrink-0 text-lg"><i class="fa-solid fa-file-arrow-up"></i></div>
+                <div class="w-10 h-10 bg-primary-50 text-primary-600 rounded-lg flex items-center justify-center flex-shrink-0 text-lg"><i class="fa-solid fa-file-arrow-up"></i></div>
                 <div class="flex-1 min-w-0">
                     <div class="font-semibold text-sm text-gray-900 truncate" title="${file.name}">${file.name}</div>
                     <div class="text-xs text-gray-500 mt-0.5" id="meta-${uuid}">Preparando... | ${formatBytes(file.size)}</div>
                 </div>
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800" id="badge-${uuid}">Fila</span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-800" id="badge-${uuid}">Fila</span>
             </div>
             <div>
                 <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                    <div class="bg-sky-600 h-full transition-all duration-300" id="fill-${uuid}" style="width: 0%;"></div>
+                    <div class="bg-primary-500 h-full transition-all duration-300" id="fill-${uuid}" style="width: 0%;"></div>
                 </div>
                 <div class="flex justify-between text-xs text-gray-500 mt-2">
                     <span id="speed-${uuid}">0 KB/s</span>
@@ -388,16 +402,16 @@
         card.id = `card-${uuid}`;
         card.innerHTML = `
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-sky-50 text-sky-600 rounded-lg flex items-center justify-center flex-shrink-0 text-lg"><i class="fa-solid fa-file-arrow-up"></i></div>
+                <div class="w-10 h-10 bg-primary-50 text-primary-600 rounded-lg flex items-center justify-center flex-shrink-0 text-lg"><i class="fa-solid fa-file-arrow-up"></i></div>
                 <div class="flex-1 min-w-0">
                     <div class="font-semibold text-sm text-gray-900 truncate" title="${item.name}">${item.name}</div>
                     <div class="text-xs text-gray-500 mt-0.5" id="meta-${uuid}">Preparando... | ${formatBytes(item.size)}</div>
                 </div>
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800" id="badge-${uuid}">Fila</span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-800" id="badge-${uuid}">Fila</span>
             </div>
             <div>
                 <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                    <div class="bg-sky-600 h-full transition-all duration-300" id="fill-${uuid}" style="width: 0%;"></div>
+                    <div class="bg-primary-500 h-full transition-all duration-300" id="fill-${uuid}" style="width: 0%;"></div>
                 </div>
                 <div class="flex justify-between text-xs text-gray-500 mt-2">
                     <span id="speed-${uuid}">0 KB/s</span>
