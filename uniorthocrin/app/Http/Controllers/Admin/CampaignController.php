@@ -18,9 +18,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Traits\HandlesChunkUploads;
 
 class CampaignController extends Controller
 {
+    use HandlesChunkUploads;
     public function index(Request $request)
     {
         $query = Campaign::with(['posts', 'folders', 'videos.files', 'miscellaneous']);
@@ -109,6 +111,9 @@ class CampaignController extends Controller
 
         // Processar uploads de arquivos
         $this->processFileUploads($request, $campaign);
+
+        // Associar uploads fracionados do Uppy
+        $this->associateChunkUploads($request, $campaign);
 
         // Criar notificação automática para usuários com permissão
         NotificationService::notifyNewCampaign($campaign->id, $campaign->name);
@@ -206,6 +211,9 @@ class CampaignController extends Controller
 
         // Processar uploads de arquivos (posts, vídeos, folders, etc.)
         $this->processFileUploads($request, $campaign);
+
+        // Associar uploads fracionados do Uppy
+        $this->associateChunkUploads($request, $campaign);
 
         return redirect()->route('admin.campaigns.show', $campaign)->with('success', 'Campanha atualizada com sucesso!');
     }

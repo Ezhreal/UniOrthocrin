@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE campaign_miscellaneous MODIFY COLUMN type ENUM('spot', 'tag', 'sticker', 'script', 'adesivo', 'banner', 'faixa') NOT NULL DEFAULT 'spot'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE campaign_miscellaneous MODIFY COLUMN type ENUM('spot', 'tag', 'sticker', 'script', 'adesivo', 'banner', 'faixa') NOT NULL DEFAULT 'spot'");
+        }
     }
 
     /**
@@ -19,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE campaign_miscellaneous MODIFY COLUMN type ENUM('spot', 'tag', 'sticker', 'script') NOT NULL DEFAULT 'spot'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE campaign_miscellaneous MODIFY COLUMN type ENUM('spot', 'tag', 'sticker', 'script') NOT NULL DEFAULT 'spot'");
+        }
     }
 };

@@ -19,6 +19,8 @@ class File extends Model
         'thumbnail_md_path',
         'thumbnail_lg_path',
         'is_optimized',
+        'chunk_upload_uuid',
+        'status',
     ];
 
     protected $casts = [
@@ -32,6 +34,27 @@ class File extends Model
         static::created(function ($file) {
             if ($file->type === 'image') {
                 \App\Jobs\OptimizeImage::dispatch($file);
+            }
+
+            // Sempre agendar a sincronização para o FTP quando um arquivo privado for gravado
+            if (str_starts_with($file->path, 'private/')) {
+                $exists = \App\Models\FtpSync::where('file_id', $file->id)->exists();
+                if (!$exists) {
+                    $isThumbnail = str_contains($file->path, '/thumb/') || 
+                                   str_contains($file->path, '/thumbnail') || 
+                                   str_contains($file->path, '_thumb');
+
+                    $sync = \App\Models\FtpSync::create([
+                        'syncable_type' => get_class($file),
+                        'syncable_id' => $file->id,
+                        'file_id' => $isThumbnail ? null : $file->id,
+                        'local_path' => storage_path('app/' . $file->path),
+                        'remote_path' => $file->path,
+                        'status' => 'pending'
+                    ]);
+
+                    \App\Jobs\UploadToFtpJob::dispatch($sync->id);
+                }
             }
         });
     }

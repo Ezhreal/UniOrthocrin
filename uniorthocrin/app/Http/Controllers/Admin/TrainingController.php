@@ -15,9 +15,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Traits\HandlesChunkUploads;
 
 class TrainingController extends Controller
 {
+    use HandlesChunkUploads;
     public function index(Request $request)
     {
         $query = Training::with(['category', 'videos', 'files']);
@@ -165,6 +167,9 @@ class TrainingController extends Controller
             'can_view' => true,
             'can_download' => true,
         ]);
+
+        // Associar uploads fracionados do Uppy
+        $this->associateChunkUploads($request, $training);
 
         // Criar notificação automática para usuários com permissão
         NotificationService::notifyNewTraining($training->id, $training->name);
@@ -325,6 +330,9 @@ class TrainingController extends Controller
             'can_view' => true,
             'can_download' => true,
         ]);
+
+        // Associar uploads fracionados do Uppy
+        $this->associateChunkUploads($request, $training);
 
             DB::commit();
 

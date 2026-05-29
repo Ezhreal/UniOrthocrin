@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\LibraryCategoryController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MediaCategoryController;
 use App\Http\Controllers\Admin\HelpController;
+use App\Http\Controllers\Admin\ChunkUploadController;
 
 // Auth e Redirects
 Route::get('admin/login', [\App\Http\Controllers\Auth\AuthController::class, 'showLoginForm'])->name('admin.login')->middleware('guest');
@@ -45,6 +46,14 @@ Route::post('profile/switch/{id}', function ($id, \App\Services\ProfileService $
 Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware\AdminOnly::class, \App\Http\Middleware\NoStoreForAuthenticated::class])->group(function () {
     
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Chunk Upload
+    Route::post('upload/chunk', [ChunkUploadController::class, 'uploadChunk'])->name('upload.chunk');
+    Route::get('upload-manager', [ChunkUploadController::class, 'showUploadManager'])->name('upload.manager');
+    Route::get('upload/status/{uuid}', [ChunkUploadController::class, 'getUploadStatus'])->name('upload.status');
+    Route::post('upload/sync/{uuid}', [ChunkUploadController::class, 'sync'])->name('upload.sync');
+    Route::post('upload/sync-all', [ChunkUploadController::class, 'syncAll'])->name('upload.sync-all');
+    Route::post('upload/clear-all', [ChunkUploadController::class, 'clearAll'])->name('upload.clear-all');
     
     // 1. Produtos
     Route::resource('produtos', ProductController::class)->names('products')->parameters(['produtos' => 'product']);

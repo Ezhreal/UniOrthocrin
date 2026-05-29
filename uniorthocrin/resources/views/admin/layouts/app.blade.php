@@ -289,6 +289,15 @@
                             <span x-show="sidebarOpen || mobileMenuOpen" class="ml-3 transition-opacity duration-200">Notificações</span>
                         </a>
 
+                        <!-- Upload Manager -->
+                        <a href="{{ route('admin.upload.manager') }}" 
+                           @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
+                           class="flex items-center px-3 py-2 text-white rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.upload.manager') ? 'bg-primary-600' : 'hover:bg-primary-600' }}"
+                           :class="(sidebarOpen || mobileMenuOpen) ? 'justify-start' : 'justify-center'">
+                            <i class="fas fa-cloud-arrow-up text-base"></i>
+                            <span x-show="sidebarOpen || mobileMenuOpen" class="ml-3 transition-opacity duration-200">Upload Manager</span>
+                        </a>
+
                         <!-- Como usar -->
                         <a href="{{ route('admin.help.index') }}" 
                            @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
@@ -626,6 +635,11 @@
 
     <!-- Loading Scripts -->
     <script src="{{ asset('js/button-loading.js') }}"></script>
+
+    <!-- Uppy CSS & JS (Global Chunk Uploads) -->
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v3.27.3/uppy.min.css">
+    <script src="https://releases.transloadit.com/uppy/v3.27.3/uppy.min.js"></script>
+    <script src="{{ asset('js/uppy-global.js') }}"></script>
 
 </body>
 </html>

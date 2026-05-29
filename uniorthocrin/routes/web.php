@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -83,7 +85,30 @@ Route::prefix('{profile_slug}')->middleware(['auth', \App\Http\Middleware\CheckP
         $filePath = storage_path('app/private/' . $path);
         if (!file_exists($filePath)) {
             $filePath = storage_path('app/downloads/' . $path);
-            if (!file_exists($filePath)) abort(404);
+            if (!file_exists($filePath)) {
+                // Tentar ler do FTP
+                $fullPath = 'private/' . $path;
+                try {
+                    if (Storage::disk('ftp')->exists($fullPath)) {
+                        $mimeType = Storage::disk('ftp')->mimeType($fullPath) ?? 'application/octet-stream';
+                        return response()->stream(function() use ($fullPath) {
+                            $stream = Storage::disk('ftp')->readStream($fullPath);
+                            if ($stream) {
+                                fpassthru($stream);
+                                if (is_resource($stream)) {
+                                    fclose($stream);
+                                }
+                            }
+                        }, 200, [
+                            'Content-Type' => $mimeType,
+                            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Erro ao ler do FTP na rota private context: " . $e->getMessage());
+                }
+                abort(404);
+            }
         }
         return response()->file($filePath);
     })->where('path', '.*')->name('profile.private.file');
@@ -97,7 +122,30 @@ Route::middleware(['auth'])->group(function () {
         $filePath = storage_path('app/private/' . $path);
         if (!file_exists($filePath)) {
             $filePath = storage_path('app/downloads/' . $path);
-            if (!file_exists($filePath)) abort(404);
+            if (!file_exists($filePath)) {
+                // Tentar ler do FTP
+                $fullPath = 'private/' . $path;
+                try {
+                    if (Storage::disk('ftp')->exists($fullPath)) {
+                        $mimeType = Storage::disk('ftp')->mimeType($fullPath) ?? 'application/octet-stream';
+                        return response()->stream(function() use ($fullPath) {
+                            $stream = Storage::disk('ftp')->readStream($fullPath);
+                            if ($stream) {
+                                fpassthru($stream);
+                                if (is_resource($stream)) {
+                                    fclose($stream);
+                                }
+                            }
+                        }, 200, [
+                            'Content-Type' => $mimeType,
+                            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Erro ao ler do FTP na rota private global: " . $e->getMessage());
+                }
+                abort(404);
+            }
         }
         return response()->file($filePath);
     })->where('path', '.*');

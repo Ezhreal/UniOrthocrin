@@ -19,7 +19,9 @@
     </div>
 
     <!-- Modern Form -->
-    <form method="POST" action="{{ route('admin.media.store') }}" enctype="multipart/form-data" class="space-modern">
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v3.27.3/uppy.min.css">
+    <script src="https://releases.transloadit.com/uppy/v3.27.3/uppy.min.js"></script>
+    <form id="media-form" method="POST" action="{{ route('admin.media.store') }}" enctype="multipart/form-data" class="space-modern">
         @csrf
         
         <div class="grid-modern grid-modern-3">
@@ -346,7 +348,6 @@ function createFileItem(file, index) {
 }
 
 function removeFilePreview(button, index) {
-    // Remover o elemento visual
     button.closest('.flex').remove();
 }
 </script>

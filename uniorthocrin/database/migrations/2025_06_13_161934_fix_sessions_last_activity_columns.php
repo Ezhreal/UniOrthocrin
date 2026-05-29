@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sessions', function (Blueprint $table) {
-            // Remover coluna last_activity antiga
+            // Drop index first to avoid SQLite column drop reference error
+            $table->dropIndex('sessions_last_activity_index');
             $table->dropColumn('last_activity');
         });
         

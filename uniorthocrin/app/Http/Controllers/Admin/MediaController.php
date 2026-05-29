@@ -10,14 +10,20 @@ use App\Models\UserType;
 use App\Models\File;
 use App\Models\MediaPermission;
 use App\Models\OneDriveSync;
+use App\Models\FtpSync;
+use App\Models\ChunkUpload;
+use App\Jobs\UploadToFtpJob;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+use App\Traits\HandlesChunkUploads;
+
 class MediaController extends Controller
 {
+    use HandlesChunkUploads;
     public function index(Request $request)
     {
         $query = Media::with(['category', 'files']);
@@ -75,42 +81,21 @@ class MediaController extends Controller
             $thumbPath = $thumb->store('private/media/' . $media->id . '/thumb', 'private');
             $media->thumbnail_path = $thumbPath;
             $media->save();
+
+            // Sincronizar thumbnail com o FTP (mantendo a cópia local)
+            $sync = \App\Models\FtpSync::create([
+                'syncable_type' => get_class($media),
+                'syncable_id' => $media->id,
+                'file_id' => null,
+                'local_path' => storage_path('app/' . $thumbPath),
+                'remote_path' => $thumbPath,
+                'status' => 'pending'
+            ]);
+            UploadToFtpJob::dispatch($sync->id);
         }
 
-        // Handle file uploads
-        $publishOneDrive = $request->boolean('publish_onedrive');
-        
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store('private/media/' . $media->id, 'private');
-                
-                // Criar o arquivo na tabela files
-                $fileRecord = File::create([
-                    'name' => $file->getClientOriginalName(),
-                    'path' => $path,
-                    'type' => $this->getFileType($file->getMimeType()),
-                    'extension' => $this->getFileExtension($file->getClientOriginalName()),
-                    'mime_type' => $file->getMimeType(),
-                    'size' => $file->getSize(),
-                    'order' => 0,
-                ]);
-                
-                // Associar o arquivo à media
-                $media->files()->attach($fileRecord->id, [
-                    'file_type' => $this->getFileType($file->getMimeType()),
-                    'sort_order' => 0,
-                    'is_primary' => true
-                ]);
-                
-                // Disparar envio ao OneDrive (síncrono) se marcado
-                if ($publishOneDrive && $path) {
-                    $localPath = storage_path('app/' . $path);
-                    $remotePath = 'Media/' . $media->id . '/' . $fileRecord->id . '-' . $this->getFileType($file->getMimeType()) . '.' . $this->getFileExtension($file->getClientOriginalName());
-                    $sync = $this->createOneDriveSync($media, $path, $remotePath);
-                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
-                }
-            }
-        }
+        // Processar os uploads de arquivos (Multipart normal ou Chunks via Uppy)
+        $this->processUploadedFiles($request, $media);
 
         // Handle permissions
         if ($request->has('permissions')) {
@@ -179,55 +164,26 @@ class MediaController extends Controller
                 'name', 'description', 'media_category_id', 'status'
             ]));
 
-        $publishOneDrive = $request->boolean('publish_onedrive');
-
         if ($request->hasFile('thumbnail')) {
             $thumb = $request->file('thumbnail');
             $thumbPath = $thumb->store('private/media/' . $media->id . '/thumb', 'private');
             $media->thumbnail_path = $thumbPath;
             $media->save();
             
-            // OneDrive (assíncrono)
-            if ($publishOneDrive && $thumbPath) {
-                $localPath = storage_path('app/' . $thumbPath);
-                $remotePath = 'Media/' . $media->id . '/thumb-' . $media->id . '.' . $this->getFileExtension($thumb->getClientOriginalName());
-                $sync = $this->createOneDriveSync($media, $thumbPath, $remotePath);
-                \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
-            }
+            // Sincronizar thumbnail com o FTP (mantendo a cópia local)
+            $sync = \App\Models\FtpSync::create([
+                'syncable_type' => get_class($media),
+                'syncable_id' => $media->id,
+                'file_id' => null,
+                'local_path' => storage_path('app/' . $thumbPath),
+                'remote_path' => $thumbPath,
+                'status' => 'pending'
+            ]);
+            UploadToFtpJob::dispatch($sync->id);
         }
 
-        // Handle new file uploads
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store('private/media/' . $media->id, 'private');
-                
-                // Criar o arquivo na tabela files
-                $fileRecord = File::create([
-                    'name' => $file->getClientOriginalName(),
-                    'path' => $path,
-                    'type' => $this->getFileType($file->getMimeType()),
-                    'extension' => $this->getFileExtension($file->getClientOriginalName()),
-                    'mime_type' => $file->getMimeType(),
-                    'size' => $file->getSize(),
-                    'order' => 0,
-                ]);
-                
-                // Associar o arquivo à media
-                $media->files()->attach($fileRecord->id, [
-                    'file_type' => $this->getFileType($file->getMimeType()),
-                    'sort_order' => 0,
-                    'is_primary' => true
-                ]);
-                
-                // OneDrive (assíncrono)
-                if ($publishOneDrive && $path) {
-                    $localPath = storage_path('app/' . $path);
-                    $remotePath = 'Media/' . $media->id . '/' . $fileRecord->id . '-' . $this->getFileType($file->getMimeType()) . '.' . $this->getFileExtension($file->getClientOriginalName());
-                    $sync = $this->createOneDriveSync($media, $path, $remotePath);
-                    \App\Jobs\UploadToOneDrive::dispatch($localPath, $remotePath, $sync->id);
-                }
-            }
-        }
+        // Processar os uploads de arquivos (Multipart normal ou Chunks via Uppy)
+        $this->processUploadedFiles($request, $media);
 
         // Update permissions (simple sync for now, can be more complex)
         $media->permissions()->where('user_type_id', '!=', 1)->delete(); // Remove existing (exceto admin)
@@ -468,5 +424,76 @@ class MediaController extends Controller
                 'message' => 'Erro ao tentar reenviar: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Processa uploads clássicos (multipart) e uploads segmentados via Uppy.
+     */
+    private function processUploadedFiles(Request $request, Media $media)
+    {
+        \Illuminate\Support\Facades\Log::info('[MediaController] processUploadedFiles starting', [
+            'media_id' => $media->id,
+            'has_files' => $request->hasFile('files'),
+            'files_raw' => $request->file('files'),
+        ]);
+
+        if ($request->hasFile('files')) {
+            $files = $request->file('files');
+            // Se não for array, transforma em array para o foreach funcionar corretamente
+            if (!is_array($files)) {
+                $files = [$files];
+            }
+
+            foreach ($files as $index => $file) {
+                if (!$file->isValid()) {
+                    \Illuminate\Support\Facades\Log::error('[MediaController] Invalid file upload', [
+                        'index' => $index,
+                        'error' => $file->getErrorMessage()
+                    ]);
+                    continue;
+                }
+
+                try {
+                    $path = $file->store('private/media/' . $media->id, 'private');
+                    
+                    \Illuminate\Support\Facades\Log::info('[MediaController] File stored locally', [
+                        'original_name' => $file->getClientOriginalName(),
+                        'stored_path' => $path
+                    ]);
+
+                    $fileRecord = File::create([
+                        'name' => $file->getClientOriginalName(),
+                        'path' => $path,
+                        'type' => $this->getFileType($file->getMimeType()),
+                        'extension' => $this->getFileExtension($file->getClientOriginalName()),
+                        'mime_type' => $file->getMimeType(),
+                        'size' => $file->getSize(),
+                        'order' => 0,
+                    ]);
+
+                    \Illuminate\Support\Facades\Log::info('[MediaController] File model created in DB', [
+                        'id' => $fileRecord->id,
+                        'name' => $fileRecord->name
+                    ]);
+                    
+                    $media->files()->attach($fileRecord->id, [
+                        'file_type' => $this->getFileType($file->getMimeType()),
+                        'sort_order' => 0,
+                        'is_primary' => true
+                    ]);
+
+                    \Illuminate\Support\Facades\Log::info('[MediaController] File attached to media successfully');
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('[MediaController] Error processing file', [
+                        'original_name' => $file->getClientOriginalName(),
+                        'message' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
+            }
+        }
+
+        // Processar associações assíncronas de Chunk Uploads do Uppy via Trait centralizado
+        $this->associateChunkUploads($request, $media);
     }
 }

@@ -15,9 +15,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Traits\HandlesChunkUploads;
 
 class NewsController extends Controller
 {
+    use HandlesChunkUploads;
     public function index(Request $request)
     {
         $query = News::with(['category', 'image']);
@@ -123,6 +125,9 @@ class NewsController extends Controller
             'can_view' => true,
         ]);
 
+        // Associar uploads fracionados do Uppy
+        $this->associateChunkUploads($request, $news);
+
         // Criar notificação automática para usuários com permissão
         NotificationService::notifyNewNews($news->id, $news->title);
 
@@ -223,6 +228,9 @@ class NewsController extends Controller
         ], [
             'can_view' => true,
         ]);
+
+        // Associar uploads fracionados do Uppy
+        $this->associateChunkUploads($request, $news);
 
             DB::commit();
 

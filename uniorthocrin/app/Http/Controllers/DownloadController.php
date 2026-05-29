@@ -825,6 +825,28 @@ class DownloadController extends Controller
 
         $path = storage_path('app/' . $file->path);
         if (!is_file($path)) {
+            // Verificar se o arquivo existe no FTP
+            try {
+                if (Storage::disk('ftp')->exists($file->path)) {
+                    $fileName = $file->name;
+                    $mimeType = $file->mime_type ?? 'application/octet-stream';
+
+                    return response()->streamDownload(function() use ($file) {
+                        $stream = Storage::disk('ftp')->readStream($file->path);
+                        if ($stream) {
+                            fpassthru($stream);
+                            if (is_resource($stream)) {
+                                fclose($stream);
+                            }
+                        }
+                    }, $fileName, [
+                        'Content-Type' => $mimeType,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error("Erro ao baixar arquivo do FTP no DownloadController: " . $e->getMessage());
+            }
+
             return response()->json(['success' => false, 'message' => 'Arquivo não encontrado no servidor']);
         }
 

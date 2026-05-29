@@ -21,7 +21,9 @@
     </div>
 
     <!-- Modern Form -->
-    <form action="{{ route('admin.media.update', $media) }}" method="POST" enctype="multipart/form-data" class="space-modern">
+    <link rel="stylesheet" href="https://releases.transloadit.com/uppy/v3.27.3/uppy.min.css">
+    <script src="https://releases.transloadit.com/uppy/v3.27.3/uppy.min.js"></script>
+    <form id="media-form" action="{{ route('admin.media.update', $media) }}" method="POST" enctype="multipart/form-data" class="space-modern">
         @csrf
         @method('PUT')
 
@@ -122,12 +124,11 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="space-modern-sm">
+                            <div class="space-modern-sm">
                         <!-- Upload de Arquivos -->
                         <div>
                             <label for="files" class="form-label-modern">Galeria de Arquivos</label>
-                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4" id="file-upload-area-modern">
+                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
                                     <p class="text-modern-body font-medium mb-2">Arraste e solte os arquivos aqui</p>
@@ -140,12 +141,14 @@
                                     </label>
                                 </div>
                             </div>
+                            <div id="files_preview" class="mt-4"></div>
                             @error('files')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
                             @error('files.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
+                        </div>
 
                             
                             <!-- Lista dos Arquivos Existentes -->
@@ -155,9 +158,25 @@
                                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                                     <div class="divide-y divide-gray-200">
                                         @foreach($media->files as $file)
-                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50">
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-medium text-gray-900 truncate">{{ $file->name }}</p>
+                                        <div class="flex items-center justify-between p-3 hover:bg-gray-50 {{ $file->status === 'pending' ? 'uppy-file-item' : '' }}" {!! $file->status === 'pending' ? 'data-file-uuid="' . $file->chunk_upload_uuid . '"' : '' !!}>
+                                            <div class="flex items-center space-x-3 flex-1 min-w-0">
+                                                <div class="flex-shrink-0">
+                                                    @if($file->status === 'pending')
+                                                        <i class="fas fa-spinner fa-spin text-primary-500 text-sm"></i>
+                                                    @else
+                                                        <i class="fas fa-file text-gray-400 text-sm"></i>
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $file->name }}
+                                                        @if($file->status === 'pending')
+                                                            <span class="uppy-pending-badge ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                                                Processando...
+                                                            </span>
+                                                        @endif
+                                                    </p>
+                                                </div>
                                             </div>
                                             <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200"
                                                     onclick="deleteFile({{ $media->id }}, {{ $file->id }})">
@@ -207,7 +226,7 @@
                         <label class="flex items-center cursor-pointer">
                             <input type="checkbox" name="permissions[{{ $loop->index }}][can_view]" value="1"
                                    {{ $permission && $permission->can_view ? 'checked' : '' }} @if($userType->id == 1) checked disabled @endif
-                                   class="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300 rounded transition-colors duração-200">
+                                   class="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300 rounded transition-colors duration-200">
                             <span class="ml-2 text-modern-caption">Ver</span>
                         </label>
                         <label class="flex items-center cursor-pointer">
@@ -297,72 +316,89 @@
 </div>
 
 <script>
-// File upload area interactions
-const fileUploadArea = document.getElementById('file-upload-area-modern');
-if (fileUploadArea) {
-    fileUploadArea.addEventListener('click', () => {
-        document.getElementById('files').click();
-    });
-}
-
-// Drag and drop
-const area = document.getElementById('file-upload-area-modern');
-
-if (area) {
-    area.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        area.classList.add('file-upload-area-active');
-    });
-
-    area.addEventListener('dragleave', () => {
-        area.classList.remove('file-upload-area-active');
-    });
-
-    area.addEventListener('drop', (e) => {
-        e.preventDefault();
-        area.classList.remove('file-upload-area-active');
-        
-        const files = e.dataTransfer.files;
-        const input = document.getElementById('files');
-        input.files = files;
-        previewFiles(input);
-    });
-}
-
-function previewFiles(input) {
-    const preview = document.getElementById('file-preview');
-    if (!preview) return;
-    preview.innerHTML = '';
-    
-    Array.from(input.files).forEach(file => {
-        const div = document.createElement('div');
-        div.className = 'relative';
-        
-        if (file.type.startsWith('image/')) {
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('thumbnail');
+    const preview = document.getElementById('thumbnail-preview');
+    if (input && preview) {
+        input.addEventListener('change', function(e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) {
+                preview.innerHTML = '';
+                return;
+            }
             const reader = new FileReader();
-            reader.onload = (e) => {
-                div.innerHTML = `
-                    <img src="${e.target.result}" class="w-full h-24 object-cover rounded-lg border border-gray-200">
-                    <p class="text-xs text-gray-600 mt-1 truncate">${file.name}</p>
-                `;
+            reader.onload = function(ev) {
+                preview.innerHTML = `<div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden mt-2"><img src="${ev.target.result}" alt="thumb" class="w-full h-full object-cover"></div>`;
             };
             reader.readAsDataURL(file);
-        } else {
-            div.innerHTML = `
-                <div class="w-full h-24 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
-                    <i class="fas fa-file text-2xl text-gray-400"></i>
-                </div>
-                <p class="text-xs text-gray-600 mt-1 truncate">${file.name}</p>
-            `;
-        }
+        });
+    }
+
+    // Preview dos arquivos
+    initializeFileUpload('files', 'files_preview');
+});
+
+function initializeFileUpload(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    
+    input.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        const previewContainer = document.getElementById(previewId);
         
-        preview.appendChild(div);
+        if (!previewContainer) return;
+        
+        // Limpar preview anterior
+        previewContainer.innerHTML = '';
+        
+        if (files.length === 0) return;
+        
+        // Título
+        const title = document.createElement('h5');
+        title.className = 'text-modern-body font-medium mb-3';
+        title.textContent = 'Arquivos Selecionados:';
+        previewContainer.appendChild(title);
+        
+        // Container de arquivos
+        const outerDiv = document.createElement('div');
+        outerDiv.className = 'bg-white border border-gray-200 rounded-lg overflow-hidden';
+        
+        const innerDiv = document.createElement('div');
+        innerDiv.className = 'divide-y divide-gray-200';
+        
+        outerDiv.appendChild(innerDiv);
+        previewContainer.appendChild(outerDiv);
+        
+        files.forEach((file, index) => {
+            const fileItem = createFileItem(file, index);
+            innerDiv.appendChild(fileItem);
+        });
     });
+}
+
+function createFileItem(file, index) {
+    const div = document.createElement('div');
+    div.className = 'flex items-center justify-between p-3 hover:bg-gray-50';
+    
+    div.innerHTML = `
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">${file.name}</p>
+        </div>
+        <button type="button" class="text-red-600 hover:text-red-800 transition-colors duration-200" onclick="removeFilePreview(this, ${index})">
+            <i class="fas fa-trash text-sm"></i>
+        </button>
+    `;
+    
+    return div;
+}
+
+function removeFilePreview(button, index) {
+    button.closest('.flex').remove();
 }
 
 function deleteFile(mediaId, fileId) {
     if (confirm('Tem certeza que deseja deletar este arquivo?')) {
-        fetch(`/admin/media/${mediaId}/files/${fileId}`, {
+        fetch(`/admin/na-midia/${mediaId}/files/${fileId}`, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -383,25 +419,5 @@ function deleteFile(mediaId, fileId) {
         });
     }
 }
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const input = document.getElementById('thumbnail');
-    const preview = document.getElementById('thumbnail-preview');
-    if (input && preview) {
-        input.addEventListener('change', function(e) {
-            const file = e.target.files && e.target.files[0];
-            if (!file) {
-                preview.innerHTML = '';
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                preview.innerHTML = `<div class=\"w-20 h-20 bg-gray-100 rounded-lg overflow-hidden mt-2\"><img src=\"${ev.target.result}\" alt=\"thumb\" class=\"w-full h-full object-cover\"></div>`;
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-});
 </script>
 @endsection

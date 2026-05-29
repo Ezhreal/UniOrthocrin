@@ -89,6 +89,22 @@ return [
             'report' => false,
         ],
 
+        'ftp' => env('FTP_DRIVER', 'ftp') === 'local' ? [
+            'driver' => 'local',
+            'root' => storage_path('app/emulator/ftp'),
+        ] : [
+            'driver' => 'ftp',
+            'host' => env('FTP_HOST'),
+            'username' => env('FTP_USERNAME'),
+            'password' => env('FTP_PASSWORD'),
+            'port' => (int) env('FTP_PORT', 21),
+            'root' => env('FTP_ROOT', '/'),
+            'passive' => env('FTP_PASSIVE', true),
+            'ssl' => env('FTP_SSL', false),
+            'timeout' => (int) env('FTP_TIMEOUT', 90),
+            'throw' => true,
+        ],
+
     ],
 
     /*

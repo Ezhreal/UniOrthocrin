@@ -28,13 +28,25 @@ class NewsMultiprofileTest extends TestCase
      */
     public function test_news_published_scope_includes_null_published_at_with_published_status(): void
     {
+        $userType = UserType::create([
+            'name' => 'Author Type',
+            'slug' => 'author-type',
+            'description' => 'Author type description',
+        ]);
+        $author = User::create([
+            'name' => 'Author User',
+            'email' => 'author@example.com',
+            'password' => bcrypt('password'),
+            'user_type_id' => $userType->id,
+        ]);
+
         // 1. News with published status and NULL published_at -> Should be included
         $news1 = News::create([
             'title' => 'News 1',
             'content' => 'Content 1',
             'status' => 'published',
             'published_at' => null,
-            'author_id' => 1,
+            'author_id' => $author->id,
         ]);
 
         // 2. News with published status and past published_at -> Should be included
@@ -43,7 +55,7 @@ class NewsMultiprofileTest extends TestCase
             'content' => 'Content 2',
             'status' => 'published',
             'published_at' => now()->subDay(),
-            'author_id' => 1,
+            'author_id' => $author->id,
         ]);
 
         // 3. News with published status and future published_at -> Should NOT be included
@@ -52,7 +64,7 @@ class NewsMultiprofileTest extends TestCase
             'content' => 'Content 3',
             'status' => 'published',
             'published_at' => now()->addDay(),
-            'author_id' => 1,
+            'author_id' => $author->id,
         ]);
 
         // 4. News with draft status -> Should NOT be included
@@ -61,7 +73,7 @@ class NewsMultiprofileTest extends TestCase
             'content' => 'Content 4',
             'status' => 'draft',
             'published_at' => null,
-            'author_id' => 1,
+            'author_id' => $author->id,
         ]);
 
         $published = News::published()->get();
@@ -93,7 +105,11 @@ class NewsMultiprofileTest extends TestCase
      */
     public function test_news_can_be_downloaded_by_respects_can_view_permission(): void
     {
-        $userType = UserType::create(['name' => 'Franqueado', 'slug' => 'franqueado']);
+        $userType = UserType::create([
+            'name' => 'Franqueado',
+            'slug' => 'franqueado',
+            'description' => 'Franqueado description',
+        ]);
         
         $user = User::create([
             'name' => 'John Doe',
@@ -107,7 +123,7 @@ class NewsMultiprofileTest extends TestCase
             'content' => 'Important Content',
             'status' => 'published',
             'published_at' => null,
-            'author_id' => 1,
+            'author_id' => $user->id,
         ]);
 
         // Scenario 1: No permission record exists -> defaults to true (for authenticated users)

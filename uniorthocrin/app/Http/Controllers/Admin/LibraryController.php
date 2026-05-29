@@ -15,9 +15,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Traits\HandlesChunkUploads;
 
 class LibraryController extends Controller
 {
+    use HandlesChunkUploads;
     public function index(Request $request)
     {
         $query = Library::with(['category', 'files']);
@@ -132,6 +134,9 @@ class LibraryController extends Controller
             'can_view' => true,
             'can_download' => true,
         ]);
+
+        // Associar uploads fracionados do Uppy
+        $this->associateChunkUploads($request, $library);
 
         // Criar notificação automática para usuários com permissão
         NotificationService::notifyNewLibrary($library->id, $library->name);
@@ -258,6 +263,9 @@ class LibraryController extends Controller
             'can_view' => true,
             'can_download' => true,
         ]);
+
+        // Associar uploads fracionados do Uppy
+        $this->associateChunkUploads($request, $library);
 
             DB::commit();
 

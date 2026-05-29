@@ -36,6 +36,32 @@ class ServePrivateFiles
         $filePath = storage_path('app/' . $fullPath);
         
         if (!file_exists($filePath)) {
+            // Verificar se o arquivo existe no FTP
+            try {
+                if (Storage::disk('ftp')->exists($fullPath)) {
+                    $mimeType = Storage::disk('ftp')->mimeType($fullPath) ?? 'application/octet-stream';
+                    $fileName = basename($path);
+
+                    return response()->stream(function() use ($fullPath) {
+                        $stream = Storage::disk('ftp')->readStream($fullPath);
+                        if ($stream) {
+                            fpassthru($stream);
+                            if (is_resource($stream)) {
+                                fclose($stream);
+                            }
+                        }
+                    }, 200, [
+                        'Content-Type' => $mimeType,
+                        'Content-Disposition' => 'inline; filename="' . $fileName . '"',
+                        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                        'Pragma' => 'no-cache',
+                        'Expires' => '0'
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error("Erro ao ler arquivo do FTP no middleware ServePrivateFiles: " . $e->getMessage());
+            }
+            
             abort(404, 'Arquivo não encontrado');
         }
 

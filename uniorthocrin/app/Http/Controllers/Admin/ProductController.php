@@ -11,13 +11,17 @@ use App\Models\File;
 use App\Models\UserType;
 use App\Models\ProductPermission;
 use App\Models\OneDriveSync;
+use App\Models\ChunkUpload;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
+use App\Traits\HandlesChunkUploads;
+
 class ProductController extends Controller
 {
+    use HandlesChunkUploads;
     public function index(Request $request)
     {
         $query = Product::with(['category', 'series', 'images', 'videos']);
@@ -166,6 +170,9 @@ class ProductController extends Controller
                 'can_view' => true,
                 'can_download' => true,
             ]);
+
+            // Associar chunk uploads assíncronos do Uppy
+            $this->associateChunkUploads($request, $product);
 
             DB::commit();
 
@@ -328,6 +335,9 @@ class ProductController extends Controller
                 'can_view' => true,
                 'can_download' => true,
             ]);
+
+            // Associar chunk uploads assíncronos do Uppy
+            $this->associateChunkUploads($request, $product);
 
             DB::commit();
 
@@ -584,4 +594,6 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
 }
+
