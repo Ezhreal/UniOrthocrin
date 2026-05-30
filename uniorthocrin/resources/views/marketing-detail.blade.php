@@ -370,7 +370,8 @@
             @endif
             
             <!-- Conteúdo dos vídeos -->
-                          <!-- Player principal -->
+            <div class="flex gap-8">
+                <!-- Player principal -->
                 <div class="flex-grow max-w-[70%]">
                     <div class="bg-gray-900 rounded-lg">
                         <div class="relative">

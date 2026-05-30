@@ -148,7 +148,6 @@
                             @error('files.*')
                                 <p class="form-error-modern">{{ $message }}</p>
                             @enderror
-                        </div>
 
                             
                             <!-- Lista dos Arquivos Existentes -->
