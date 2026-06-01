@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('news_categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('news_categories')) {
+            Schema::create('news_categories', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->enum('status', ['active', 'inactive'])->default('active');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

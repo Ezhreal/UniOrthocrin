@@ -11,21 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_views', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('viewable_type'); // Product, Campaign, Training, etc.
-            $table->unsignedBigInteger('viewable_id');
-            $table->timestamp('first_viewed_at');
-            $table->timestamp('last_viewed_at');
-            $table->integer('view_count')->default(1);
-            $table->integer('download_count')->default(0);
-            $table->timestamps();
-            
-            $table->index(['viewable_type', 'viewable_id']);
-            $table->unique(['user_id', 'viewable_type', 'viewable_id']);
-            $table->index(['user_id', 'last_viewed_at']);
-        });
+        if (!Schema::hasTable('user_views')) {
+            Schema::create('user_views', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+                $table->string('viewable_type'); // Product, Campaign, Training, etc.
+                $table->unsignedBigInteger('viewable_id');
+                $table->timestamp('first_viewed_at');
+                $table->timestamp('last_viewed_at');
+                $table->integer('view_count')->default(1);
+                $table->integer('download_count')->default(0);
+                $table->timestamps();
+
+                $table->index(['viewable_type', 'viewable_id']);
+                $table->unique(['user_id', 'viewable_type', 'viewable_id']);
+                $table->index(['user_id', 'last_viewed_at']);
+            });
+        }
     }
 
     public function down()

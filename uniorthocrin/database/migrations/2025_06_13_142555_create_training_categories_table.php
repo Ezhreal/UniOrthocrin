@@ -11,15 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('training_categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-            
-            $table->index('status');
-        });
+        if (!Schema::hasTable('training_categories')) {
+            Schema::create('training_categories', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->enum('status', ['active', 'inactive'])->default('active');
+                $table->timestamps();
+
+                $table->index('status');
+            });
+        }
     }
 
     /**

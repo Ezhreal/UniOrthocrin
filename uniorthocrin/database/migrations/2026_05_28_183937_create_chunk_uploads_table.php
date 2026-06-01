@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('chunk_uploads', function (Blueprint $table) {
-            $table->uuid('uuid')->primary();
-            $table->string('filename');
-            $table->string('mime_type')->nullable();
-            $table->unsignedBigInteger('total_size');
-            $table->integer('total_chunks');
-            $table->integer('uploaded_chunks')->default(0);
-            $table->string('status')->default('uploading');
-            $table->string('local_path')->nullable();
-            $table->text('error_message')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('chunk_uploads')) {
+            Schema::create('chunk_uploads', function (Blueprint $table) {
+                $table->uuid('uuid')->primary();
+                $table->string('filename');
+                $table->string('mime_type')->nullable();
+                $table->unsignedBigInteger('total_size');
+                $table->integer('total_chunks');
+                $table->integer('uploaded_chunks')->default(0);
+                $table->string('status')->default('uploading');
+                $table->string('local_path')->nullable();
+                $table->text('error_message')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

@@ -81,6 +81,11 @@ Route::prefix('{profile_slug}')->middleware(['auth', \App\Http\Middleware\CheckP
 
     // Arquivos Privados sob o contexto do perfil ativo
     Route::get('/private/{path}', function($profile_slug, $path) {
+        \Illuminate\Support\Facades\Log::info('Route A Private File access:', [
+            'profile_slug' => $profile_slug,
+            'path' => $path,
+            'file_exists_local' => file_exists(storage_path('app/private/' . $path)),
+        ]);
         if (!Auth::check()) abort(401);
         $filePath = storage_path('app/private/' . $path);
         if (!file_exists($filePath)) {
@@ -104,7 +109,7 @@ Route::prefix('{profile_slug}')->middleware(['auth', \App\Http\Middleware\CheckP
                             'Cache-Control' => 'no-cache, no-store, must-revalidate',
                         ]);
                     }
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     Log::error("Erro ao ler do FTP na rota private context: " . $e->getMessage());
                 }
                 abort(404);
@@ -141,7 +146,7 @@ Route::middleware(['auth'])->group(function () {
                             'Cache-Control' => 'no-cache, no-store, must-revalidate',
                         ]);
                     }
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     Log::error("Erro ao ler do FTP na rota private global: " . $e->getMessage());
                 }
                 abort(404);

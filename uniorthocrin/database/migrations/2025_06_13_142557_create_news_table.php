@@ -11,20 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('news', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->text('content');
-            $table->text('excerpt')->nullable();
-            $table->foreignId('author_id')->constrained('users');
-            $table->timestamp('published_at')->nullable();
-            $table->enum('status', ['draft', 'published'])->default('draft');
-            $table->timestamps();
-            
-            $table->index(['status', 'published_at']);
-            $table->index('author_id');
-            $table->index('updated_at');
-        });
+        if (!Schema::hasTable('news')) {
+            Schema::create('news', function (Blueprint $table) {
+                $table->id();
+                $table->string('title');
+                $table->text('content');
+                $table->text('excerpt')->nullable();
+                $table->foreignId('author_id')->constrained('users');
+                $table->timestamp('published_at')->nullable();
+                $table->enum('status', ['draft', 'published'])->default('draft');
+                $table->timestamps();
+
+                $table->index(['status', 'published_at']);
+                $table->index('author_id');
+                $table->index('updated_at');
+            });
+        }
     }
 
     /**

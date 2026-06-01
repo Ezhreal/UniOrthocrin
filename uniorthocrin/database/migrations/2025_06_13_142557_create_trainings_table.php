@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('trainings', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->foreignId('category_id')->constrained('training_categories');
-            $table->text('description')->nullable();
-            $table->enum('content_type', ['pdf', 'video'])->default('pdf');
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-            
-            $table->index(['category_id', 'status']);
-            $table->index(['content_type', 'status']);
-            $table->index('updated_at');
-        });
+        if (!Schema::hasTable('trainings')) {
+            Schema::create('trainings', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->foreignId('category_id')->constrained('training_categories');
+                $table->text('description')->nullable();
+                $table->enum('content_type', ['pdf', 'video'])->default('pdf');
+                $table->enum('status', ['active', 'inactive'])->default('active');
+                $table->timestamps();
+
+                $table->index(['category_id', 'status']);
+                $table->index(['content_type', 'status']);
+                $table->index('updated_at');
+            });
+        }
     }
 
     /**

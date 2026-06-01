@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,10 +12,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('library', function (Blueprint $table) {
-            // Renomear category_id para library_category_id
-            $table->renameColumn('category_id', 'library_category_id');
-        });
+        if (Schema::hasColumn('library', 'category_id') && !Schema::hasColumn('library', 'library_category_id')) {
+            try {
+                Schema::table('library', function (Blueprint $table) {
+                    $table->dropForeign(['category_id']);
+                });
+            } catch (\Exception $e) {}
+            
+            DB::statement('ALTER TABLE library CHANGE category_id library_category_id bigint unsigned null');
+            
+            try {
+                Schema::table('library', function (Blueprint $table) {
+                    $table->foreign('library_category_id')->references('id')->on('library_categories');
+                });
+            } catch (\Exception $e) {}
+        }
     }
 
     /**
@@ -22,9 +34,20 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('library', function (Blueprint $table) {
-            // Reverter as mudanças
-            $table->renameColumn('library_category_id', 'category_id');
-        });
+        if (Schema::hasColumn('library', 'library_category_id') && !Schema::hasColumn('library', 'category_id')) {
+            try {
+                Schema::table('library', function (Blueprint $table) {
+                    $table->dropForeign(['library_category_id']);
+                });
+            } catch (\Exception $e) {}
+            
+            DB::statement('ALTER TABLE library CHANGE library_category_id category_id bigint unsigned null');
+            
+            try {
+                Schema::table('library', function (Blueprint $table) {
+                    $table->foreign('category_id')->references('id')->on('library_categories');
+                });
+            } catch (\Exception $e) {}
+        }
     }
 };

@@ -61,6 +61,10 @@ class OptimizeImagesCommand extends Command
                 $this->error("\nError optimizing file ID {$file->id}: " . $e->getMessage());
             }
             $bar->advance();
+
+            // Libera a memória explicitamente no final de cada iteração
+            unset($file);
+            gc_collect_cycles();
         }
 
         $bar->finish();
@@ -104,6 +108,8 @@ class OptimizeImagesCommand extends Command
                         }
                     }
                 }
+                unset($item);
+                gc_collect_cycles();
             }
         }
 

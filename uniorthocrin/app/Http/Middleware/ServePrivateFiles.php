@@ -58,7 +58,7 @@ class ServePrivateFiles
                         'Expires' => '0'
                     ]);
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 \Log::error("Erro ao ler arquivo do FTP no middleware ServePrivateFiles: " . $e->getMessage());
             }
             

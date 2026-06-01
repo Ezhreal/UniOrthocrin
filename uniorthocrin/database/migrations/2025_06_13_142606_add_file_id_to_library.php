@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('library', function (Blueprint $table) {
-            $table->foreignId('library_file_id')->nullable()->constrained('files')->onDelete('set null');
-        });
+        if (!Schema::hasColumn('library', 'library_file_id')) {
+            Schema::table('library', function (Blueprint $table) {
+                $table->foreignId('library_file_id')->nullable()->constrained('files')->onDelete('set null');
+            });
+        }
     }
 
     /**
@@ -21,9 +23,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('library', function (Blueprint $table) {
-            $table->dropForeign(['library_file_id']);
-            $table->dropColumn('library_file_id');
-        });
+        if (Schema::hasColumn('library', 'library_file_id')) {
+            Schema::table('library', function (Blueprint $table) {
+                try {
+                    $table->dropForeign(['library_file_id']);
+                } catch (\Exception $e) {}
+                $table->dropColumn('library_file_id');
+            });
+        }
     }
 };

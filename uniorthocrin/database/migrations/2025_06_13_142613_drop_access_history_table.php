@@ -19,20 +19,22 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::create('access_history', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('action'); // view, download
-            $table->string('resource_type'); // Product, Campaign, etc.
-            $table->unsignedBigInteger('resource_id');
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->json('metadata')->nullable(); // dados extras
-            $table->timestamp('created_at');
-            
-            $table->index(['user_id', 'created_at']);
-            $table->index(['resource_type', 'resource_id']);
-            $table->index(['action', 'created_at']);
-        });
+        if (!Schema::hasTable('access_history')) {
+            Schema::create('access_history', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+                $table->string('action'); // view, download
+                $table->string('resource_type'); // Product, Campaign, etc.
+                $table->unsignedBigInteger('resource_id');
+                $table->string('ip_address', 45)->nullable();
+                $table->text('user_agent')->nullable();
+                $table->json('metadata')->nullable(); // dados extras
+                $table->timestamp('created_at');
+
+                $table->index(['user_id', 'created_at']);
+                $table->index(['resource_type', 'resource_id']);
+                $table->index(['action', 'created_at']);
+            });
+        }
     }
 };

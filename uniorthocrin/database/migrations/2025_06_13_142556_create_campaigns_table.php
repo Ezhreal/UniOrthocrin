@@ -11,20 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('campaigns', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
-            $table->boolean('visible_franchise_only')->default(true);
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-            
-            $table->index(['status', 'visible_franchise_only']);
-            $table->index(['start_date', 'end_date']);
-            $table->index('updated_at');
-        });
+        if (!Schema::hasTable('campaigns')) {
+            Schema::create('campaigns', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->date('start_date')->nullable();
+                $table->date('end_date')->nullable();
+                $table->boolean('visible_franchise_only')->default(true);
+                $table->enum('status', ['active', 'inactive'])->default('active');
+                $table->timestamps();
+
+                $table->index(['status', 'visible_franchise_only']);
+                $table->index(['start_date', 'end_date']);
+                $table->index('updated_at');
+            });
+        }
     }
 
     /**

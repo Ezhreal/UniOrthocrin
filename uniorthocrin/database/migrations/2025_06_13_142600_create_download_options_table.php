@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('download_options', function (Blueprint $table) {
-            $table->id();
-            $table->string('resource_type'); // Product, Campaign, etc.
-            $table->unsignedBigInteger('resource_id');
-            $table->string('option_name'); // 'all_images', 'all_videos', 'complete'
-            $table->text('description')->nullable();
-            $table->unsignedBigInteger('estimated_size')->nullable(); // bytes
-            $table->timestamps();
-            
-            $table->index(['resource_type', 'resource_id']);
-            $table->unique(['resource_type', 'resource_id', 'option_name']);
-        });
+        if (!Schema::hasTable('download_options')) {
+            Schema::create('download_options', function (Blueprint $table) {
+                $table->id();
+                $table->string('resource_type'); // Product, Campaign, etc.
+                $table->unsignedBigInteger('resource_id');
+                $table->string('option_name'); // 'all_images', 'all_videos', 'complete'
+                $table->text('description')->nullable();
+                $table->unsignedBigInteger('estimated_size')->nullable(); // bytes
+                $table->timestamps();
+
+                $table->index(['resource_type', 'resource_id']);
+                $table->unique(['resource_type', 'resource_id', 'option_name']);
+            });
+        }
     }
 
     /**

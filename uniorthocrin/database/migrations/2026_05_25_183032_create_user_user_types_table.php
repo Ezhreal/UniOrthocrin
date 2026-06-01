@@ -12,14 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_user_types', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_type_id')->constrained('user_types')->onDelete('cascade');
-            $table->timestamps();
-            
-            $table->unique(['user_id', 'user_type_id']);
-        });
+        if (!Schema::hasTable('user_user_types')) {
+            Schema::create('user_user_types', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->foreignId('user_type_id')->constrained('user_types')->onDelete('cascade');
+                $table->timestamps();
+
+                $table->unique(['user_id', 'user_type_id']);
+            });
+        }
 
         // Migrar dados existentes: cada usuário ganha o perfil que já possui no user_type_id
         $users = DB::table('users')->whereNotNull('user_type_id')->get();

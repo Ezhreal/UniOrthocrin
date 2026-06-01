@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('news_permissions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('news_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_type_id')->constrained()->cascadeOnDelete();
-            $table->boolean('can_view')->default(true);
-            $table->timestamps();
-            
-            $table->unique(['news_id', 'user_type_id']);
-            $table->index(['user_type_id', 'can_view']);
-        });
+        if (!Schema::hasTable('news_permissions')) {
+            Schema::create('news_permissions', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('news_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('user_type_id')->constrained()->cascadeOnDelete();
+                $table->boolean('can_view')->default(true);
+                $table->timestamps();
+
+                $table->unique(['news_id', 'user_type_id']);
+                $table->index(['user_type_id', 'can_view']);
+            });
+        }
     }
 
     /**

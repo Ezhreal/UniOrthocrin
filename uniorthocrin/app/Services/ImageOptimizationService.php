@@ -44,6 +44,20 @@ class ImageOptimizationService
         }
 
         try {
+            // Evitar carregar imagens gigantescas na memória para não estourar o limite de 512MB do PHP
+            $dimensions = @getimagesize($fullOriginalPath);
+            if ($dimensions) {
+                $width = $dimensions[0];
+                $height = $dimensions[1];
+                $megapixels = ($width * $height) / 1000000;
+                $maxMegapixels = 12.0; // Limite de 12 Megapixels (ex: 4000x3000)
+                
+                if ($megapixels > $maxMegapixels) {
+                    Log::warning("Ignorando imagem muito grande para evitar estouro de memória ({$width}x{$height} = " . round($megapixels, 2) . "MP): {$path}");
+                    return null;
+                }
+            }
+
             $manager = new ImageManager(new Driver());
             $image = $manager->read($fullOriginalPath);
             
@@ -150,6 +164,21 @@ class ImageOptimizationService
 
         try {
             $fullOriginalPath = $disk->path($path);
+            
+            // Evitar carregar imagens gigantescas na memória para não estourar o limite de 512MB do PHP
+            $dimensions = @getimagesize($fullOriginalPath);
+            if ($dimensions) {
+                $width = $dimensions[0];
+                $height = $dimensions[1];
+                $megapixels = ($width * $height) / 1000000;
+                $maxMegapixels = 12.0; // Limite de 12 Megapixels (ex: 4000x3000)
+                
+                if ($megapixels > $maxMegapixels) {
+                    Log::warning("Ignorando imagem muito grande para evitar estouro de memória em local ({$width}x{$height} = " . round($megapixels, 2) . "MP): {$path}");
+                    return $path;
+                }
+            }
+
             $manager = new ImageManager(new Driver());
             $image = $manager->read($fullOriginalPath);
             

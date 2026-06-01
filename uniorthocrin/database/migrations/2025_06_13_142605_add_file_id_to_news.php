@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('news', function (Blueprint $table) {
-            $table->foreignId('news_file_id')->nullable()->constrained('files')->onDelete('set null');
-        });
+        if (!Schema::hasColumn('news', 'news_file_id')) {
+            Schema::table('news', function (Blueprint $table) {
+                $table->foreignId('news_file_id')->nullable()->constrained('files')->onDelete('set null');
+            });
+        }
     }
 
     /**
@@ -21,9 +23,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('news', function (Blueprint $table) {
-            $table->dropForeign(['news_file_id']);
-            $table->dropColumn('news_file_id');
-        });
+        if (Schema::hasColumn('news', 'news_file_id')) {
+            Schema::table('news', function (Blueprint $table) {
+                try {
+                    $table->dropForeign(['news_file_id']);
+                } catch (\Exception $e) {}
+                $table->dropColumn('news_file_id');
+            });
+        }
     }
 };

@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->foreignId('product_file_id')->nullable()->constrained('files')->onDelete('set null');
-        });
+        if (!Schema::hasColumn('products', 'product_file_id')) {
+            Schema::table('products', function (Blueprint $table) {
+                $table->foreignId('product_file_id')->nullable()->constrained('files')->onDelete('set null');
+            });
+        }
     }
 
     /**
@@ -21,9 +23,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropForeign(['product_file_id']);
-            $table->dropColumn('product_file_id');
-        });
+        if (Schema::hasColumn('products', 'product_file_id')) {
+            Schema::table('products', function (Blueprint $table) {
+                try {
+                    $table->dropForeign(['product_file_id']);
+                } catch (\Exception $e) {}
+                $table->dropColumn('product_file_id');
+            });
+        }
     }
 };

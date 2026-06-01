@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique(); // admin, franquia, representante, lojista
-            $table->string('description');
-            $table->integer('level')->default(1); // nível hierárquico
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('user_types')) {
+            Schema::create('user_types', function (Blueprint $table) {
+                $table->id();
+                $table->string('name')->unique(); // admin, franquia, representante, lojista
+                $table->string('description');
+                $table->integer('level')->default(1); // nível hierárquico
+                $table->enum('status', ['active', 'inactive'])->default('active');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

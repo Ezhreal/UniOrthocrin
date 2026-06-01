@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('chunk_uploads', function (Blueprint $table) {
-            $table->string('model_type')->nullable()->after('local_path');
-            $table->unsignedBigInteger('model_id')->nullable()->after('model_type');
-            $table->string('property')->nullable()->after('model_id');
+            if (!Schema::hasColumn('chunk_uploads', 'model_type')) {
+                $table->string('model_type')->nullable()->after('local_path');
+            }
+            if (!Schema::hasColumn('chunk_uploads', 'model_id')) {
+                $table->unsignedBigInteger('model_id')->nullable()->after('model_type');
+            }
+            if (!Schema::hasColumn('chunk_uploads', 'property')) {
+                $table->string('property')->nullable()->after('model_id');
+            }
         });
     }
 
@@ -24,7 +30,14 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('chunk_uploads', function (Blueprint $table) {
-            $table->dropColumn(['model_type', 'model_id', 'property']);
+            $colsToDrop = [];
+            if (Schema::hasColumn('chunk_uploads', 'model_type')) $colsToDrop[] = 'model_type';
+            if (Schema::hasColumn('chunk_uploads', 'model_id')) $colsToDrop[] = 'model_id';
+            if (Schema::hasColumn('chunk_uploads', 'property')) $colsToDrop[] = 'property';
+
+            if (!empty($colsToDrop)) {
+                $table->dropColumn($colsToDrop);
+            }
         });
     }
 };

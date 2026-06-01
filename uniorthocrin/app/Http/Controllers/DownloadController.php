@@ -843,7 +843,7 @@ class DownloadController extends Controller
                         'Content-Type' => $mimeType,
                     ]);
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error("Erro ao baixar arquivo do FTP no DownloadController: " . $e->getMessage());
             }
 

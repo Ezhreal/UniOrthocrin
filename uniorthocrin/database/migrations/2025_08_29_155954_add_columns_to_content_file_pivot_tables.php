@@ -11,48 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Adicionar colunas extras nas tabelas pivot para melhor controle
-        Schema::table('product_files', function (Blueprint $table) {
-            $table->string('file_type')->nullable(); // image, video, pdf, audio
-            $table->integer('sort_order')->default(0); // Para ordenação
-            $table->boolean('is_primary')->default(false); // Arquivo principal
-        });
+        $tables = [
+            'product_files',
+            'training_files',
+            'campaign_miscellaneous_files',
+            'campaign_post_files',
+            'campaign_folder_files',
+            'campaign_video_files',
+            'library_files'
+        ];
 
-        Schema::table('training_files', function (Blueprint $table) {
-            $table->string('file_type')->nullable();
-            $table->integer('sort_order')->default(0);
-            $table->boolean('is_primary')->default(false);
-        });
-
-        Schema::table('campaign_miscellaneous_files', function (Blueprint $table) {
-            $table->string('file_type')->nullable();
-            $table->integer('sort_order')->default(0);
-            $table->boolean('is_primary')->default(false);
-        });
-
-        Schema::table('campaign_post_files', function (Blueprint $table) {
-            $table->string('file_type')->nullable();
-            $table->integer('sort_order')->default(0);
-            $table->boolean('is_primary')->default(false);
-        });
-
-        Schema::table('campaign_folder_files', function (Blueprint $table) {
-            $table->string('file_type')->nullable();
-            $table->integer('sort_order')->default(0);
-            $table->boolean('is_primary')->default(false);
-        });
-
-        Schema::table('campaign_video_files', function (Blueprint $table) {
-            $table->string('file_type')->nullable();
-            $table->integer('sort_order')->default(0);
-            $table->boolean('is_primary')->default(false);
-        });
-
-        Schema::table('library_files', function (Blueprint $table) {
-            $table->string('file_type')->nullable();
-            $table->integer('sort_order')->default(0);
-            $table->boolean('is_primary')->default(false);
-        });
+        foreach ($tables as $t) {
+            if (Schema::hasTable($t)) {
+                Schema::table($t, function (Blueprint $table) use ($t) {
+                    if (!Schema::hasColumn($t, 'file_type')) {
+                        $table->string('file_type')->nullable();
+                    }
+                    if (!Schema::hasColumn($t, 'sort_order')) {
+                        $table->integer('sort_order')->default(0);
+                    }
+                    if (!Schema::hasColumn($t, 'is_primary')) {
+                        $table->boolean('is_primary')->default(false);
+                    }
+                });
+            }
+        }
     }
 
     /**
@@ -60,32 +43,28 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('product_files', function (Blueprint $table) {
-            $table->dropColumn(['file_type', 'sort_order', 'is_primary']);
-        });
+        $tables = [
+            'product_files',
+            'training_files',
+            'campaign_miscellaneous_files',
+            'campaign_post_files',
+            'campaign_folder_files',
+            'campaign_video_files',
+            'library_files'
+        ];
 
-        Schema::table('training_files', function (Blueprint $table) {
-            $table->dropColumn(['file_type', 'sort_order', 'is_primary']);
-        });
-
-        Schema::table('campaign_miscellaneous_files', function (Blueprint $table) {
-            $table->dropColumn(['file_type', 'sort_order', 'is_primary']);
-        });
-
-        Schema::table('campaign_post_files', function (Blueprint $table) {
-            $table->dropColumn(['file_type', 'sort_order', 'is_primary']);
-        });
-
-        Schema::table('campaign_folder_files', function (Blueprint $table) {
-            $table->dropColumn(['file_type', 'sort_order', 'is_primary']);
-        });
-
-        Schema::table('campaign_video_files', function (Blueprint $table) {
-            $table->dropColumn(['file_type', 'sort_order', 'is_primary']);
-        });
-
-        Schema::table('library_files', function (Blueprint $table) {
-            $table->dropColumn(['file_type', 'sort_order', 'is_primary']);
-        });
+        foreach ($tables as $t) {
+            if (Schema::hasTable($t)) {
+                Schema::table($t, function (Blueprint $table) use ($t) {
+                    $colsToDrop = [];
+                    if (Schema::hasColumn($t, 'file_type')) $colsToDrop[] = 'file_type';
+                    if (Schema::hasColumn($t, 'sort_order')) $colsToDrop[] = 'sort_order';
+                    if (Schema::hasColumn($t, 'is_primary')) $colsToDrop[] = 'is_primary';
+                    if (!empty($colsToDrop)) {
+                        $table->dropColumn($colsToDrop);
+                    }
+                });
+            }
+        }
     }
 };

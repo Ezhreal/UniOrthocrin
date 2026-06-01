@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('cnpj', 20)->nullable()->after('cpf_cnpj');
-        });
+        if (!Schema::hasColumn('users', 'cnpj')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('cnpj', 20)->nullable()->after('cpf_cnpj');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('cnpj');
-        });
+        if (Schema::hasColumn('users', 'cnpj')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('cnpj');
+            });
+        }
     }
 };

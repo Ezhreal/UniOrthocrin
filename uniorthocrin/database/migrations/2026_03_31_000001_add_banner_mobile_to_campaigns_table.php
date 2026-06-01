@@ -8,15 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('campaigns', function (Blueprint $table) {
-            $table->string('banner_mobile_path')->nullable()->after('banner_path');
-        });
+        if (!Schema::hasColumn('campaigns', 'banner_mobile_path')) {
+            Schema::table('campaigns', function (Blueprint $table) {
+                $table->string('banner_mobile_path')->nullable()->after('banner_path');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('campaigns', function (Blueprint $table) {
-            $table->dropColumn('banner_mobile_path');
-        });
+        if (Schema::hasColumn('campaigns', 'banner_mobile_path')) {
+            Schema::table('campaigns', function (Blueprint $table) {
+                $table->dropColumn('banner_mobile_path');
+            });
+        }
     }
 };

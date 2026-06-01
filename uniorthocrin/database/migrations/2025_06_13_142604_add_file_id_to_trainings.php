@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('trainings', function (Blueprint $table) {
-            $table->foreignId('training_file_id')->nullable()->constrained('files')->onDelete('set null');
-        });
+        if (!Schema::hasColumn('trainings', 'training_file_id')) {
+            Schema::table('trainings', function (Blueprint $table) {
+                $table->foreignId('training_file_id')->nullable()->constrained('files')->onDelete('set null');
+            });
+        }
     }
 
     /**
@@ -21,9 +23,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('trainings', function (Blueprint $table) {
-            $table->dropForeign(['training_file_id']);
-            $table->dropColumn('training_file_id');
-        });
+        if (Schema::hasColumn('trainings', 'training_file_id')) {
+            Schema::table('trainings', function (Blueprint $table) {
+                try {
+                    $table->dropForeign(['training_file_id']);
+                } catch (\Exception $e) {}
+                $table->dropColumn('training_file_id');
+            });
+        }
     }
 };

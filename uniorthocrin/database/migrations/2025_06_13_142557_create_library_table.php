@@ -11,17 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('library', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->foreignId('category_id')->constrained('library_categories');
-            $table->text('description')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-            
-            $table->index(['category_id', 'status']);
-            $table->index('updated_at');
-        });
+        if (!Schema::hasTable('library')) {
+            Schema::create('library', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->foreignId('category_id')->constrained('library_categories');
+                $table->text('description')->nullable();
+                $table->enum('status', ['active', 'inactive'])->default('active');
+                $table->timestamps();
+
+                $table->index(['category_id', 'status']);
+                $table->index('updated_at');
+            });
+        }
     }
 
     /**

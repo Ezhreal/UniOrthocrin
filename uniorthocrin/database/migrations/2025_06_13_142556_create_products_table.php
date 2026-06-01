@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('serie')->nullable();
-            $table->foreignId('category_id')->constrained('product_categories');
-            $table->text('description')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-            
-            $table->index(['category_id', 'status']);
-            $table->index('updated_at');
-        });
+        if (!Schema::hasTable('products')) {
+            Schema::create('products', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('serie')->nullable();
+                $table->foreignId('category_id')->constrained('product_categories');
+                $table->text('description')->nullable();
+                $table->enum('status', ['active', 'inactive'])->default('active');
+                $table->timestamps();
+
+                $table->index(['category_id', 'status']);
+                $table->index('updated_at');
+            });
+        }
     }
 
     /**

@@ -13,23 +13,29 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('user_types', function (Blueprint $table) {
-            $table->string('slug')->nullable()->after('name')->unique();
-        });
+        if (!Schema::hasColumn('user_types', 'slug')) {
+            Schema::table('user_types', function (Blueprint $table) {
+                $table->string('slug')->nullable()->after('name');
+            });
 
-        // Popular slugs baseados no nome
-        $types = DB::table('user_types')->get();
-        foreach ($types as $type) {
-            $slug = Str::slug($type->name);
-            // Ajuste manual para slugs específicos se necessário
-            if ($type->id == 1) $slug = 'admin';
-            
-            DB::table('user_types')->where('id', $type->id)->update(['slug' => $slug]);
+            // Popular slugs baseados no nome
+            $types = DB::table('user_types')->get();
+            foreach ($types as $type) {
+                $slug = Str::slug($type->name);
+                if ($type->id == 1) $slug = 'admin';
+                
+                DB::table('user_types')->where('id', $type->id)->update(['slug' => $slug]);
+            }
+
+            DB::statement('ALTER TABLE user_types MODIFY slug varchar(255) not null');
+
+            $hasUnique = collect(DB::select("SHOW INDEXES FROM user_types WHERE Key_name = 'user_types_slug_unique'"))->isNotEmpty();
+            if (!$hasUnique) {
+                Schema::table('user_types', function (Blueprint $table) {
+                    $table->unique('slug');
+                });
+            }
         }
-
-        Schema::table('user_types', function (Blueprint $table) {
-            $table->string('slug')->nullable(false)->change();
-        });
     }
 
     /**
@@ -37,8 +43,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('user_types', function (Blueprint $table) {
-            $table->dropColumn('slug');
-        });
+        if (Schema::hasColumn('user_types', 'slug')) {
+            Schema::table('user_types', function (Blueprint $table) {
+                $table->dropColumn('slug');
+            });
+        }
     }
 };

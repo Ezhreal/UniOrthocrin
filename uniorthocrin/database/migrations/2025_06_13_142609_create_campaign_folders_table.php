@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('campaign_folders', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('campaign_id')->constrained('campaigns')->onDelete('cascade');
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->enum('state', ['MG/SP', 'DF/ES', 'RJ', 'RS', 'SC', 'PR', 'BA', 'CE', 'PE', 'GO', 'MT', 'MS', 'RO', 'AC', 'AP', 'AM', 'PA', 'RR', 'TO', 'PI', 'MA', 'RN', 'PB', 'AL', 'SE'])->default('MG/SP');
-            $table->foreignId('campaign_folder_file_id')->nullable()->constrained('files')->onDelete('set null');
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('campaign_folders')) {
+            Schema::create('campaign_folders', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('campaign_id')->constrained('campaigns')->onDelete('cascade');
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->enum('state', ['MG/SP', 'DF/ES', 'RJ', 'RS', 'SC', 'PR', 'BA', 'CE', 'PE', 'GO', 'MT', 'MS', 'RO', 'AC', 'AP', 'AM', 'PA', 'RR', 'TO', 'PI', 'MA', 'RN', 'PB', 'AL', 'SE'])->default('MG/SP');
+                $table->foreignId('campaign_folder_file_id')->nullable()->constrained('files')->onDelete('set null');
+                $table->enum('status', ['active', 'inactive'])->default('active');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

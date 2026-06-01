@@ -11,17 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('training_permissions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('training_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_type_id')->constrained()->cascadeOnDelete();
-            $table->boolean('can_view')->default(true);
-            $table->boolean('can_download')->default(true);
-            $table->timestamps();
-            
-            $table->unique(['training_id', 'user_type_id']);
-            $table->index(['user_type_id', 'can_view']);
-        });
+        if (!Schema::hasTable('training_permissions')) {
+            Schema::create('training_permissions', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('training_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('user_type_id')->constrained()->cascadeOnDelete();
+                $table->boolean('can_view')->default(true);
+                $table->boolean('can_download')->default(true);
+                $table->timestamps();
+
+                $table->unique(['training_id', 'user_type_id']);
+                $table->index(['user_type_id', 'can_view']);
+            });
+        }
     }
 
     /**

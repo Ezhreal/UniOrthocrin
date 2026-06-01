@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ftp_syncs', function (Blueprint $table) {
-            $table->id();
-            $table->nullableMorphs('syncable');
-            $table->unsignedBigInteger('file_id')->nullable();
-            $table->string('local_path');
-            $table->string('remote_path');
-            $table->enum('status', ['pending', 'processing', 'synced', 'failed'])->default('pending');
-            $table->text('error_message')->nullable();
-            $table->timestamp('synced_at')->nullable();
-            $table->timestamps();
-            
-            $table->index('status');
-        });
+        if (!Schema::hasTable('ftp_syncs')) {
+            Schema::create('ftp_syncs', function (Blueprint $table) {
+                $table->id();
+                $table->nullableMorphs('syncable');
+                $table->unsignedBigInteger('file_id')->nullable();
+                $table->string('local_path');
+                $table->string('remote_path');
+                $table->enum('status', ['pending', 'processing', 'synced', 'failed'])->default('pending');
+                $table->text('error_message')->nullable();
+                $table->timestamp('synced_at')->nullable();
+                $table->timestamps();
+
+                $table->index('status');
+            });
+        }
     }
 
     /**

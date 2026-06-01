@@ -12,11 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('files', function (Blueprint $table) {
-            $table->string('optimized_path')->nullable()->after('path');
-            $table->string('thumbnail_sm_path')->nullable()->after('optimized_path');
-            $table->string('thumbnail_md_path')->nullable()->after('thumbnail_sm_path');
-            $table->string('thumbnail_lg_path')->nullable()->after('thumbnail_md_path');
-            $table->boolean('is_optimized')->default(false)->after('thumbnail_lg_path');
+            if (!Schema::hasColumn('files', 'optimized_path')) {
+                $table->string('optimized_path')->nullable()->after('path');
+            }
+            if (!Schema::hasColumn('files', 'thumbnail_sm_path')) {
+                $table->string('thumbnail_sm_path')->nullable()->after('optimized_path');
+            }
+            if (!Schema::hasColumn('files', 'thumbnail_md_path')) {
+                $table->string('thumbnail_md_path')->nullable()->after('thumbnail_sm_path');
+            }
+            if (!Schema::hasColumn('files', 'thumbnail_lg_path')) {
+                $table->string('thumbnail_lg_path')->nullable()->after('thumbnail_md_path');
+            }
+            if (!Schema::hasColumn('files', 'is_optimized')) {
+                $table->boolean('is_optimized')->default(false)->after('thumbnail_lg_path');
+            }
         });
     }
 
@@ -26,13 +36,16 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('files', function (Blueprint $table) {
-            $table->dropColumn([
-                'optimized_path',
-                'thumbnail_sm_path',
-                'thumbnail_md_path',
-                'thumbnail_lg_path',
-                'is_optimized'
-            ]);
+            $colsToDrop = [];
+            if (Schema::hasColumn('files', 'optimized_path')) $colsToDrop[] = 'optimized_path';
+            if (Schema::hasColumn('files', 'thumbnail_sm_path')) $colsToDrop[] = 'thumbnail_sm_path';
+            if (Schema::hasColumn('files', 'thumbnail_md_path')) $colsToDrop[] = 'thumbnail_md_path';
+            if (Schema::hasColumn('files', 'thumbnail_lg_path')) $colsToDrop[] = 'thumbnail_lg_path';
+            if (Schema::hasColumn('files', 'is_optimized')) $colsToDrop[] = 'is_optimized';
+
+            if (!empty($colsToDrop)) {
+                $table->dropColumn($colsToDrop);
+            }
         });
     }
 };

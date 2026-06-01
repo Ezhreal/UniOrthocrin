@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_series', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->foreignId('product_category_id')->constrained('product_categories')->onDelete('cascade');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('product_series')) {
+            Schema::create('product_series', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->enum('status', ['active', 'inactive'])->default('active');
+                $table->foreignId('product_category_id')->constrained('product_categories')->onDelete('cascade');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

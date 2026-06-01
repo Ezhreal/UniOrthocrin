@@ -32,6 +32,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(UiVisibilityService::class, function ($app) {
             return new UiVisibilityService($app->make(UiVisibilityRepository::class));
         });
+
+        // Altera o caminho público para a raiz externa (public_html) encontrar o manifesto do Vite
+        if (isset($_SERVER['SCRIPT_FILENAME'])) {
+            $entryDir = dirname($_SERVER['SCRIPT_FILENAME']);
+            $parentDir = realpath(base_path('../'));
+            if ($entryDir === $parentDir) {
+                $this->app->usePublicPath($parentDir);
+            }
+        }
     }
 
     /**
@@ -43,16 +52,9 @@ class AppServiceProvider extends ServiceProvider
             return app(\App\Services\UiVisibilityService::class)->canView($feature);
         });
 
-        // Injetar automaticamente o profile_slug em todas as rotas geradas que possuam este parâmetro.
-        // Isso resolve o problema de links quebrados no front-end de forma global.
-        try {
-            if (Session::has('active_profile_slug')) {
-                URL::defaults(['profile_slug' => Session::get('active_profile_slug')]);
-            }
-        } catch (\Exception $e) {
-            // Sessão pode não estar disponível em console commands
-        }
-        
+        // O profile_slug é agora injetado dinamicamente via o middleware SetDefaultProfileSlug
+        // que roda após o início da sessão.
+
         // Register observers for automatic notifications
         Product::observe(ProductObserver::class);
         News::observe(NewsObserver::class);

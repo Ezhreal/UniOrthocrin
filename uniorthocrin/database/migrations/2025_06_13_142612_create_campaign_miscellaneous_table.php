@@ -11,16 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('campaign_miscellaneous', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('campaign_id')->constrained('campaigns')->onDelete('cascade');
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->enum('type', ['spot', 'tag', 'sticker', 'script'])->default('spot');
-            $table->foreignId('campaign_miscellaneous_file_id')->nullable()->constrained('files')->onDelete('set null');
-            $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('campaign_miscellaneous')) {
+            Schema::create('campaign_miscellaneous', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('campaign_id')->constrained('campaigns')->onDelete('cascade');
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->enum('type', ['spot', 'tag', 'sticker', 'script'])->default('spot');
+                $table->foreignId('campaign_miscellaneous_file_id')->nullable()->constrained('files')->onDelete('set null');
+                $table->enum('status', ['active', 'inactive'])->default('active');
+                $table->timestamps();
+            });
+        }
     }
 
     /**
