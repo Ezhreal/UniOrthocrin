@@ -52,7 +52,7 @@ class RegisterController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'user_type_id' => $userTypeId,
-            'status' => 'active',
+            'status' => 'inactive',
         ];
 
         if (in_array($profile, ['franquia', 'lojista', 'representante'], true)) {
@@ -67,9 +67,9 @@ class RegisterController extends Controller
         // Sync the registered profile in the user_user_types pivot table
         $user->profiles()->sync([$userTypeId]);
 
-        return redirect()
-            ->route('login')
-            ->with('success', 'Cadastro realizado com sucesso. Faça login para continuar.');
+        session()->flash('info', 'Cadastro realizado com sucesso! Aguarde a aprovação do administrador.');
+
+        return redirect()->route('login');
     }
 
     private function isValidProfile(string $profile): bool

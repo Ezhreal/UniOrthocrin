@@ -107,9 +107,19 @@
                             </div>
                         </td>
                         <td>
-                            <span class="badge-modern {{ $user->status === 'active' ? 'badge-modern-success' : 'badge-modern-error' }}">
-                                {{ $user->status === 'active' ? 'Ativo' : 'Inativo' }}
-                            </span>
+                            @if($user->status === 'active')
+                                <span class="badge-modern badge-modern-success">
+                                    Ativo
+                                </span>
+                            @elseif($user->status === 'inactive')
+                                <span class="badge-modern badge-modern-warning">
+                                    Inativo
+                                </span>
+                            @else
+                                <span class="badge-modern badge-modern-warning">
+                                    {{ $user->status }}
+                                </span>
+                            @endif
                         </td>
                         <td>
                             <span class="text-modern-body">{{ $user->last_login_at ? $user->last_login_at->format('d/m/Y H:i') : 'Nunca' }}</span>
@@ -119,6 +129,14 @@
                         </td>
                         <td>
                             <div class="flex items-center space-x-2">
+                                @if($user->status === 'inactive')
+                                <form method="POST" action="{{ route('admin.users.approve', $user) }}" class="inline" onsubmit="return confirm('Deseja realmente aprovar este usuário?')">
+                                    @csrf
+                                    <button type="submit" class="text-success-500 hover:text-success-600 transition-colors duration-200 mr-1" title="Aprovar Usuário">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                </form>
+                                @endif
                                 <a href="{{ route('admin.users.show', $user) }}" class="text-primary-500 hover:text-primary-600 transition-colors duration-200">
                                     <i class="fas fa-eye"></i>
                                 </a>

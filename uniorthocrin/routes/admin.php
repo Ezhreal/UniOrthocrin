@@ -69,6 +69,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     // 2. Usuarios
     Route::resource('usuarios', UserController::class)->names('users')->parameters(['usuarios' => 'user']);
     Route::get('usuario/{user}', [UserController::class, 'show']);
+    Route::post('usuarios/{user}/approve', [UserController::class, 'approve'])->name('users.approve');
+    Route::post('users/{user}/approve', [UserController::class, 'approve']);
     Route::post('usuarios/{user}/avatar', [UserController::class, 'uploadAvatar'])->name('users.avatar.upload');
     Route::delete('usuarios/{user}/avatar', [UserController::class, 'deleteAvatar'])->name('users.avatar.delete');
     Route::get('profile', [UserController::class, 'profile'])->name('profile');

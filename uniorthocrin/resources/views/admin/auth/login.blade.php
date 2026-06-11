@@ -24,11 +24,27 @@
                     class="w-full px-3 py-2 border border-[#DDDDDD] rounded-md text-[#747474] placeholder-[#747474] focus:outline-none focus:ring-2 focus:ring-[#910039] focus:border-[#910039] bg-white" />
             </div>
 
-            @if ($errors->any())
+             @if ($errors->any())
                 <div class="text-red-500 text-xs mb-2">
                     @foreach ($errors->all() as $error)
                         <p>{{ $error }}</p>
                     @endforeach
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="text-emerald-600 text-xs mb-2 font-semibold">
+                    <p>{{ session('success') }}</p>
+                </div>
+            @endif
+            @if (session('info'))
+                <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md text-xs mb-2">
+                    <p>{{ session('info') }}</p>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-xs mb-2">
+                    <p>{{ session('error') }}</p>
                 </div>
             @endif
 

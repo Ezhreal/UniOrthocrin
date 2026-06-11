@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserApproved;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -220,6 +222,20 @@ class UserController extends Controller
         ]);
 
         return redirect()->route('admin.profile')->with('success', 'Senha alterada com sucesso!');
+    }
+
+    public function approve(User $user)
+    {
+        $user->status = 'active';
+        $user->save();
+
+        try {
+            Mail::to($user->email)->send(new UserApproved($user));
+        } catch (\Exception $e) {
+            Log::error('Erro ao enviar e-mail de aprovação de usuário: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Usuário aprovado com sucesso.');
     }
 
 }

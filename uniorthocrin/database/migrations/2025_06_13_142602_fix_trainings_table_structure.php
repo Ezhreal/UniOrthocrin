@@ -19,7 +19,9 @@ return new class extends Migration
                 });
             } catch (\Exception $e) {}
             
-            DB::statement('ALTER TABLE trainings CHANGE category_id training_category_id bigint unsigned null');
+            Schema::table('trainings', function (Blueprint $table) {
+                $table->renameColumn('category_id', 'training_category_id');
+            });
             
             try {
                 Schema::table('trainings', function (Blueprint $table) {
@@ -41,7 +43,9 @@ return new class extends Migration
                 });
             } catch (\Exception $e) {}
             
-            DB::statement('ALTER TABLE trainings CHANGE training_category_id category_id bigint unsigned null');
+            Schema::table('trainings', function (Blueprint $table) {
+                $table->renameColumn('training_category_id', 'category_id');
+            });
             
             try {
                 Schema::table('trainings', function (Blueprint $table) {

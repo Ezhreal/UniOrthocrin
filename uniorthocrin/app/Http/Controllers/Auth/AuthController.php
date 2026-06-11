@@ -38,15 +38,29 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $user = Auth::user();
+
+            if ($user->status === 'inactive') {
+                Auth::logout();
+                session()->flash('error', 'Seu cadastro ainda está aguardando aprovação.');
+                return redirect()->route('login');
+            }
+
+            if ($user->status !== 'active') {
+                Auth::logout();
+                session()->flash('error', 'Seu cadastro ainda está aguardando aprovação.');
+                return redirect()->route('login');
+            }
+
             $request->session()->regenerate();
             
             // Atualizar último acesso imediatamente
-            Auth::user()->update(['last_access' => now()]);
+            $user->update(['last_access' => now()]);
             
             Log::info('Usuário logado com sucesso', [
-                'user_id' => Auth::id(),
-                'email' => Auth::user()->email,
-                'user_type' => Auth::user()->user_type_id ?? 'N/A'
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'user_type' => $user->user_type_id ?? 'N/A'
             ]);
 
             // Redireciona baseado no tipo de usuário

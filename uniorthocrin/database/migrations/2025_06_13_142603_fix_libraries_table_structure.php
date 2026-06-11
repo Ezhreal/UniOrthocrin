@@ -19,7 +19,9 @@ return new class extends Migration
                 });
             } catch (\Exception $e) {}
             
-            DB::statement('ALTER TABLE library CHANGE category_id library_category_id bigint unsigned null');
+            Schema::table('library', function (Blueprint $table) {
+                $table->renameColumn('category_id', 'library_category_id');
+            });
             
             try {
                 Schema::table('library', function (Blueprint $table) {
@@ -41,7 +43,9 @@ return new class extends Migration
                 });
             } catch (\Exception $e) {}
             
-            DB::statement('ALTER TABLE library CHANGE library_category_id category_id bigint unsigned null');
+            Schema::table('library', function (Blueprint $table) {
+                $table->renameColumn('library_category_id', 'category_id');
+            });
             
             try {
                 Schema::table('library', function (Blueprint $table) {

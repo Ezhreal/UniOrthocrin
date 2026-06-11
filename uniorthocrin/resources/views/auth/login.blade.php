@@ -65,8 +65,18 @@
                     </div>
                     @endif
                     @if (session('success'))
-                    <div class="text-emerald-600 text-xs mb-2">
+                    <div class="text-emerald-600 text-xs mb-2 font-semibold">
                         <p>{{ session('success') }}</p>
+                    </div>
+                    @endif
+                    @if (session('info'))
+                    <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md text-xs mb-2">
+                        <p>{{ session('info') }}</p>
+                    </div>
+                    @endif
+                    @if (session('error'))
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-xs mb-2">
+                        <p>{{ session('error') }}</p>
                     </div>
                     @endif
                     <div class="flex justify-between mb-2">
