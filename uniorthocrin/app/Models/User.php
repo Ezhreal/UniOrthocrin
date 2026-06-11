@@ -31,6 +31,7 @@ class User extends Authenticatable
         'nome_fantasia',
         'razao_social',
         'cpf_cnpj',
+        'cnpj',
     ];
 
     /**

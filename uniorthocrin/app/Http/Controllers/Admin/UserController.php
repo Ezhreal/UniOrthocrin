@@ -80,12 +80,14 @@ class UserController extends Controller
             $userData['razao_social'] = $request->input('razao_social');
             $userData['nome_fantasia'] = $request->input('nome_fantasia');
             $userData['cpf_cnpj'] = $request->input('cpf_cnpj');
+            $userData['cnpj'] = $request->input('cpf_cnpj');
         }
 
         $user = User::create($userData);
         
-        // Sincronizar perfis na pivot
-        $user->profiles()->sync($request->user_type_ids);
+        // Sincronizar perfis na pivot (garantindo que o perfil principal esteja incluso)
+        $userTypeIds = array_unique(array_merge($request->user_type_ids, [$request->primary_user_type_id]));
+        $user->profiles()->sync($userTypeIds);
 
         return redirect()->route('admin.users.index')->with('success', 'Usuário criado com sucesso!');
     }
@@ -136,10 +138,12 @@ class UserController extends Controller
             $data['razao_social'] = $request->input('razao_social');
             $data['nome_fantasia'] = $request->input('nome_fantasia');
             $data['cpf_cnpj'] = $request->input('cpf_cnpj');
+            $data['cnpj'] = $request->input('cpf_cnpj');
         } else {
             $data['razao_social'] = null;
             $data['nome_fantasia'] = null;
             $data['cpf_cnpj'] = null;
+            $data['cnpj'] = null;
         }
 
         if ($request->filled('password')) {
@@ -148,8 +152,9 @@ class UserController extends Controller
 
         $user->update($data);
         
-        // Sincronizar perfis na pivot
-        $user->profiles()->sync($request->user_type_ids);
+        // Sincronizar perfis na pivot (garantindo que o perfil principal esteja incluso)
+        $userTypeIds = array_unique(array_merge($request->user_type_ids, [$request->primary_user_type_id]));
+        $user->profiles()->sync($userTypeIds);
 
         return redirect()->route('admin.users.index')->with('success', 'Usuário atualizado com sucesso!');
     }

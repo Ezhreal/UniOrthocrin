@@ -59,9 +59,13 @@ class RegisterController extends Controller
             $payload['razao_social'] = $request->input('razao_social');
             $payload['nome_fantasia'] = $request->input('nome_fantasia');
             $payload['cnpj'] = $request->input('cnpj');
+            $payload['cpf_cnpj'] = $request->input('cnpj');
         }
 
-        User::create($payload);
+        $user = User::create($payload);
+
+        // Sync the registered profile in the user_user_types pivot table
+        $user->profiles()->sync([$userTypeId]);
 
         return redirect()
             ->route('login')
