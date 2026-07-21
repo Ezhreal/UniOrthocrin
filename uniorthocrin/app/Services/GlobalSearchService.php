@@ -55,7 +55,7 @@ class GlobalSearchService
                     'thumbnail_url' => $thumb ? url($thumb) : null,
                     'title' => $c->name,
                     'type_label' => 'Marketing',
-                    'url' => route('marketing.detail', ['profile_slug' => $profileSlug, 'id' => $c->id]),
+                    'url' => route('campanhas.detail', ['profile_slug' => $profileSlug, 'id' => $c->id]),
                 ]);
             }
         }
@@ -122,7 +122,7 @@ class GlobalSearchService
                 'thumbnail_url' => $thumb,
                 'title' => $n->title,
                 'type_label' => 'Radar',
-                'url' => route('news.detail', ['profile_slug' => $profileSlug, 'id' => $n->id]),
+                'url' => route('radar.detail', ['profile_slug' => $profileSlug, 'id' => $n->id]),
             ]);
         }
 
