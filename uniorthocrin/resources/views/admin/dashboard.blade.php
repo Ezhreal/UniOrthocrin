@@ -1,5 +1,7 @@
 @extends('admin.layouts.app')
 
+@section('tour_page_key', 'admin_dashboard')
+
 @section('title', 'Dashboard - Admin')
 
 @section('content')
@@ -11,12 +13,16 @@
             <p class="text-modern-subtitle">Visão geral da plataforma UniOrthocrin</p>
         </div>
         <div class="flex items-center space-x-3">
+            <button type="button" id="btn-trigger-help-tour" class="btn-modern-secondary inline-flex items-center gap-2">
+                <i class="fas fa-question-circle text-primary-500"></i>
+                <span>Como usar?</span>
+            </button>
             <span class="text-modern-caption">Última atualização: {{ now()->format('d/m/Y H:i') }}</span>
         </div>
     </div>
 
     <!-- Main Stats Cards (3 principais) -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div id="admin-quick-stats" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <!-- Campaigns - Card Principal -->
         <div class="stats-card-modern hover-modern-lift">
             <div class="flex items-center justify-between">
@@ -76,7 +82,7 @@
     </div>
 
     <!-- Secondary Stats Cards (4 menores) -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div id="admin-secondary-stats" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <!-- Library -->
         <div class="stats-card-modern hover-modern-lift">
             <div class="flex items-center justify-between">
@@ -151,7 +157,7 @@
     </div>
 
     <!-- Modern Recent Activity -->
-    <div class="grid-modern grid-modern-2">
+    <div id="admin-recent-activity" class="grid-modern grid-modern-2">
         <!-- Recent Users -->
         <div class="modern-card hover-modern-lift">
             <div class="modern-card-header">

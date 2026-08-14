@@ -75,12 +75,13 @@ class ProductVideoPlayer {
                 `;
                 console.log('ProductVideoPlayer: Vídeo principal atualizado para embed:', video.embed_url);
             } else if (video.video_url) {
+                const cleanFileName = video.file_name ? decodeURIComponent(decodeURIComponent(video.file_name)) : '';
                 this.videoContainer.innerHTML = `
                     <video id="mainVideo" class="w-full h-96" controls>
                         <source src="${video.video_url}" type="video/mp4">
                         Seu navegador não suporta o elemento de vídeo.
                     </video>
-                    ${video.file_name ? `<p class="text-gray-400 text-xs mt-2 px-2 pb-2 truncate" title="${video.file_name}">Ficheiro: ${video.file_name}</p>` : ''}
+                    ${cleanFileName ? `<p class="text-gray-400 text-xs mt-2 px-2 pb-2 truncate" title="${cleanFileName}">Ficheiro: ${cleanFileName}</p>` : ''}
                 `;
                 console.log('ProductVideoPlayer: Vídeo principal atualizado para HTML5:', video.video_url);
             } else {

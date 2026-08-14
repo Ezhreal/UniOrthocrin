@@ -32,7 +32,7 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-gray-50 font-outfit">
+<body class="bg-gray-50 font-outfit" data-tour-page="@yield('tour_page_key', 'admin_dashboard')">
     <div class="flex h-screen overflow-hidden">
         <!-- Mobile Overlay -->
         <div x-show="mobileMenuOpen" 
@@ -46,7 +46,7 @@
              class="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 lg:hidden"></div>
 
         <!-- Sidebar -->
-        <aside class="bg-primary-500 border-r border-primary-600 transition-all duration-300 ease-in-out
+        <aside id="admin-sidebar" class="bg-primary-500 border-r border-primary-600 transition-all duration-300 ease-in-out
                       fixed lg:relative inset-y-0 left-0 z-50
                       lg:w-auto"
                :class="{
@@ -290,7 +290,7 @@
                         </a>
 
                         <!-- Upload Manager -->
-                        <a href="{{ route('admin.upload.manager') }}" 
+                        <a id="admin-upload-manager-btn" href="{{ route('admin.upload.manager') }}" 
                            @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
                            class="flex items-center px-3 py-2 text-white rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.upload.manager') ? 'bg-primary-600' : 'hover:bg-primary-600' }}"
                            :class="(sidebarOpen || mobileMenuOpen) ? 'justify-start' : 'justify-center'">
@@ -299,7 +299,7 @@
                         </a>
 
                         <!-- Como usar -->
-                        <a href="{{ route('admin.help.index') }}" 
+                        <a id="btn-trigger-help-tour" href="{{ route('admin.help.index') }}" 
                            @click="if (window.innerWidth < 1024) mobileMenuOpen = false"
                            class="flex items-center px-3 py-2 text-white rounded-lg transition-colors duration-200 {{ request()->routeIs('admin.help.*') ? 'bg-primary-600' : 'hover:bg-primary-600' }}"
                            :class="(sidebarOpen || mobileMenuOpen) ? 'justify-start' : 'justify-center'">
@@ -340,7 +340,7 @@
                 <!-- Modern User Menu -->
                 <div id="admin-notifications-dropdown" class="flex items-center space-x-4" x-data="adminNotificationDropdown()" x-init="markReadUrl = '{{ route('admin.notifications.mark-read', ['notification' => 0]) }}'">
                         <!-- Notifications -->
-                        <div class="relative" x-data="{ open: false }">
+                        <div id="admin-bell-notifications" class="relative" x-data="{ open: false }">
                             <button @click="open = !open; loadNotifications()" 
                                     class="p-2 text-gray-400 hover:text-gray-500 relative hover-modern transition-colors duration-200">
                                 <i class="fas fa-bell text-xl"></i>

@@ -284,10 +284,13 @@ class MarketingDetail {
         videoListContainer.innerHTML = '';
 
         videos.forEach((video, index) => {
+            const cleanName = decodeURIComponent(decodeURIComponent(video.name || video.title || ''));
+            const cleanFileName = video.file_name ? decodeURIComponent(decodeURIComponent(video.file_name)) : '';
+
             const videoItem = document.createElement('div');
             videoItem.className = `video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t ${index === videos.length - 1 ? 'border-b' : ''} border-gray-200`;
             videoItem.setAttribute('data-video', video.file_id || video.id);
-            videoItem.setAttribute('data-title', video.name || '');
+            videoItem.setAttribute('data-title', cleanName);
             videoItem.setAttribute('data-type', video.type || '');
 
             const typeLabel = (video.type || '')
@@ -299,8 +302,8 @@ class MarketingDetail {
                 ? `<img src="${marketingDetailEscapeAttr(video.thumbnail)}" alt="" class="w-full h-full object-cover">`
                 : '<div class="w-full h-12 bg-gray-400 flex items-center justify-center"><i class="fas fa-video text-gray-600"></i></div>';
 
-            const fileNameHtml = video.file_name
-                ? `<p class="text-gray-500 text-xs truncate mb-1" title="${marketingDetailEscapeAttr(video.file_name)}">${marketingDetailEscapeHtml(video.file_name)}</p>`
+            const fileNameHtml = (cleanFileName && cleanFileName !== cleanName)
+                ? `<p class="text-gray-500 text-xs truncate mb-1" title="${marketingDetailEscapeAttr(cleanFileName)}">${marketingDetailEscapeHtml(cleanFileName)}</p>`
                 : '';
 
             const downloadForm = video.file_id
@@ -310,7 +313,7 @@ class MarketingDetail {
                         <input type="hidden" name="content_id" value="${campaignId}">
                         <input type="hidden" name="type" value="video">
                         <input type="hidden" name="file_ids[]" value="${video.file_id}">
-                        <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                        <button type="submit" class="btn-video-download-single inline-flex items-center gap-1 text-[#910039] text-xs hover:underline">
                             <i class="fa-solid fa-download"></i>
                             Download
                         </button>
@@ -323,7 +326,7 @@ class MarketingDetail {
                         ${thumbBlock}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="text-[#910039] font-semibold text-sm mb-1">${marketingDetailEscapeHtml(video.name || '')}</h4>
+                        <h4 class="text-[#910039] font-semibold text-sm mb-1 break-words line-clamp-2" title="${marketingDetailEscapeAttr(cleanName)}">${marketingDetailEscapeHtml(cleanName)}</h4>
                         ${fileNameHtml}
                         <div class="flex items-center justify-between gap-2">
                             <span class="text-gray-600 text-xs">${marketingDetailEscapeHtml(typeLabel)}</span>
@@ -350,7 +353,7 @@ class MarketingDetail {
                     <input type="hidden" name="content_id" value="${campaignId}">
                     <input type="hidden" name="type" value="video">
                     ${hiddenFiles}
-                    <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                    <button type="submit" id="tour-video-download-all" class="btn-video-download-all inline-flex items-center gap-1 text-[#910039] text-xs font-semibold hover:underline">
                         <i class="fa-solid fa-download"></i>
                         Baixar ${withFiles.length} vídeo${withFiles.length > 1 ? 's' : ''}
                     </button>

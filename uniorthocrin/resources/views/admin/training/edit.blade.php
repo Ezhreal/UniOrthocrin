@@ -1,5 +1,7 @@
 @extends('admin.layouts.app')
 
+@section('tour_page_key', 'admin_training_form')
+
 @section('title', 'Editar Treinamento - Admin')
 
 @section('content')
@@ -10,7 +12,11 @@
             <h1 class="text-modern-title">Editar Treinamento</h1>
             <p class="text-modern-subtitle">Modifique as informações do treinamento</p>
         </div>
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3 flex-wrap gap-2">
+            <button type="button" id="btn-trigger-help-tour" class="btn-modern-secondary inline-flex items-center gap-2">
+                <i class="fas fa-question-circle text-primary-500"></i>
+                <span>Como usar?</span>
+            </button>
             <a href="{{ route('admin.training.show', $training) }}" class="btn-modern-secondary">
                 <i class="fas fa-eye mr-2"></i>Visualizar
             </a>
@@ -124,7 +130,7 @@
                     </div>
                     <div class="space-modern-sm">
                             <!-- Galeria de Vídeos -->
-                        <div>
+                        <div id="tour-videos-upload-area">
                             <x-video-source-selector
                                 inputId="videos"
                                 inputName="videos[]"
@@ -189,7 +195,7 @@
                             <!-- Galeria de PDFs -->
                         <div class="mt-6">
                             <label for="files" class="form-label-modern">Galeria de PDFs</label>
-                            <div class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
+                            <div id="tour-files-upload-area" class="file-upload-area-modern border border-gray-300 rounded-lg p-6 my-4">
                                 <div class="text-center">
                                     <i class="fas fa-file-pdf text-4xl text-gray-400 mb-4"></i>
                                     <p class="text-modern-body font-medium mb-2">Arraste e solte os PDFs aqui</p>
@@ -266,7 +272,7 @@
             <!-- Sidebar -->
             <div class="space-modern">
                 <!-- Permissions Card -->
-                <div class="modern-card hover-modern-lift">
+                <div id="tour-permissions-card" class="modern-card hover-modern-lift">
                     <div class="modern-card-header">
                         <div class="flex items-center space-x-3">
                             <div class="h-10 w-10 bg-warning-50 rounded-xl flex items-center justify-center">
@@ -396,7 +402,7 @@
                         --}}
                         
                         <div class="space-y-3">
-                            <button type="submit" class="btn-modern-primary w-full">
+                            <button id="tour-submit-btn" type="submit" class="btn-modern-primary w-full">
                                 <i class="fas fa-save mr-2"></i>Salvar Alterações
                             </button>
                             <a href="{{ route('admin.training.show', $training) }}" class="btn-modern-secondary w-full text-center">

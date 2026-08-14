@@ -8,7 +8,7 @@
         </div>
 
         <!-- Menu Desktop -->
-        <nav class="hidden md:flex flex-1 justify-center">
+        <nav id="tour-navigation" class="hidden md:flex flex-1 justify-center">
             <ul class="flex space-x-8">
                 @php 
                     $user = auth()->user(); 
@@ -36,11 +36,19 @@
 
             <!-- Dropdown de Notificações -->
             @auth
-                @livewire('notification-dropdown')
+                <div id="tour-notifications" class="relative">
+                    @livewire('notification-dropdown')
+                </div>
             @endauth
 
+            <!-- Botão "Como Usar" -->
+            <button id="btn-trigger-help-tour" class="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 text-gray-600 hover:text-[#910039] hover:border-[#910039] transition-all duration-200 rounded-full text-xs font-semibold bg-white shadow-sm" title="Tutorial rápido desta página">
+                <i class="fas fa-question-circle text-sm text-[#910039]"></i>
+                <span>Como Usar?</span>
+            </button>
+
             <!-- Menu do usuário -->
-            <div class="relative group" x-data="{ open: false }">
+            <div id="tour-profile-menu" class="relative group" x-data="{ open: false }">
                 <button @click="open = !open" class="relative p-2 text-gray-600 hover:text-[#910039] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#910039] focus:ring-opacity-50 rounded-lg">
                     <i class="fas fa-user-circle text-xl"></i>
                 </button>

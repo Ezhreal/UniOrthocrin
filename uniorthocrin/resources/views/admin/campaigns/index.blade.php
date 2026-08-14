@@ -1,5 +1,7 @@
 @extends('admin.layouts.app')
 
+@section('tour_page_key', 'admin_campaigns_list')
+
 @section('title', 'Campanhas - Admin')
 
 @section('content')
@@ -11,7 +13,11 @@
             <p class="text-modern-subtitle">Gerencie todas as campanhas da plataforma</p>
         </div>
         <div class="flex items-center space-x-3">
-            <a href="{{ route('admin.campaigns.create') }}" class="btn-modern-primary">
+            <button type="button" id="btn-trigger-help-tour" class="btn-modern-secondary inline-flex items-center gap-2">
+                <i class="fas fa-question-circle text-primary-500"></i>
+                <span>Como usar?</span>
+            </button>
+            <a href="{{ route('admin.campaigns.create') }}" id="tour-add-new-btn" class="btn-modern-primary">
                 <i class="fas fa-plus mr-2"></i>
                 Nova Campanha
             </a>
@@ -19,7 +25,7 @@
     </div>
 
     <!-- Modern Filters -->
-    <div class="modern-card">
+    <div id="tour-filters-card" class="modern-card">
         <div class="modern-card-header">
             <div class="flex items-center space-x-3">
                 <div class="h-10 w-10 bg-primary-50 rounded-xl flex items-center justify-center">
@@ -69,7 +75,7 @@
     </div>
 
     <!-- Modern Campaigns Table -->
-    <div class="modern-card">
+    <div id="tour-items-table" class="modern-card">
         <div class="overflow-x-auto">
             <table class="table-modern">
                 <thead>

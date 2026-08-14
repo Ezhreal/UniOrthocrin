@@ -127,10 +127,11 @@ class ProductRepository implements RepositoryInterface
         // --- Vídeos por upload (tabela files) ---
         $videos = $product->videos()->get();
         $videos->each(function ($file) use ($product, &$result) {
+            $cleanName = rawurldecode(urldecode($file->name));
             $result->push([
                 'id'           => $file->id,
-                'title'        => $product->name . ' - ' . $file->name,
-                'file_name'    => $file->name,
+                'title'        => $cleanName,
+                'file_name'    => $cleanName,
                 'video_url'    => $file->url,
                 'embed_url'    => null,
                 'video_source' => 'upload',

@@ -1,5 +1,7 @@
 @extends('admin.layouts.app')
 
+@section('tour_page_key', 'admin_campaigns_form')
+
 @section('title', 'Nova Campanha - Admin')
 
 @section('content')
@@ -11,6 +13,10 @@
             <p class="text-modern-subtitle">Criar uma nova campanha na plataforma</p>
         </div>
         <div class="flex items-center space-x-3">
+            <button type="button" id="btn-trigger-help-tour" class="btn-modern-secondary inline-flex items-center gap-2">
+                <i class="fas fa-question-circle text-primary-500"></i>
+                <span>Como usar?</span>
+            </button>
             <a href="{{ route('admin.campaigns.index') }}" class="btn-modern-secondary">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Voltar
@@ -156,7 +162,7 @@
                 </div>
 
                 <!-- Folhetos Card -->
-                <div class="modern-card hover-modern-lift">
+                <div id="tour-folhetos-card" class="modern-card hover-modern-lift">
                     <div class="modern-card-header">
                         <div class="flex items-center space-x-3">
                             <div class="h-10 w-10 bg-primary-50 rounded-xl flex items-center justify-center">
@@ -209,7 +215,7 @@
                 </div>
 
                 <!-- Posts Card -->
-                <div class="modern-card hover-modern-lift">
+                <div id="tour-posts-card" class="modern-card hover-modern-lift">
                     <div class="modern-card-header">
                         <div class="flex items-center space-x-3">
                             <div class="h-10 w-10 bg-success-50 rounded-xl flex items-center justify-center">
@@ -280,7 +286,7 @@
                 </div>
 
                 <!-- Vídeos Card -->
-                <div class="modern-card hover-modern-lift">
+                <div id="tour-videos-card" class="modern-card hover-modern-lift">
                     <div class="modern-card-header">
                         <div class="flex items-center space-x-3">
                             <div class="h-10 w-10 bg-warning-50 rounded-xl flex items-center justify-center">
@@ -323,7 +329,7 @@
                 </div>
 
                 <!-- Diversos Card -->
-                <div class="modern-card hover-modern-lift">
+                <div id="tour-diversos-card" class="modern-card hover-modern-lift">
                     <div class="modern-card-header">
                         <div class="flex items-center space-x-3">
                             <div class="h-10 w-10 bg-secondary-50 rounded-xl flex items-center justify-center">
@@ -519,7 +525,7 @@
                         --}}
                         
                         <div class="space-y-3">
-                            <button type="submit" class="btn-modern-primary w-full">
+                            <button id="tour-submit-btn" type="submit" class="btn-modern-primary w-full">
                                 <i class="fas fa-save mr-2"></i>Criar Campanha
                             </button>
                             <a href="{{ route('admin.campaigns.index') }}" class="btn-modern-secondary w-full text-center">

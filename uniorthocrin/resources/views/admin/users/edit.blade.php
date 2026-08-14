@@ -1,5 +1,7 @@
 @extends('admin.layouts.app')
 
+@section('tour_page_key', 'admin_users_form')
+
 @section('title', 'Editar Usuário - Admin')
 
 @section('content')
@@ -11,6 +13,10 @@
             <p class="text-modern-subtitle">Editar informações do usuário: {{ $user->name }}</p>
         </div>
         <div class="flex items-center space-x-3">
+            <button type="button" id="btn-trigger-help-tour" class="btn-modern-secondary inline-flex items-center gap-2">
+                <i class="fas fa-question-circle text-primary-500"></i>
+                <span>Como usar?</span>
+            </button>
             <a href="{{ route('admin.users.index') }}" class="btn-modern-secondary">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Voltar
@@ -231,7 +237,7 @@
                class="btn-modern-secondary">
                 Cancelar
             </a>
-            <button type="submit" 
+            <button id="tour-submit-btn" type="submit" 
                     class="btn-modern-primary">
                 <i class="fas fa-save mr-2"></i>
                 Atualizar Usuário

@@ -8,12 +8,18 @@ import './components/ProductVideoPlayer';
 import './components/ProductList';
 import './components/DownloadManager';
 import './components/MarketingDetail';
+import './components/TourManager';
 
 // Inicializar componentes comuns em todas as páginas
 document.addEventListener('DOMContentLoaded', function() {
     // Sempre inicializar Common
     if (window.Common) {
         new window.Common();
+    }
+    
+    // Sempre inicializar TourManager
+    if (window.TourManager) {
+        new window.TourManager();
     }
     
     // Sempre inicializar DownloadManager

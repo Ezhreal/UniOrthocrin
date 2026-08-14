@@ -63,17 +63,20 @@ class MarketingController extends Controller
                     $thumbnail = 'https://placehold.co/600x600?text=Vídeo';
                 }
 
+                $cleanName = rawurldecode(urldecode($video->name));
+                $cleanFileName = $videoFile ? rawurldecode(urldecode($videoFile->name)) : null;
+
                 return [
                     'id' => $video->id,
                     'file_id' => $videoFile?->id,
-                    'name' => $video->name,
-                    'title' => $video->name,
+                    'name' => $cleanName,
+                    'title' => $cleanName,
                     'type' => $video->type,
                     'video_url' => $videoUrl,
                     'embed_url' => $embedUrl,
                     'video_source' => $videoSource,
                     'thumbnail' => $thumbnail,
-                    'file_name' => $videoFile?->name,
+                    'file_name' => $cleanFileName,
                     'description' => $video->description,
                 ];
             });

@@ -1,5 +1,6 @@
 @extends('admin.layouts.app')
 
+
 @section('title', 'Gerenciador de Uploads - Admin')
 
 @section('content')

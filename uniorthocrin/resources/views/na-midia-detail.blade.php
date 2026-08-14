@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('tour_page_key', 'client_media_detail')
+
 @section('content')
 <div class="bg-[#F9F9F9] min-h-screen">
     <!-- Banner com breadcrumb e título -->
@@ -21,7 +23,7 @@
 
     <div class="max-w-7xl mx-auto px-4 py-12">
         <!-- Card de Informações Detalhadas -->
-        <div class="bg-white p-6 rounded-lg shadow-sm mb-12">
+        <div id="tour-item-details-card" class="bg-white p-6 rounded-lg shadow-sm mb-12">
             <!-- Descrição -->
             <div class="mb-6">
                 <h3 class="text-[#910039] font-bold text-lg mb-2">Descrição</h3>
@@ -52,7 +54,7 @@
                     <input type="hidden" name="content_type" value="media">
                     <input type="hidden" name="content_id" value="{{ $mediaItem->id }}">
                     <input type="hidden" name="type" value="all">
-                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-[#910039] text-white rounded hover:bg-[#7A0030] transition text-sm font-semibold">
+                    <button type="submit" class="btn-download-all inline-flex items-center gap-2 px-4 py-2 bg-[#910039] text-white rounded hover:bg-[#7A0030] transition text-sm font-semibold">
                         <i class="fa-solid fa-download"></i>
                         Baixar Todos os Arquivos (.zip)
                     </button>
@@ -100,7 +102,7 @@
                         @if($mediaItem->canBeDownloadedBy(auth()->user()))
                         <a href="{{ $file->url }}" 
                            download="{{ $file->name }}"
-                           class="inline-flex items-center gap-1 text-[#910039] hover:underline text-sm font-semibold">
+                           class="btn-download-single inline-flex items-center gap-1 text-[#910039] hover:underline text-sm font-semibold">
                             <i class="fas fa-download"></i> Download
                         </a>
                         @endif

@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('tour_page_key', 'client_marketing_detail')
+
 @section('content')
 @if(!isset($campaign) || !$campaign)
     <div class="bg-[#F9F9F9] min-h-screen flex items-center justify-center">
@@ -35,7 +37,7 @@
         <!-- 3 Boxes principais lado a lado -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             <!-- Box 1: Dados Gerais da Campanha -->
-            <div class="bg-white p-6 rounded-lg shadow-sm">
+            <div id="tour-item-details-card" class="bg-white p-6 rounded-lg shadow-sm">
                 <h2 class="text-[#910039] text-xl font-bold mb-4">Dados Gerais da Campanha</h2>
                 
                 <div class="space-y-3">
@@ -125,7 +127,7 @@
                         <input type="hidden" name="content_type" value="marketing">
                         <input type="hidden" name="content_id" value="{{ $campaign->id }}">
                         <input type="hidden" name="type" value="all">
-                        <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                        <button type="submit" id="marketing-campaign-download-btn" class="inline-flex items-center gap-1 text-[#910039] text-xs">
                             <i class="fa-solid fa-download"></i>
                             Download da Campanha
                         </button>
@@ -135,7 +137,7 @@
             </div>
 
             <!-- Box 2: Folhetos (SP / Outros Estados — um download por arquivo) -->
-            <div class="bg-white p-6 rounded-lg shadow-sm">
+            <div id="regional-brochures-box" class="bg-white p-6 rounded-lg shadow-sm">
                 <h2 class="text-[#910039] text-xl font-bold mb-4">Folhetos</h2>
                 
                 @php
@@ -239,7 +241,7 @@
             @endif
             
             <!-- Carousel de imagens -->
-            <div class="relative">
+            <div class="marketing-posts-grid relative">
                 <div class="flex items-center justify-center gap-4">
                     <!-- Seta esquerda -->
                     <button id="prevBtn" class="w-[250px] h-[40px] bg-[#910039] text-white rounded-full flex items-center justify-center hover:bg-[#7A0030] transition cursor-pointer">
@@ -442,10 +444,14 @@
                             }
                         @endphp
                         
+                        @php
+                            $cleanVideoName = rawurldecode(urldecode($video->name));
+                            $cleanFileName = $videoFile && $videoFile->name ? rawurldecode(urldecode($videoFile->name)) : null;
+                        @endphp
                         @if(($videoSource === 'url' && !empty($video->video_url)) || $videoFile)
                         <div class="video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t {{ $loop->last ? 'border-b' : '' }} border-gray-200" 
                              data-video="{{ $videoSource === 'url' ? 'ext_' . $video->id : ($videoFile ? $videoFile->id : $video->id) }}" 
-                             data-title="{{ $video->name }}" 
+                             data-title="{{ $cleanVideoName }}" 
                              data-type="{{ $video->type }}">
                             <div class="flex gap-3">
                                 <div class="w-20 h-12 bg-gray-300 rounded overflow-hidden flex-shrink-0">
@@ -458,11 +464,11 @@
                                     @endif
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <h4 class="text-[#910039] font-semibold text-sm mb-1">{{ $video->name }}</h4>
+                                    <h4 class="text-[#910039] font-semibold text-sm mb-1 break-words line-clamp-2" title="{{ $cleanVideoName }}">{{ $cleanVideoName }}</h4>
                                     @if($videoSource === 'url')
                                     <p class="text-gray-500 text-xs truncate mb-1" title="{{ $video->video_url }}">Link: {{ $video->video_url }}</p>
-                                    @elseif($videoFile && $videoFile->name)
-                                    <p class="text-gray-500 text-xs truncate mb-1" title="{{ $videoFile->name }}">{{ $videoFile->name }}</p>
+                                    @elseif($cleanFileName && $cleanFileName !== $cleanVideoName)
+                                    <p class="text-gray-500 text-xs truncate mb-1" title="{{ $cleanFileName }}">{{ $cleanFileName }}</p>
                                     @endif
                                     <div class="flex items-center justify-between gap-2">
                                         <span class="text-gray-600 text-xs">{{ ucfirst(str_replace('_', ' ', $video->type)) }}</span>
@@ -473,7 +479,7 @@
                                             <input type="hidden" name="content_id" value="{{ $campaign->id }}">
                                             <input type="hidden" name="type" value="video">
                                             <input type="hidden" name="file_ids[]" value="{{ $videoFile->id }}">
-                                            <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                                            <button type="submit" class="btn-video-download-single inline-flex items-center gap-1 text-[#910039] text-xs hover:underline">
                                                 <i class="fa-solid fa-download"></i>
                                                 Download
                                             </button>
@@ -503,7 +509,7 @@
                                         <input type="hidden" name="file_ids[]" value="{{ $vf->id }}">
                                     @endif
                                 @endforeach
-                                <button type="submit" class="inline-flex items-center gap-1 text-[#910039] text-xs">
+                                <button type="submit" id="tour-video-download-all" class="btn-video-download-all inline-flex items-center gap-1 text-[#910039] text-xs font-semibold hover:underline">
                                     <i class="fa-solid fa-download"></i>
                                     Baixar {{ $withFilesCount }} vídeo{{ $withFilesCount > 1 ? 's' : '' }}
                                 </button>

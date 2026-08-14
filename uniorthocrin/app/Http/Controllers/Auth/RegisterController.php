@@ -19,14 +19,14 @@ class RegisterController extends Controller
 
     public function showForm(Request $request, ?string $profile = null)
     {
-        $profile = $request->old('profile', $profile ?? 'franquia');
-        if (! $this->isValidProfile($profile)) {
-            $profile = 'franquia';
+        $selected = $request->old('profile', $profile);
+        if ($selected !== null && ! $this->isValidProfile($selected)) {
+            $selected = null;
         }
 
         return view('auth.register-profile', [
-            'profile' => $profile,
-            'profileLabel' => $this->profileLabel($profile),
+            'profile' => $selected,
+            'profileLabel' => $selected ? $this->profileLabel($selected) : '',
         ]);
     }
 
@@ -80,9 +80,9 @@ class RegisterController extends Controller
     private function profileLabel(string $profile): string
     {
         return match ($profile) {
-            'franquia' => 'Franquia',
+            'franquia' => 'Franqueado',
             'representante' => 'Representante',
-            'lojista' => 'Lojista',
+            'lojista' => 'Lojista Multimarca',
             default => 'Perfil',
         };
     }

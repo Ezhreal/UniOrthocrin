@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('tour_page_key', 'client_product_detail')
+
 @section('content')
 <div class="bg-[#F9F9F9] min-h-screen">
     <!-- Banner com breadcrumb e título -->
@@ -21,7 +23,7 @@
 
     <div class="max-w-7xl mx-auto py-12">
         <!-- Card de Informações Detalhadas -->
-        <div class="bg-white p-6 rounded-lg shadow-sm mb-12">
+        <div id="tour-item-details-card" class="bg-white p-6 rounded-lg shadow-sm mb-12">
             <!-- Descrição -->
             <div class="mb-4">
                 <h3 class="text-[#910039] font-bold text-lg mb-2">Descrição</h3>
@@ -112,7 +114,7 @@
                     <input type="hidden" name="content_type" value="product">
                     <input type="hidden" name="content_id" value="{{ $product->id }}">
                     <input type="hidden" name="type" value="all">
-                    <button type="submit" class="inline-flex items-center gap-2 text-[#910039] font-semibold hover:underline">
+                    <button type="submit" class="btn-download-zip inline-flex items-center gap-2 text-[#910039] font-semibold hover:underline">
                         <i class="fas fa-download"></i>
                         Baixar Galeria de Imagens.zip
                         <span class="text-gray-500 text-sm">({{ $images->count() }} arquivos)</span>
@@ -121,8 +123,9 @@
             </div>
         </div>
 
+        @if($videos && $videos->count() > 0)
         <!-- Vídeos do produto -->
-        <div class="mb-12 bg-white p-8">
+        <div id="tour-videos-gallery" class="mb-12 bg-white p-8">
             <h2 class="text-[#910039] text-2xl font-bold mb-8">Vídeos do produto</h2>
             
 
@@ -130,7 +133,7 @@
             <div class="flex gap-8">
                 <!-- Player principal -->
                 <div class="flex-grow max-w-[70%]">
-                    <div class="bg-gray-900 rounded-lg">
+                    <div id="tour-video-player" class="bg-gray-900 rounded-lg">
                         <div class="relative">
                         <!-- Thumbnail do vídeo -->
                             <div class="bg-gray-800">
@@ -196,26 +199,37 @@
                 </div>
                 
                 <!-- Lista de vídeos -->
-                <div class="flex-shrink-0 max-w-[30%]">
+                <div id="tour-video-playlist" class="flex-shrink-0 max-w-[30%]">
                     <h3 class="text-[#910039] font-bold text-lg mb-4">Lista de Reels</h3>
                     <div class="space-y-0">
                         @forelse($videos as $video)
-                        <div class="video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t {{ $loop->last ? 'border-b' : '' }} border-gray-200" data-video="{{ $video['id'] }}" data-title="{{ $video['title'] }}">
+                        @php
+                            $cleanTitle = rawurldecode(urldecode($video['title'] ?? 'Vídeo'));
+                            $cleanFileName = !empty($video['file_name']) ? rawurldecode(urldecode($video['file_name'])) : null;
+                        @endphp
+                        <div class="video-item bg-white p-4 cursor-pointer hover:bg-gray-50 transition border-t {{ $loop->last ? 'border-b' : '' }} border-gray-200" data-video="{{ $video['id'] }}" data-title="{{ $cleanTitle }}">
                             <div class="flex gap-3">
                                 <div class="w-20 h-12 bg-gray-300 rounded overflow-hidden flex-shrink-0">
                                     <img src="{{ $video['thumbnail'] }}" alt="Thumbnail" class="w-full h-full object-cover">
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <h4 class="text-[#910039] font-semibold text-sm mb-1">{{ $video['title'] }}</h4>
-                                    @if(!empty($video['file_name']))
-                                    <p class="text-gray-500 text-xs truncate" title="{{ $video['file_name'] }}">{{ $video['file_name'] }}</p>
+                                    <h4 class="text-[#910039] font-semibold text-sm mb-1 break-words line-clamp-2" title="{{ $cleanTitle }}">{{ $cleanTitle }}</h4>
+                                    @if($cleanFileName && $cleanFileName !== $cleanTitle)
+                                    <p class="text-gray-500 text-xs truncate mb-1" title="{{ $cleanFileName }}">{{ $cleanFileName }}</p>
                                     @endif
                                     <div class="flex items-center justify-between">
                                         <span class="text-gray-600 text-xs">Assistir</span>
-                                        @if($product->canBeDownloadedBy(auth()->user()))
-                                        <a href="javascript:void(0)" class="text-[#910039] text-xs hover:underline">
-                                            <i class="fas fa-download mr-1"></i>Download
-                                        </a>
+                                        @if($product->canBeDownloadedBy(auth()->user()) && ($video['video_source'] ?? 'upload') !== 'url')
+                                        <form method="POST" action="{{ route('download.files') }}" onclick="event.stopPropagation()" onsubmit="event.stopPropagation(); return handleDownloadSubmit(event, this);" class="inline-flex items-center gap-1">
+                                            @csrf
+                                            <input type="hidden" name="content_type" value="product">
+                                            <input type="hidden" name="content_id" value="{{ $product->id }}">
+                                            <input type="hidden" name="type" value="video">
+                                            <input type="hidden" name="file_ids[]" value="{{ $video['id'] }}">
+                                            <button type="submit" class="btn-video-download-single text-[#910039] text-xs hover:underline inline-flex items-center gap-1">
+                                                <i class="fas fa-download mr-1"></i>Download
+                                            </button>
+                                        </form>
                                         @endif
                                     </div>
                                 </div>
@@ -228,22 +242,33 @@
                         @endforelse
 
                         <!-- Download dos vídeos -->
-                        @if($videos->count() > 0 && $product->canBeDownloadedBy(auth()->user()))
+                        @php
+                            $downloadableVideos = $videos->filter(fn($v) => ($v['video_source'] ?? 'upload') !== 'url');
+                        @endphp
+                        @if($downloadableVideos->count() > 0 && $product->canBeDownloadedBy(auth()->user()))
                         <div class="mt-6">
-                            <a href="javascript:void(0)" 
-                               data-download="videos" 
-                               data-content-id="{{ $product->id }}" 
-                               data-content-type="product"
-                               class="inline-flex items-center gap-2 text-[#910039] font-semibold hover:underline">
-                                <i class="fas fa-download"></i>
-                                {{ $videos->count() }} Vídeo{{ $videos->count() > 1 ? 's' : '' }} disponíve{{ $videos->count() > 1 ? 'is' : 'l' }}
-                            </a>
+                            <form method="POST" action="{{ route('download.files') }}" onsubmit="return handleDownloadSubmit(event, this);" class="inline">
+                                @csrf
+                                <input type="hidden" name="content_type" value="product">
+                                <input type="hidden" name="content_id" value="{{ $product->id }}">
+                                <input type="hidden" name="type" value="video">
+                                @foreach($downloadableVideos as $dVideo)
+                                    <input type="hidden" name="file_ids[]" value="{{ $dVideo['id'] }}">
+                                @endforeach
+                                <button type="submit" id="tour-video-download-all" class="btn-video-download-all inline-flex items-center gap-2 text-[#910039] font-semibold hover:underline">
+                                    <i class="fas fa-download"></i>
+                                    Baixar Todos os Vídeos .zip
+                                    <span class="text-gray-500 text-sm">({{ $downloadableVideos->count() }} vídeos)</span>
+                                </button>
+                            </form>
                         </div>
                         @endif
                     </div>
                 </div>
             </div>
             
+        </div>
+        @endif    
 
         </div>
     </div>

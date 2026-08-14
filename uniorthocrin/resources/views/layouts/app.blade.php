@@ -11,7 +11,7 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @livewireStyles
 </head>
-<body class="bg-background min-h-screen">
+<body class="bg-background min-h-screen" data-tour-page="@yield('tour_page_key', 'client_dashboard')">
     <!-- Admin View Indicator -->
     @if(auth()->check() && auth()->user()->isAdmin())
         <div class="bg-[#910039] text-white px-6 py-2 text-sm font-medium flex flex-wrap items-center justify-between sticky top-0 z-[60] border-b border-[#7a0030]">
