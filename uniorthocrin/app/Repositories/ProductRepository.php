@@ -75,7 +75,11 @@ class ProductRepository implements RepositoryInterface
         }
 
         // Paginação
-        $perPage = $filters['per_page'] ?? 12;
+        $perPage = array_key_exists('per_page', $filters) ? $filters['per_page'] : 12;
+        
+        if ($perPage === null) {
+            return $query->latest('id')->get();
+        }
         
         return $query->latest('id')->paginate($perPage);
     }
